@@ -1,0 +1,32 @@
+{
+  "name": "tiny-mail",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev --port 3000",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "generate:db": "drizzle-kit generate:sqlite"
+  },
+  "dependencies": {
+    "@astrojs/node": "^8.2.3",
+    "@astrojs/tailwind": "^5.1.0",
+    "astro": "^4.5.2",
+    "better-sqlite3": "^9.4.3",
+    "drizzle-orm": "^0.30.2",
+    "joi": "^17.12.2",
+    "jose": "^5.2.3",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/node": "^20.11.26",
+    "drizzle-kit": "^0.20.14",
+    "prettier": "^3.2.5",
+    "prettier-plugin-astro": "^0.13.0",
+    "prettier-plugin-tailwindcss": "^0.5.12"
+  }
+}

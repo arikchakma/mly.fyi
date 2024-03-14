@@ -1,0 +1,11 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title='Tiny Mail'>
+  <form method='POST' action='/api/v1/auth/login'>
+    <input type='email' name='email' id='email' class='border' />
+    <input type='password' name='password' id='password' class='border' />
+    <button type='submit'>Login</button>
+  </form>
+</Layout>
