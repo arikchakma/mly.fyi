@@ -41,6 +41,7 @@
     "@types/better-sqlite3": "^7.6.9",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20.11.26",
+    "@types/nodemailer": "^6.4.14",
     "@types/uuid": "^9.0.8",
     "drizzle-kit": "^0.20.14",
     "prettier": "^3.2.5",
