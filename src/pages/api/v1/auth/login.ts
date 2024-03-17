@@ -63,7 +63,7 @@ async function handle({ body, context }: V1LoginRequest) {
   //   token,
   // } satisfies V1LoginResponse);
 
-  return json({ token: '' } as V1LoginResponse);
+  return json<V1LoginResponse>({ token: '' });
 }
 
 export const POST: APIRoute = handler(

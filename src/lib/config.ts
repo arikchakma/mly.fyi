@@ -1,8 +1,10 @@
+import { env } from './env';
+
 export const config = {
-  isDev: import.meta.env.DEV,
-  appUrl: import.meta.env.APP_URL || 'http://localhost:3000',
+  isDev: env.DEV,
+  appUrl: env.APP_URL,
   jwt: {
-    secret: import.meta.env.JWT_SECRET || 'secret',
-    expiresIn: import.meta.env.JWT_EXPIRES_IN || '90d',
+    secret: env.JWT_SECRET,
+    expiresIn: env.JWT_EXPIRES_IN,
   },
 } as const;

@@ -6,7 +6,7 @@
  *
  * @returns Response
  */
-export function json(response: any, options: ResponseInit = {}): Response {
+export function json<T>(response: T, options: ResponseInit = {}): Response {
   return new Response(JSON.stringify(response), {
     status: options.status || 200,
     headers: {

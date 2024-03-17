@@ -2,9 +2,21 @@ import { json } from './response';
 import { stripQuotes } from '../utils/string';
 import { logError } from './logger';
 import Joi from 'joi';
+import type { HttpError } from './http-error';
+
+export const ERROR_CODE_BY_KEY = {
+  validation_error: 400,
+  internal_error: 500,
+  not_found: 404,
+  unauthorized: 401,
+  forbidden: 403,
+  conflict: 409,
+} as const;
+
+export type ErrorCodeKey = keyof typeof ERROR_CODE_BY_KEY;
 
 interface ErrorBody {
-  type: 'ValidationError' | 'InternalError' | 'NotFound' | 'Unauthorized';
+  type: ErrorCodeKey;
   message: string;
   errors?: {
     message: string;
@@ -22,12 +34,26 @@ export function renderErrorResponse(error: ErrorBody, status: number) {
   return json(error, { status });
 }
 
+export function renderHttpError(error: HttpError): Response {
+  return renderErrorResponse(
+    {
+      type: error.type || 'internal_error',
+      message: error.message,
+      errors: error?.errors?.map((err) => ({
+        message: err.message,
+        path: err.location,
+      })),
+    },
+    error.status,
+  );
+}
+
 export function renderValidationError(error: Joi.ValidationError): Response {
   const errorsList = error.details || [];
 
   return renderErrorResponse(
     {
-      type: 'ValidationError',
+      type: 'validation_error',
       message: stripQuotes(error.message),
       errors: errorsList.map((err) => ({
         message: stripQuotes(err.message),
@@ -45,7 +71,7 @@ export function renderInternalError(err: Error): Response {
 
   return renderErrorResponse(
     {
-      type: 'InternalError',
+      type: 'internal_error',
       message: err.message,
     },
     500,
@@ -55,7 +81,7 @@ export function renderInternalError(err: Error): Response {
 export function renderUnauthorized(): Response {
   return renderErrorResponse(
     {
-      type: 'Unauthorized',
+      type: 'unauthorized',
       message: 'Invalid credentials',
     },
     401,
@@ -65,7 +91,7 @@ export function renderUnauthorized(): Response {
 export function renderNotFound(): Response {
   return renderErrorResponse(
     {
-      type: 'NotFound',
+      type: 'not_found',
       message: 'Resource not found',
     },
     404,

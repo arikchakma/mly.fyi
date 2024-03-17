@@ -1,11 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { db } from '../db';
+import { env } from '@/lib/env';
 
 const users = await db.query.users.findMany();
 
 console.log('-'.repeat(20));
 console.log('Users: ', users);
+console.log('Enviroment Variables: ', env);
 console.log('-'.repeat(20));
 ---
 
