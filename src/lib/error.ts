@@ -5,6 +5,7 @@ import Joi from 'joi';
 import type { HttpError } from './http-error';
 
 export const ERROR_CODE_BY_KEY = {
+  bad_request: 400,
   validation_error: 400,
   internal_error: 500,
   not_found: 404,
@@ -15,7 +16,7 @@ export const ERROR_CODE_BY_KEY = {
 
 export type ErrorCodeKey = keyof typeof ERROR_CODE_BY_KEY;
 
-interface ErrorBody {
+export interface ErrorBody {
   type: ErrorCodeKey;
   message: string;
   errors?: {

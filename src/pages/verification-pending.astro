@@ -1,0 +1,22 @@
+---
+import { PendingVerificationMessage } from '../components/AuthenticationFlow/PendingVerificationMessage';
+import AuthLayout from '../layouts/AuthLayout.astro';
+
+const rawEmail = Astro.url.searchParams.get('email');
+if (!rawEmail) {
+  return Astro.redirect('/');
+}
+
+const email = decodeURIComponent(rawEmail);
+
+const { currentUserId } = Astro.locals;
+if (currentUserId) {
+  return Astro.redirect('/');
+}
+---
+
+<AuthLayout title='Verify Email' noIndex={true}>
+  <section class='py-8 sm:py-20'>
+    <PendingVerificationMessage email={email} client:load />
+  </section>
+</AuthLayout>

@@ -21,9 +21,10 @@ export const users = sqliteTable(
       enum: allowedAuthProvider,
     }).notNull(),
     verificationCode: text('verification_code').unique(),
-    verificationCodeAt: text('verification_code_at'),
     resetPasswordCode: text('reset_password_code').unique(),
-    resetPasswordCodeAt: text('reset_password_code_at'),
+    resetPasswordCodeAt: integer('reset_password_code_at', {
+      mode: 'timestamp',
+    }),
     verifiedAt: integer('verified_at', { mode: 'timestamp' }),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .notNull()

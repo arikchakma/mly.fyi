@@ -18,13 +18,13 @@ import { hashPassword } from '@/lib/hash';
 export interface RegisterResponse {
   status: 'ok';
 }
-export interface RegisterRequest extends RouteParams {
-  body: {
-    name: string;
-    email: string;
-    password: string;
-  };
-}
+
+export type RegisterBody = {
+  name: string;
+  email: string;
+  password: string;
+};
+export interface RegisterRequest extends RouteParams<RegisterBody> {}
 
 async function validate(params: RegisterRequest) {
   const schema = Joi.object({
