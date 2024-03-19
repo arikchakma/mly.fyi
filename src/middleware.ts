@@ -24,10 +24,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
         return next();
       }
 
-      console.log('-'.repeat(20));
-      console.log('Current User: ', user);
-      console.log('-'.repeat(20));
-
       context.locals.currentUser = user;
       context.locals.currentUserId = user?.id;
     } catch (error) {

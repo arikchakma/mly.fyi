@@ -41,7 +41,12 @@ export function decodeToken(token: string): TokenPayload {
 export function readTokenCookie(
   context: APIContext | AstroGlobal,
 ): string | undefined {
-  const token = context.cookies.get(TOKEN_COOKIE_NAME)?.value;
+  let token = context.cookies.get(TOKEN_COOKIE_NAME)?.value;
+
+  if (!token) {
+    const authorization = context.request.headers.get('Authorization') || '';
+    token = authorization.replace('Bearer ', '');
+  }
 
   if (!token) {
     return undefined;

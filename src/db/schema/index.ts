@@ -1,2 +1,3 @@
 export * from './users';
-export * from './emails';
+export * from './email-logs';
+export * from './projects';

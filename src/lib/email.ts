@@ -6,7 +6,7 @@ import SESTransport from 'nodemailer/lib/ses-transport';
 import { logError } from './logger';
 import { serverConfig } from './config';
 
-export const allowedEmailProvider = ['ses', 'postmark'] as const;
+export const allowedEmailProvider = ['ses'] as const;
 export type AllowedEmailProvider = (typeof allowedEmailProvider)[number];
 
 interface EmailErrorType {

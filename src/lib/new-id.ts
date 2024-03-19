@@ -6,6 +6,10 @@ export const nanoid = customAlphabet(
 const prefixes = {
   key: 'key',
   user: 'user',
+  project: 'pjt',
+  projectMember: 'pjm',
+  emailLog: 'eml',
+  emailEvent: 'eme',
   test: 'test', // <-- for tests only
 } as const;
 

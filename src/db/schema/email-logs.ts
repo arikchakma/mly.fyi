@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { text, sqliteTable, integer, index } from 'drizzle-orm/sqlite-core';
 
-export const allowedEmailStatus = [
+export const allowedEmailLogStatus = [
   'sent',
   'delivered',
   'opened',
@@ -12,8 +12,8 @@ export const allowedEmailStatus = [
   'error',
 ] as const;
 
-export const emails = sqliteTable(
-  'emails',
+export const emailLogs = sqliteTable(
+  'email_logs',
   {
     id: text('id').unique().primaryKey(),
     messageId: text('message_id').notNull(),
@@ -24,7 +24,7 @@ export const emails = sqliteTable(
     text: text('text'),
     html: text('html'),
     status: text('status', {
-      enum: allowedEmailStatus,
+      enum: allowedEmailLogStatus,
     }).notNull(),
     sendAt: integer('send_at', { mode: 'timestamp' }),
     createdAt: integer('created_at', { mode: 'timestamp' })
@@ -37,20 +37,20 @@ export const emails = sqliteTable(
   (emails) => ({}),
 );
 
-export const events = sqliteTable(
-  'events',
+export const emailEvents = sqliteTable(
+  'email_events',
   {
     id: text('id').unique().primaryKey(),
     emailId: text('email_id')
       .notNull()
-      .references(() => emails.id),
+      .references(() => emailLogs.id),
     email: text('email').notNull(),
     type: text('type', {
-      enum: allowedEmailStatus,
+      enum: allowedEmailLogStatus,
     }).notNull(),
     timestamp: integer('timestamp', { mode: 'timestamp' })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
   },
-  (events) => ({}),
+  (emailEvents) => ({}),
 );

@@ -12,33 +12,23 @@ import {
   setIdentityNotificationTopic,
 } from './ses';
 
-type SNSCredentials = {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
-};
-
-export function getSNSClient(sns: SNSCredentials): SNSClient {
-  return new SNSClient({
-    region: sns.region,
-    credentials: {
-      accessKeyId: sns.accessKeyId,
-      secretAccessKey: sns.secretAccessKey,
-    },
-  });
-}
+export const snsClient = new SNSClient({
+  region: serverConfig.ses.region,
+  credentials: {
+    accessKeyId: serverConfig.ses.accessKeyId,
+    secretAccessKey: serverConfig.ses.secretAccessKey,
+  },
+});
 
 export async function listSubscriptions(
-  sns: SNSCredentials,
   nextToken?: string,
 ): Promise<ListSubscriptionsCommandOutput | undefined> {
-  const client = getSNSClient(sns);
   const command = new ListSubscriptionsCommand({
     NextToken: nextToken,
   });
 
   try {
-    const result = await client.send(command);
+    const result = await snsClient.send(command);
     return result;
   } catch (error) {
     logError(error, (error as Error)?.stack);
@@ -46,10 +36,8 @@ export async function listSubscriptions(
 }
 
 export async function createTopic(
-  sns: SNSCredentials,
   topicName: string,
 ): Promise<string | undefined> {
-  const snsClient = getSNSClient(sns);
   const command = new CreateTopicCommand({
     Name: topicName,
   });
@@ -69,20 +57,17 @@ type SubscribeToTopicParams = {
 };
 
 export async function subscribeToTopic(
-  sns: SNSCredentials,
   params: SubscribeToTopicParams,
 ): Promise<string | undefined> {
-  const { topicArn, endpoint, protocol = 'https' } = params;
-
-  const snsClient = getSNSClient(sns);
-  const command = new SubscribeCommand({
-    TopicArn: topicArn,
-    Endpoint: endpoint,
-    Protocol: protocol,
-    ReturnSubscriptionArn: true,
-  });
-
   try {
+    const { topicArn, endpoint, protocol = 'https' } = params;
+    const command = new SubscribeCommand({
+      TopicArn: topicArn,
+      Endpoint: endpoint,
+      Protocol: protocol,
+      ReturnSubscriptionArn: true,
+    });
+
     const result = await snsClient.send(command);
     return result?.SubscriptionArn;
   } catch (error) {
@@ -91,7 +76,6 @@ export async function subscribeToTopic(
 }
 
 export async function setupEmailNotificationHandling(
-  sns: SNSCredentials,
   email: string,
 ): Promise<boolean> {
   const emailDomain = email.split('@')[1];
@@ -101,13 +85,13 @@ export async function setupEmailNotificationHandling(
   let complaintsTopicArn: string | undefined;
   let complaintsSubscriptionArn: string | undefined;
 
-  const bouncesEndoint = `${serverConfig.appUrl}/api/v1/webhook/bounces`;
-  const complaintsEndpoint = `${serverConfig.appUrl}/api/v1/webhook/complaints`;
+  const bouncesEndoint = `${serverConfig.appUrl}/api/v1-bounces`;
+  const complaintsEndpoint = `${serverConfig.appUrl}/api/v1-complaints`;
 
   try {
     // 1. Check if bounces and complaints subscriptions already exist
     // for their respective topics
-    const subscriptions = await listSubscriptions(sns);
+    const subscriptions = await listSubscriptions();
     for (const subscription of subscriptions?.Subscriptions || []) {
       if (subscription.Endpoint === bouncesEndoint) {
         bouncesTopicArn = subscription.TopicArn;
@@ -120,18 +104,18 @@ export async function setupEmailNotificationHandling(
 
     // 2. As the topic creation is idempotent, we can create the topics
     // and subscriptions even if they already exist
-    bouncesTopicArn = await createTopic(sns, 'bounces');
-    complaintsTopicArn = await createTopic(sns, 'complaints');
+    bouncesTopicArn = await createTopic('bounces');
+    complaintsTopicArn = await createTopic('complaints');
 
     // 3. If 'bounces' and 'complaints' SNS topics exist,
     // create SNS subscriptions for them
     if (bouncesTopicArn !== '' && complaintsTopicArn !== '') {
       // Create 'bounces' and 'complaints' SNS subscriptions
-      bouncesSubscriptionArn = await subscribeToTopic(sns, {
+      bouncesSubscriptionArn = await subscribeToTopic({
         topicArn: bouncesTopicArn!,
         endpoint: bouncesEndoint,
       });
-      complaintsSubscriptionArn = await subscribeToTopic(sns, {
+      complaintsSubscriptionArn = await subscribeToTopic({
         topicArn: complaintsTopicArn!,
         endpoint: complaintsEndpoint,
       });
@@ -143,28 +127,28 @@ export async function setupEmailNotificationHandling(
 
     // Add the subscription ARNs to the user identity
     const results = await Promise.allSettled([
-      setIdentityNotificationTopic(sns, {
+      setIdentityNotificationTopic({
         topicArn: bouncesTopicArn,
         identity: email,
         notificationType: 'Bounce',
       }),
-      setIdentityNotificationTopic(sns, {
+      setIdentityNotificationTopic({
         topicArn: bouncesTopicArn,
         identity: emailDomain,
         notificationType: 'Bounce',
       }),
-      setIdentityNotificationTopic(sns, {
+      setIdentityNotificationTopic({
         topicArn: complaintsTopicArn,
         identity: email,
         notificationType: 'Complaint',
       }),
-      setIdentityNotificationTopic(sns, {
+      setIdentityNotificationTopic({
         topicArn: complaintsTopicArn,
         identity: emailDomain,
         notificationType: 'Complaint',
       }),
-      setIdentityFeedbackForwardingEnabled(sns, email, false),
-      setIdentityFeedbackForwardingEnabled(sns, emailDomain, false),
+      setIdentityFeedbackForwardingEnabled(email, false),
+      setIdentityFeedbackForwardingEnabled(emailDomain, false),
     ]);
 
     for (const result of results) {

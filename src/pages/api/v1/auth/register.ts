@@ -75,10 +75,6 @@ async function handle({ body }: RegisterRequest) {
     authProvider: 'email',
   });
 
-  console.log('-'.repeat(20));
-  console.log('User created:', JSON.stringify(user));
-  console.log('-'.repeat(20));
-
   // Send verification email
 
   return json<RegisterResponse>({ status: 'ok' });

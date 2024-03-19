@@ -6,18 +6,28 @@ import {
   renderValidationError,
 } from './error';
 import { HttpError } from './http-error';
+import { decodeToken, readTokenCookie } from './jwt';
+import type { User } from '@/db/types';
+import { db } from '@/db';
+import { eq } from 'drizzle-orm';
+import { users } from '@/db/schema';
 
-export type RouteParams<B = any, Q = any> = {
-  query: Q;
+export type RouteParams<B = any, Q = any, P = any> = {
   body: B;
+  query: Q;
+  params: P;
   headers: Headers;
   context: APIContext;
+  user?: User;
+  userId?: string;
 };
 
 export type HandleRoute<P = RouteParams> = (params: P) => Promise<Response>;
 export type ValidateRoute<P = RouteParams> = (params: P) => Promise<P>;
 
-export type HandlerOptions = {};
+export type HandlerOptions = {
+  isProtected?: boolean;
+};
 
 /**
  * Wraps the API handlers for error handling and other common tasks
@@ -31,23 +41,53 @@ export function handler(
   validate: ValidateRoute | undefined = undefined,
   options: HandlerOptions = {},
 ): APIRoute {
+  const { isProtected = false } = options;
+
   return async (context: APIContext): Promise<Response> => {
     try {
-      const { request, params: queryParams } = context;
-      const body = await request.json();
+      const { request, url, params } = context;
+      const queryParams = Object.fromEntries(url.searchParams);
+      const body = await request.json().catch(() => ({}));
 
       let routeParams: RouteParams = {
         query: queryParams,
         body,
+        params,
         headers: request.headers,
         context,
       };
+
+      if (isProtected) {
+        const token = readTokenCookie(context);
+        if (!token) {
+          throw new HttpError('unauthorized', 'Unauthorized');
+        }
+
+        const payload = decodeToken(token);
+        const user = await db.query.users.findFirst({
+          where: eq(users.id, payload.id),
+        });
+
+        if (!user) {
+          throw new HttpError('unauthorized', 'Unauthorized');
+        }
+
+        if (!user.isEnabled) {
+          throw new HttpError('bad_request', 'User not verified');
+        }
+
+        Object.assign(routeParams, {
+          user,
+          userId: user.id,
+        });
+      }
 
       if (validate) {
         routeParams = await validate(routeParams);
       }
 
-      return handle(routeParams);
+      const handleResponse = await handle(routeParams);
+      return handleResponse;
     } catch (e) {
       if (e instanceof Joi.ValidationError) {
         return renderValidationError(e);

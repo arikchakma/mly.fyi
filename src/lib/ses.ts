@@ -5,46 +5,28 @@ import {
   SESClient,
   SetIdentityFeedbackForwardingEnabledCommand,
   SetIdentityNotificationTopicCommand,
-  VerificationStatus,
   VerifyEmailIdentityCommand,
 } from '@aws-sdk/client-ses';
 import { logError } from './logger';
-import { setupEmailNotificationHandling } from './sns';
+import { setupEmailNotificationHandling } from './notification';
 import { serverConfig } from './config';
+import type { AllowedProjectSetupStatus } from '@/db/schema/projects';
 
-export type SESCredentials = {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
-};
+export const sesClient = new SESClient({
+  region: serverConfig.ses.region,
+  credentials: {
+    accessKeyId: serverConfig.ses.accessKeyId,
+    secretAccessKey: serverConfig.ses.secretAccessKey,
+  },
+});
 
-export function getSESClient(
-  credentials: SESCredentials,
-  sesEndpointOverrideUrl?: string,
-) {
-  return new SESClient({
-    region: credentials.region,
-    credentials: {
-      accessKeyId: credentials.accessKeyId,
-      secretAccessKey: credentials.secretAccessKey,
-    },
-    ...(sesEndpointOverrideUrl
-      ? {
-          endpoint: sesEndpointOverrideUrl,
-        }
-      : {}),
-  });
-}
-
-export async function listIdentities(ses: SESCredentials, nextToken?: string) {
-  const sesClient = getSESClient(ses);
-
-  // @TODO: Implement do while loop to get all identities
-  const command = new ListIdentitiesCommand({
-    NextToken: nextToken,
-  });
-
+export async function listIdentities(nextToken?: string) {
   try {
+    // @TODO: Implement do while loop to get all identities
+    const command = new ListIdentitiesCommand({
+      NextToken: nextToken,
+    });
+
     return await sesClient.send(command);
   } catch (err) {
     logError(err, (err as Error)?.stack);
@@ -52,14 +34,11 @@ export async function listIdentities(ses: SESCredentials, nextToken?: string) {
   }
 }
 
-export async function checkIsValidSESIdentity(
-  ses: SESCredentials,
-  identity: string,
-) {
+export async function checkIsValidSESIdentity(identity: string) {
   const emailDomain = identity.split('@')[1];
 
   try {
-    const identities = await listIdentities(ses);
+    const identities = await listIdentities();
     const verifiedIdentities = identities?.Identities || [];
 
     if (verifiedIdentities.includes(identity)) {
@@ -75,18 +54,13 @@ export async function checkIsValidSESIdentity(
   }
 }
 
-export async function getIdentityVerificationAttributes(
-  ses: SESCredentials,
-  identity: string,
-) {
-  const emailDomain = identity.split('@')[1];
-  const sesClient = getSESClient(ses);
-
-  const command = new GetIdentityVerificationAttributesCommand({
-    Identities: [identity, emailDomain],
-  });
-
+export async function getIdentityVerificationAttributes(identity: string) {
   try {
+    const emailDomain = identity.split('@')[1];
+    const command = new GetIdentityVerificationAttributesCommand({
+      Identities: [identity, emailDomain],
+    });
+
     const identityVerificationAttributes = await sesClient.send(command);
 
     const domainVerificationStatus =
@@ -106,17 +80,12 @@ export async function getIdentityVerificationAttributes(
   }
 }
 
-export async function verifyEmailIdentity(
-  ses: SESCredentials,
-  identity: string,
-) {
-  const sesClient = getSESClient(ses);
-
-  const command = new VerifyEmailIdentityCommand({
-    EmailAddress: identity,
-  });
-
+export async function verifyEmailIdentity(identity: string) {
   try {
+    const command = new VerifyEmailIdentityCommand({
+      EmailAddress: identity,
+    });
+
     await sesClient.send(command);
     return true;
   } catch (err) {
@@ -125,33 +94,21 @@ export async function verifyEmailIdentity(
   }
 }
 
-export type ProjectSetupStatus =
-  | 'completed'
-  | 'verification-pending'
-  | 'not-started';
-
-export async function verifyIdentityAndStatus(
-  credentials: SESCredentials,
-  projectId: string,
-  fromEmail: string,
-) {
-  let status: ProjectSetupStatus = 'verification-pending';
-  const isValidSESIdentity = await checkIsValidSESIdentity(
-    credentials,
-    fromEmail,
-  );
+export async function verifyIdentityAndStatus(fromEmail: string) {
+  let status: AllowedProjectSetupStatus = 'verification-pending';
+  const isValidSESIdentity = await checkIsValidSESIdentity(fromEmail);
 
   if (isValidSESIdentity) {
     const { emailStatus, domainStatus } =
-      (await getIdentityVerificationAttributes(credentials, fromEmail)) || {};
+      (await getIdentityVerificationAttributes(fromEmail)) || {};
     if (emailStatus === 'Success' || domainStatus === 'Success') {
       status = 'completed';
     }
   } else {
-    await verifyEmailIdentity(credentials, fromEmail);
+    await verifyEmailIdentity(fromEmail);
   }
 
-  await setupEmailNotificationHandling(credentials, fromEmail);
+  await setupEmailNotificationHandling(fromEmail);
   return status;
 }
 
@@ -162,11 +119,8 @@ type SetIdentityNotificationTopicCommandParams = {
 };
 
 export async function setIdentityNotificationTopic(
-  ses: SESCredentials,
   params: SetIdentityNotificationTopicCommandParams,
 ) {
-  const sesClient = getSESClient(ses);
-
   try {
     const command = new SetIdentityNotificationTopicCommand({
       Identity: params.identity,
@@ -183,12 +137,9 @@ export async function setIdentityNotificationTopic(
 }
 
 export async function setIdentityFeedbackForwardingEnabled(
-  ses: SESCredentials,
   identity: string,
   enabled: boolean,
 ) {
-  const sesClient = getSESClient(ses);
-
   try {
     const command = new SetIdentityFeedbackForwardingEnabledCommand({
       Identity: identity,
@@ -203,16 +154,11 @@ export async function setIdentityFeedbackForwardingEnabled(
   }
 }
 
-export async function getSESSendQuota(ses: SESCredentials): Promise<{
+export async function getSESSendQuota(): Promise<{
   max24HourSend: number;
   maxSendRate: number;
   sentLast24Hours: number;
 } | null> {
-  const sesOverrideUrl = serverConfig.isDev
-    ? serverConfig.ses.sesEndpointOverrideUrl
-    : undefined;
-  const sesClient = getSESClient(ses, sesOverrideUrl);
-
   try {
     const sendingQuotaCommand = new GetSendQuotaCommand({});
     const sendingQuotaResult = await sesClient.send(sendingQuotaCommand);
