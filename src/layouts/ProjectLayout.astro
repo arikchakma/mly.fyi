@@ -1,0 +1,40 @@
+---
+import Layout from './Layout.astro';
+import type { AppError, FetchError } from '../api/api';
+import { ProjectNavigation } from '../components/Projects/ProjectNavigation';
+import { PageError } from '../components/Errors/PageError';
+
+export interface Props {
+  project?: Partial<{
+    id: string;
+    name: string;
+  }>;
+  projectError?: AppError | FetchError | null;
+  title: string;
+}
+
+const { project, projectError, ...props } = Astro.props;
+const hasError = !project?.id || !!projectError;
+---
+
+<Layout {...props}>
+  {
+    !hasError && (
+      <>
+        <ProjectNavigation
+          project={{
+            name: project?.name!,
+          }}
+          url={Astro.url}
+          params={Astro.params}
+        />
+        <slot />
+      </>
+    )
+  }
+  {
+    hasError && (
+      <PageError error={projectError?.message || 'Something went wrong'} />
+    )
+  }
+</Layout>

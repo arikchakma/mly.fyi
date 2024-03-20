@@ -8,21 +8,18 @@ import {
 import { json } from '@/lib/response';
 import Joi from 'joi';
 import { db } from '@/db';
-import { eq } from 'drizzle-orm';
-import { projectMembers, projects, users } from '@/db/schema';
-import { HttpError } from '@/lib/http-error';
+import { projectMembers, projects } from '@/db/schema';
 import { v4 as uuidV4 } from 'uuid';
 import { newId } from '@/lib/new-id';
-import { hashPassword } from '@/lib/hash';
 import type { Project } from '@/db/types';
 
-export interface RegisterResponse
+export interface CreateProjectResponse
   extends Pick<Project, 'id' | 'name' | 'url' | 'timezone'> {}
 
-export type RegisterBody = Pick<Project, 'name' | 'timezone' | 'url'>;
-export interface RegisterRequest extends RouteParams<RegisterBody> {}
+export type CreateProjectBody = Pick<Project, 'name' | 'timezone' | 'url'>;
+export interface CreateProjectRequest extends RouteParams<CreateProjectBody> {}
 
-async function validate(params: RegisterRequest) {
+async function validate(params: CreateProjectRequest) {
   const schema = Joi.object({
     name: Joi.string().trim().min(3).required(),
     timezone: Joi.string().trim().required(),
@@ -44,7 +41,7 @@ async function validate(params: RegisterRequest) {
   };
 }
 
-async function handle(params: RegisterRequest) {
+async function handle(params: CreateProjectRequest) {
   const { body, userId, user } = params;
   const { name, timezone, url } = body;
 
@@ -78,12 +75,12 @@ async function handle(params: RegisterRequest) {
     status: 'joined',
   });
 
-  return json<RegisterResponse>(project?.[0]);
+  return json<CreateProjectResponse>(project?.[0]);
 }
 
 export const POST: APIRoute = handler(
-  handle satisfies HandleRoute<RegisterRequest>,
-  validate satisfies ValidateRoute<RegisterRequest>,
+  handle satisfies HandleRoute<CreateProjectRequest>,
+  validate satisfies ValidateRoute<CreateProjectRequest>,
   {
     isProtected: true,
   },

@@ -35,7 +35,7 @@ const allowedProjectMemberRoles = ['admin', 'manager', 'viewer'] as const;
 const allowedProjectMemberStatus = ['invited', 'joined', 'rejected'] as const;
 
 export type AllowedMemberRoles = (typeof allowedProjectMemberRoles)[number];
-export type AllowedMemberProjectMemberStatus =
+export type AllowedProjectMemberStatus =
   (typeof allowedProjectMemberStatus)[number];
 
 export const projectMembers = sqliteTable(

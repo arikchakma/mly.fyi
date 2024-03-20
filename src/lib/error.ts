@@ -40,10 +40,11 @@ export function renderHttpError(error: HttpError): Response {
     {
       type: error.type || 'internal_error',
       message: error.message,
-      errors: error?.errors?.map((err) => ({
-        message: err.message,
-        path: err.location,
-      })),
+      errors:
+        error?.errors?.map((err) => ({
+          message: err.message,
+          path: err.location,
+        })) || [],
     },
     error.status,
   );
@@ -74,6 +75,7 @@ export function renderInternalError(err: Error): Response {
     {
       type: 'internal_error',
       message: err.message,
+      errors: [],
     },
     500,
   );
@@ -84,6 +86,7 @@ export function renderUnauthorized(): Response {
     {
       type: 'unauthorized',
       message: 'Invalid credentials',
+      errors: [],
     },
     401,
   );
@@ -94,6 +97,7 @@ export function renderNotFound(): Response {
     {
       type: 'not_found',
       message: 'Resource not found',
+      errors: [],
     },
     404,
   );

@@ -12,12 +12,15 @@ import { db } from '@/db';
 import { eq } from 'drizzle-orm';
 import { users } from '@/db/schema';
 
-export type RouteParams<B = any, Q = any, P = any> = {
+export type RouteParams<
+  B = any,
+  Q = any,
+  P extends Record<string, string | undefined> = any,
+> = {
   body: B;
   query: Q;
-  params: P;
   headers: Headers;
-  context: APIContext;
+  context: APIContext<any, P>;
   user?: User;
   userId?: string;
 };
@@ -45,14 +48,13 @@ export function handler(
 
   return async (context: APIContext): Promise<Response> => {
     try {
-      const { request, url, params } = context;
+      const { request, url } = context;
       const queryParams = Object.fromEntries(url.searchParams);
       const body = await request.json().catch(() => ({}));
 
       let routeParams: RouteParams = {
         query: queryParams,
         body,
-        params,
         headers: request.headers,
         context,
       };

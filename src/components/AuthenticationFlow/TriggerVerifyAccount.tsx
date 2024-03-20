@@ -18,7 +18,8 @@ export function TriggerVerifyAccount(props: TriggerVerifyAccountProps) {
   const triggerVerify = useMutation(
     {
       mutationKey: ['v1-verify-account'],
-      mutationFn: () => {
+      mutationFn: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         return httpPost<{ token: string }>(`/api/v1/auth/verify-account`, {
           code,
         });
@@ -47,7 +48,7 @@ export function TriggerVerifyAccount(props: TriggerVerifyAccountProps) {
   }, []);
 
   const loadingMessage = isLoading && (
-    <div className="flex items-center gap-3 rounded-md border px-3 py-1.5 font-medium ">
+    <div className="flex items-center gap-3 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 font-medium text-zinc-50">
       <Loader2 className="mx-auto h-5 w-5 animate-spin stroke-[3]" />
       <h3 className="text-base font-medium">
         Please wait while we verify you..
@@ -56,7 +57,7 @@ export function TriggerVerifyAccount(props: TriggerVerifyAccountProps) {
   );
 
   const errorMessage = error && !isLoading && (
-    <div className="flex items-center gap-3 rounded-md border border-red-500 px-3 py-1.5 font-medium text-red-500">
+    <div className="flex items-center gap-3 rounded-md border border-red-500 bg-red-700 px-3 py-1.5 font-medium text-white">
       <Ban className="mx-auto h-5 w-5 stroke-[3]" />
       <h3 className="text-base font-medium">{error}</h3>
     </div>
