@@ -1,13 +1,21 @@
 ---
 import ProjectLayout from '@/layouts/ProjectLayout.astro';
-import { projectApi } from '../../../api/project';
+import { projectApi } from '@/api/project';
+import { ProjectIdentity } from '@/components/ProjectIdentities/ProjectIdentity';
 
 const { currentUser } = Astro.locals;
 if (!currentUser) {
   return Astro.redirect('/login');
 }
 
-const { projectId } = Astro.params as { projectId: string };
+const { projectId, identityId } = Astro.params as {
+  projectId: string;
+  identityId: string;
+};
+
+if (!projectId) {
+  return Astro.redirect('/projects');
+}
 
 const projectClient = projectApi(Astro);
 const { response: project, error: projectError } =
@@ -22,8 +30,13 @@ const { response: project, error: projectError } =
   }}
   projectError={projectError}
   projectId={projectId}
+  identityId={identityId}
 >
   <div class='mx-auto max-w-3xl py-12'>
-    <h1>{project?.name}</h1>
+    <ProjectIdentity
+      projectId={projectId}
+      identityId={identityId}
+      client:load
+    />
   </div>
 </ProjectLayout>

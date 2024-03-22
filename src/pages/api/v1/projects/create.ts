@@ -57,6 +57,8 @@ async function handle(params: CreateProjectRequest) {
       url,
       timezone,
       apiKey,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     })
     .returning({
       id: projects.id,
@@ -73,6 +75,8 @@ async function handle(params: CreateProjectRequest) {
     invitedEmail: user?.email!,
     role: 'admin',
     status: 'joined',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   return json<CreateProjectResponse>(project?.[0]);

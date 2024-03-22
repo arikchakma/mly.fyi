@@ -78,9 +78,6 @@ async function handle({ body }: SendVerificationEmailRequest) {
   });
 
   const verificationCode = associatedUser?.verificationCode;
-  console.log('-'.repeat(20));
-  console.log(`Verification Code for ${email}: ${verificationCode}`);
-  console.log('-'.repeat(20));
   // Send verification email
 
   return json<SendVerificationEmailResponse>({ status: 'ok' });

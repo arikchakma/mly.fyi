@@ -33,7 +33,9 @@ const { title = 'Tiny EMail', description = '', noIndex = false } = Astro.props;
     {noIndex && <meta name='robots' content='noindex' />}
     {!isDev && <link rel='manifest' href='/manifest.json' />}
   </head>
-  <body class='bg-black text-gray-100'>
+  <body
+    class='bg-black text-gray-100 selection:bg-zinc-200 selection:text-zinc-900'
+  >
     <main class='relative mx-auto min-h-screen max-w-[1750px]'>
       <slot />
 

@@ -8,7 +8,7 @@ import {
   VerifyEmailIdentityCommand,
 } from '@aws-sdk/client-ses';
 import { logError } from './logger';
-import { setupEmailNotificationHandling } from './notification';
+import { setupEmailFeedbackHandling } from './notification';
 import { serverConfig } from './config';
 import type { AllowedProjectSetupStatus } from '@/db/schema/projects';
 
@@ -108,7 +108,7 @@ export async function verifyIdentityAndStatus(fromEmail: string) {
     await verifyEmailIdentity(fromEmail);
   }
 
-  await setupEmailNotificationHandling(fromEmail);
+  await setupEmailFeedbackHandling(fromEmail);
   return status;
 }
 

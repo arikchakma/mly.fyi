@@ -6,20 +6,25 @@ import {
   Mail,
   Package2,
   LayoutTemplate,
+  Fingerprint,
 } from 'lucide-react';
 import { cn } from '../../utils/classname';
 
 type ProjectNavigationProps = {
   url: URL;
-  params: Record<string, string | undefined>;
   project: {
+    id: string;
     name: string;
+  };
+  params: {
+    projectId?: string;
+    identityId?: string;
   };
 };
 
 export function ProjectNavigation(props: ProjectNavigationProps) {
-  const { params, url, project } = props;
-  const { projectId } = params;
+  const { url, project, params } = props;
+  const { projectId, identityId } = params;
 
   const primaryLinks = [
     {
@@ -29,13 +34,22 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
       alts: [],
     },
     {
-      name: 'Emails',
+      name: 'Identity',
+      icon: Fingerprint,
+      href: `/projects/${projectId}/identities`,
+      alts: [
+        `/projects/${projectId}/identities/new`,
+        `/projects/${projectId}/identities/${identityId}`,
+      ],
+    },
+    {
+      name: 'Email',
       icon: Mail,
       href: `/projects/${projectId}/emails`,
       alts: [],
     },
     {
-      name: 'Settings',
+      name: 'Setting',
       icon: Box,
       href: `/projects/${projectId}/settings`,
       alts: [],
@@ -43,11 +57,11 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
   ] as const;
 
   return (
-    <div className="w-full border-b border-zinc-700">
+    <div className="w-full border-b border-zinc-800">
       <div className="mx-auto flex max-w-3xl items-center justify-start gap-5">
         <a
           href="/projects"
-          className="-mr-1.5 flex items-center gap-0.5 rounded-md bg-zinc-700 py-1 pl-2 pr-2.5 text-sm text-zinc-50"
+          className="-mr-1.5 flex items-center gap-0.5 rounded-md border border-zinc-800 bg-zinc-900 py-1 pl-2 pr-2.5 text-sm text-zinc-50"
         >
           <FolderOpen size={16} />
           <span className="relative ml-1">{project.name}</span>

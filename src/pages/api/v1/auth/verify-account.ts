@@ -67,6 +67,7 @@ async function handle({ body }: SendVerificationEmailRequest) {
     .set({
       verifiedAt: new Date(),
       verificationCode: null,
+      updatedAt: new Date(),
     })
     .where(eq(users.id, associatedUser.id));
 

@@ -14,17 +14,18 @@ import {
   type AllowedMemberRoles,
 } from '@/db/schema';
 import type { Project } from '@/db/types';
-import { and, eq, inArray, or } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
 import { requireProjectMember } from '@/helpers/project';
+import Joi from 'joi';
 
-export interface GetProjectResponse extends Project {
+export interface ListProjectResponse extends Project {
   memberId: string;
   role: AllowedMemberRoles;
   status: AllowedProjectMemberStatus;
 }
 
-export interface GetProjectRequest
+export interface ListProjectRequest
   extends RouteParams<
     any,
     any,
@@ -33,11 +34,24 @@ export interface GetProjectRequest
     }
   > {}
 
-async function validate(params: GetProjectRequest) {
+async function validate(params: ListProjectRequest) {
+  const paramsSchema = Joi.object({
+    projectId: Joi.string().required(),
+  });
+
+  const { error: paramsError } = paramsSchema.validate(params.context.params, {
+    abortEarly: false,
+    stripUnknown: true,
+  });
+
+  if (paramsError) {
+    throw paramsError;
+  }
+
   return params;
 }
 
-async function handle(params: GetProjectRequest) {
+async function handle(params: ListProjectRequest) {
   const { user: currentUser, context } = params;
 
   if (!currentUser) {
@@ -55,7 +69,7 @@ async function handle(params: GetProjectRequest) {
 
   const member = await requireProjectMember(currentUser.id, projectId);
 
-  return json<GetProjectResponse>({
+  return json<ListProjectResponse>({
     ...project,
     status: member.status,
     role: member.role,
@@ -64,8 +78,8 @@ async function handle(params: GetProjectRequest) {
 }
 
 export const GET: APIRoute = handler(
-  handle satisfies HandleRoute<GetProjectRequest>,
-  validate satisfies ValidateRoute<GetProjectRequest>,
+  handle satisfies HandleRoute<ListProjectRequest>,
+  validate satisfies ValidateRoute<ListProjectRequest>,
   {
     isProtected: true,
   },

@@ -53,14 +53,23 @@ async function handle(params: ListProjectsRequest) {
   });
 
   const projectIds = associatedMembers.map((member) => member.projectId);
-  const allProjects = await db.query.projects.findMany({
-    where: inArray(projects.id, projectIds),
-    columns: {
-      id: true,
-      name: true,
-      url: true,
-    },
-  });
+  
+  let allProjects: {
+    id: string;
+    name: string;
+    url: string;
+  }[] = [];
+
+  if (projectIds.length > 0) {
+    allProjects = await db.query.projects.findMany({
+      where: inArray(projects.id, projectIds),
+      columns: {
+        id: true,
+        name: true,
+        url: true,
+      },
+    });
+  }
 
   const enrichedProjects: ListProjectsResponse[] = [];
   for (const project of allProjects) {

@@ -73,6 +73,8 @@ async function handle({ body }: RegisterRequest) {
     password: hashedPassword,
     verificationCode,
     authProvider: 'email',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   // Send verification email

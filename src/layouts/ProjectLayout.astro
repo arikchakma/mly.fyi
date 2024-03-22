@@ -11,9 +11,11 @@ export interface Props {
   }>;
   projectError?: AppError | FetchError | null;
   title: string;
+  projectId: string;
+  identityId?: string;
 }
 
-const { project, projectError, ...props } = Astro.props;
+const { project, projectError, identityId, ...props } = Astro.props;
 const hasError = !project?.id || !!projectError;
 ---
 
@@ -23,10 +25,14 @@ const hasError = !project?.id || !!projectError;
       <>
         <ProjectNavigation
           project={{
+            id: project?.id!,
             name: project?.name!,
           }}
           url={Astro.url}
-          params={Astro.params}
+          params={{
+            projectId: project?.id!,
+            identityId,
+          }}
         />
         <slot />
       </>

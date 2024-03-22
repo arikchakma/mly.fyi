@@ -8,6 +8,8 @@ const prefixes = {
   user: 'user',
   project: 'pjt',
   projectMember: 'pjm',
+  projectIdentity: 'pji',
+  configurationSet: 'cfg',
   emailLog: 'eml',
   emailEvent: 'eme',
   test: 'test', // <-- for tests only

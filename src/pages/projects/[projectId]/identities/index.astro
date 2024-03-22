@@ -1,6 +1,7 @@
 ---
 import ProjectLayout from '@/layouts/ProjectLayout.astro';
-import { projectApi } from '../../../api/project';
+import { projectApi } from '../../../../api/project';
+import { ListProjectIdentities } from '@/components/ProjectIdentities/ListProjectIdentities';
 
 const { currentUser } = Astro.locals;
 if (!currentUser) {
@@ -24,6 +25,6 @@ const { response: project, error: projectError } =
   projectId={projectId}
 >
   <div class='mx-auto max-w-3xl py-12'>
-    <h1>{project?.name}</h1>
+    <ListProjectIdentities projectId={projectId} client:load />
   </div>
 </ProjectLayout>

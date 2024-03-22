@@ -7,10 +7,7 @@ import {
 import type { ListSubscriptionsCommandOutput } from '@aws-sdk/client-sns';
 import { logError, logInfo } from './logger';
 import { serverConfig } from './config';
-import {
-  setIdentityFeedbackForwardingEnabled,
-  setIdentityNotificationTopic,
-} from './ses';
+import { setIdentityFeedbackForwardingEnabled } from './ses';
 
 export const snsClient = new SNSClient({
   region: serverConfig.ses.region,
@@ -75,92 +72,51 @@ export async function subscribeToTopic(
   }
 }
 
-export async function setupEmailNotificationHandling(
-  email: string,
-): Promise<boolean> {
-  const emailDomain = email.split('@')[1];
+export async function setupEmailFeedbackHandling(): Promise<string | null> {
+  let feedbacksTopicArn: string | undefined;
+  let feedbacksSubscriptionArn: string | undefined;
 
-  let bouncesTopicArn: string | undefined;
-  let bouncesSubscriptionArn: string | undefined;
-  let complaintsTopicArn: string | undefined;
-  let complaintsSubscriptionArn: string | undefined;
-
-  const bouncesEndoint = `${serverConfig.appUrl}/api/v1-bounces`;
-  const complaintsEndpoint = `${serverConfig.appUrl}/api/v1-complaints`;
+  // TODO: Remove me
+  const APP_URL = 'https://dev.arikko.dev';
+  const feedbacksEndpoint = `${APP_URL}/api/v1/webhook/feedbacks`;
 
   try {
     // 1. Check if bounces and complaints subscriptions already exist
     // for their respective topics
     const subscriptions = await listSubscriptions();
     for (const subscription of subscriptions?.Subscriptions || []) {
-      if (subscription.Endpoint === bouncesEndoint) {
-        bouncesTopicArn = subscription.TopicArn;
-        bouncesSubscriptionArn = subscription.SubscriptionArn;
-      } else if (subscription.Endpoint === complaintsEndpoint) {
-        complaintsTopicArn = subscription.TopicArn;
-        complaintsSubscriptionArn = subscription.SubscriptionArn;
+      if (subscription.Endpoint === feedbacksEndpoint) {
+        feedbacksTopicArn = subscription.TopicArn;
+        feedbacksSubscriptionArn = subscription.SubscriptionArn;
       }
     }
 
     // 2. As the topic creation is idempotent, we can create the topics
     // and subscriptions even if they already exist
-    bouncesTopicArn = await createTopic('bounces');
-    complaintsTopicArn = await createTopic('complaints');
+    feedbacksTopicArn = await createTopic('feedbacks');
 
     // 3. If 'bounces' and 'complaints' SNS topics exist,
     // create SNS subscriptions for them
-    if (bouncesTopicArn !== '' && complaintsTopicArn !== '') {
+    if (feedbacksTopicArn !== '') {
       // Create 'bounces' and 'complaints' SNS subscriptions
-      bouncesSubscriptionArn = await subscribeToTopic({
-        topicArn: bouncesTopicArn!,
-        endpoint: bouncesEndoint,
-      });
-      complaintsSubscriptionArn = await subscribeToTopic({
-        topicArn: complaintsTopicArn!,
-        endpoint: complaintsEndpoint,
+      feedbacksSubscriptionArn = await subscribeToTopic({
+        topicArn: feedbacksTopicArn!,
+        endpoint: feedbacksEndpoint,
       });
     }
 
-    if (!bouncesTopicArn || !complaintsTopicArn) {
+    console.log('-'.repeat(20));
+    console.log('Feedbacks Topic ARN:', feedbacksTopicArn);
+    console.log('-'.repeat(20));
+
+    if (!feedbacksTopicArn) {
       throw new Error('Failed to create SNS topics');
     }
 
-    // Add the subscription ARNs to the user identity
-    const results = await Promise.allSettled([
-      setIdentityNotificationTopic({
-        topicArn: bouncesTopicArn,
-        identity: email,
-        notificationType: 'Bounce',
-      }),
-      setIdentityNotificationTopic({
-        topicArn: bouncesTopicArn,
-        identity: emailDomain,
-        notificationType: 'Bounce',
-      }),
-      setIdentityNotificationTopic({
-        topicArn: complaintsTopicArn,
-        identity: email,
-        notificationType: 'Complaint',
-      }),
-      setIdentityNotificationTopic({
-        topicArn: complaintsTopicArn,
-        identity: emailDomain,
-        notificationType: 'Complaint',
-      }),
-      setIdentityFeedbackForwardingEnabled(email, false),
-      setIdentityFeedbackForwardingEnabled(emailDomain, false),
-    ]);
-
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        logError(result.reason);
-      }
-    }
-
-    return true;
+    return feedbacksTopicArn;
   } catch (error) {
     logError(error, (error as Error)?.stack);
-    return false;
+    return null;
   }
 }
 
@@ -342,8 +298,6 @@ export async function handleNotification(
       } else if (bounceType === 'Permanent') {
         // TODO: Implement handle hard bounce
       } else {
-        // TODO: Implement handle soft bounce
-
         logInfo('Unhandled bounce type or subtype', bounceType, bounceSubType);
       }
 

@@ -12,6 +12,7 @@ export const ERROR_CODE_BY_KEY = {
   unauthorized: 401,
   forbidden: 403,
   conflict: 409,
+  not_implemented: 501,
 } as const;
 
 export type ErrorCodeKey = keyof typeof ERROR_CODE_BY_KEY;
