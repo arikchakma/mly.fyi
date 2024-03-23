@@ -89,7 +89,19 @@ const allowedIdentityVerificationStatus = [
 type AllowedIdentityVerificationStatus =
   (typeof allowedIdentityVerificationStatus)[number];
 
+export enum MatchRecordStatus {
+  Success = 'success',
+  Pending = 'pending',
+  Failed = 'failed',
+  NotStarted = 'not-started',
+  TemporaryFailure = 'temporary-failure',
+}
+
+const allowedIdentityRecord = ['DKIM', 'SPF', 'DMARC'] as const;
+type AllowedIdentityRecord = (typeof allowedIdentityRecord)[number];
+
 export interface ProjectIdentityRecord {
+  record: AllowedIdentityRecord;
   name: string;
   type: string;
   ttl?: string;

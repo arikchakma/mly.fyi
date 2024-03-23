@@ -11,20 +11,15 @@ import {
 import { cn } from '../../utils/classname';
 
 type ProjectNavigationProps = {
-  url: URL;
-  project: {
-    id: string;
-    name: string;
-  };
-  params: {
-    projectId?: string;
-    identityId?: string;
-  };
+  url: string;
+  projectName: string;
+  projectId: string;
+  identityId: string;
 };
 
 export function ProjectNavigation(props: ProjectNavigationProps) {
-  const { url, project, params } = props;
-  const { projectId, identityId } = params;
+  const { url: defaultUrl, projectName, projectId, identityId } = props;
+  const url = new URL(defaultUrl || '');
 
   const primaryLinks = [
     {
@@ -64,7 +59,7 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
           className="-mr-1.5 flex items-center gap-0.5 rounded-md border border-zinc-800 bg-zinc-900 py-1 pl-2 pr-2.5 text-sm text-zinc-50"
         >
           <FolderOpen size={16} />
-          <span className="relative ml-1">{project.name}</span>
+          <span className="relative ml-1">{projectName}</span>
         </a>
         {primaryLinks.map((item) => (
           <a

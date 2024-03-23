@@ -17,6 +17,7 @@ export interface Props {
 
 const { project, projectError, identityId, ...props } = Astro.props;
 const hasError = !project?.id || !!projectError;
+const deafultUrl = Astro.url.toString();
 ---
 
 <Layout {...props}>
@@ -24,15 +25,10 @@ const hasError = !project?.id || !!projectError;
     !hasError && (
       <>
         <ProjectNavigation
-          project={{
-            id: project?.id!,
-            name: project?.name!,
-          }}
-          url={Astro.url}
-          params={{
-            projectId: project?.id!,
-            identityId,
-          }}
+          url={deafultUrl}
+          projectName={project?.name!}
+          projectId={project?.id!}
+          identityId={identityId!}
         />
         <slot />
       </>

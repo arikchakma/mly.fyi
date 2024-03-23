@@ -1,7 +1,7 @@
 ---
 import ProjectLayout from '@/layouts/ProjectLayout.astro';
 import { projectApi } from '@/api/project';
-import { ProjectIdentity } from '@/components/ProjectIdentities/ProjectIdentity';
+import { ProjectIdentityDetails } from '@/components/ProjectIdentities/ProjectIdentityDetails';
 
 const { currentUser } = Astro.locals;
 if (!currentUser) {
@@ -33,7 +33,7 @@ const { response: project, error: projectError } =
   identityId={identityId}
 >
   <div class='mx-auto max-w-3xl py-12'>
-    <ProjectIdentity
+    <ProjectIdentityDetails
       projectId={projectId}
       identityId={identityId}
       client:load

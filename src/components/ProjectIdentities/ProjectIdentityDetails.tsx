@@ -6,12 +6,12 @@ import { Box } from 'lucide-react';
 import { CopyableTableField } from './CopyableTableField';
 import { LoadingMessage } from '../LoadingMessage';
 
-type ProjectIdentityProps = {
+type ProjectIdentityDetailsProps = {
   projectId: string;
   identityId: string;
 };
 
-export function ProjectIdentity(props: ProjectIdentityProps) {
+export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
   const { projectId, identityId } = props;
 
   const { data: identity } = useQuery(

@@ -1,7 +1,11 @@
 import { logError } from './logger';
 import { sesClient } from './ses';
 import {
+  CustomMailFromStatus,
+  GetIdentityDkimAttributesCommand,
+  GetIdentityMailFromDomainAttributesCommand,
   SetIdentityMailFromDomainCommand,
+  VerificationStatus,
   VerifyDomainDkimCommand,
   VerifyDomainIdentityCommand,
 } from '@aws-sdk/client-ses';
@@ -55,5 +59,48 @@ export async function addMailFromDomain(
   } catch (error) {
     logError(error, (error as Error)?.stack);
     return false;
+  }
+}
+
+export async function getMailFromDomainVerificationStatus(
+  domain: string,
+): Promise<CustomMailFromStatus> {
+  try {
+    const command = new GetIdentityMailFromDomainAttributesCommand({
+      Identities: [domain],
+    });
+
+    const result = await sesClient.send(command);
+    const status =
+      result?.MailFromDomainAttributes?.[domain]?.MailFromDomainStatus;
+    if (!status) {
+      throw new Error('Mail from domain status not found');
+    }
+
+    return status;
+  } catch (error) {
+    logError(error, (error as Error)?.stack);
+    return 'Failed';
+  }
+}
+
+export async function getDomainDkimVerificationStatus(
+  domain: string,
+): Promise<VerificationStatus> {
+  try {
+    const command = new GetIdentityDkimAttributesCommand({
+      Identities: [domain],
+    });
+
+    const result = await sesClient.send(command);
+    const status = result?.DkimAttributes?.[domain]?.DkimVerificationStatus;
+    if (!status) {
+      throw new Error('DKIM verification status not found');
+    }
+
+    return status;
+  } catch (error) {
+    logError(error, (error as Error)?.stack);
+    return 'Failed';
   }
 }

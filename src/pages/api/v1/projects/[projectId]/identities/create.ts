@@ -159,6 +159,7 @@ async function handle(params: CreateProjectIdentityRequest) {
     // so that the recipient can verify that the email was sent by you
     dkimTokens.forEach((token) => {
       records.push({
+        record: 'DKIM',
         name: `${token}._domainkey.${domain}`,
         type: 'CNAME',
         status: 'not-started',
@@ -172,6 +173,7 @@ async function handle(params: CreateProjectIdentityRequest) {
       // Sender Policy Framework (SPF) records
       // it will let Amazon SES send emails on your behalf
       records.push({
+        record: 'SPF',
         name: mailFromDomain,
         type: 'MX',
         status: 'not-started',
@@ -181,6 +183,7 @@ async function handle(params: CreateProjectIdentityRequest) {
         ttl: 'Auto',
       });
       records.push({
+        record: 'SPF',
         name: mailFromDomain,
         type: 'TXT',
         status: 'not-started',
@@ -200,7 +203,6 @@ async function handle(params: CreateProjectIdentityRequest) {
       .set({
         records,
         configurationSetName,
-        status: 'pending',
         updatedAt: new Date(),
       })
       .where(eq(projectIdentities.id, projectIdentityId));
