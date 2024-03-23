@@ -21,6 +21,7 @@ import {
   getDomainDkimVerificationStatus,
   getMailFromDomainVerificationStatus,
 } from '@/lib/domain';
+import type { CustomMailFromStatus } from '@aws-sdk/client-ses';
 
 export interface VerifyProjectIdentityResponse {
   records: ProjectIdentityRecord[];
@@ -98,9 +99,7 @@ async function handle(params: VerifyProjectIdentityRequest) {
     throw new HttpError('not_found', 'DKIM status not found');
   }
 
-  let mailFromDomainStatus: Awaited<
-    ReturnType<typeof getMailFromDomainVerificationStatus>
-  >;
+  let mailFromDomainStatus: CustomMailFromStatus | undefined;
 
   if (mailFromDomain) {
     mailFromDomainStatus = await getMailFromDomainVerificationStatus(domain!);
@@ -115,7 +114,11 @@ async function handle(params: VerifyProjectIdentityRequest) {
       r.status = MatchRecordStatus[dkimStatus];
     }
 
-    if (mailFromDomain && r.record.toLowerCase() === 'spf') {
+    if (
+      mailFromDomain &&
+      mailFromDomainStatus &&
+      r.record.toLowerCase() === 'spf'
+    ) {
       r.status = MatchRecordStatus[mailFromDomainStatus];
     }
 
@@ -124,12 +127,18 @@ async function handle(params: VerifyProjectIdentityRequest) {
 
   const isVerified = records.every((r) => r.status === 'success');
   const isFailed = records.some((r) => r.status === 'failed');
+  const isPending =
+    records.some((r) => r.status === 'pending') && !isFailed && !isVerified;
 
-  await db.update(projectIdentities).set({
-    ...(isVerified ? { status: 'success' } : {}),
-    ...(isFailed ? { status: 'failed' } : {}),
-    records,
-  });
+  await db
+    .update(projectIdentities)
+    .set({
+      ...(isVerified ? { status: 'success' } : {}),
+      ...(isFailed ? { status: 'failed' } : {}),
+      ...(isPending ? { status: 'pending' } : {}),
+      records,
+    })
+    .where(eq(projectIdentities.id, identityId));
 
   return json<VerifyProjectIdentityResponse>({
     records,

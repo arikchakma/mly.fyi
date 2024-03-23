@@ -5,6 +5,8 @@ import type { ProjectIdentity } from '@/db/types';
 import { Box } from 'lucide-react';
 import { CopyableTableField } from './CopyableTableField';
 import { LoadingMessage } from '../LoadingMessage';
+import { useId } from 'react';
+import { Checkbox } from '../Interface/Checkbox';
 
 type ProjectIdentityDetailsProps = {
   projectId: string;
@@ -13,6 +15,9 @@ type ProjectIdentityDetailsProps = {
 
 export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
   const { projectId, identityId } = props;
+
+  const clickTrackingCheckboxId = `mly${useId()}`;
+  const openTrackingCheckboxId = `mly${useId()}`;
 
   const { data: identity } = useQuery(
     {
@@ -99,6 +104,59 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
             })}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold">Instructions</h3>
+        <p className="mt-1 text-sm text-zinc-500">
+          Follow these instructions to verify your domain.
+        </p>
+        <ol className="mt-4 list-inside list-decimal text-sm text-zinc-400">
+          <li>Add the DNS records above to your domain provider.</li>
+          <li>Click the refresh button to trigger a verification check.</li>
+          <li>Wait for the records to propagate.</li>
+        </ol>
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold">Configuration</h3>
+        <p className="mt-1 text-sm text-zinc-500">
+          Configure your domain to use the following settings.
+        </p>
+
+        <div className="mt-4 flex items-start gap-3">
+          <Checkbox id={clickTrackingCheckboxId} />
+          <div>
+            <label
+              htmlFor={clickTrackingCheckboxId}
+              className="block max-w-max text-lg font-semibold leading-none text-zinc-200 hover:text-zinc-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Click Tracking
+            </label>
+            <p className="mt-1 text-balance text-sm text-zinc-400">
+              For every link in your email, we will modify the links in the
+              email, and whenver the user clicks on the link, we will track the
+              click.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-start gap-3">
+          <Checkbox id={openTrackingCheckboxId} />
+          <div>
+            <label
+              htmlFor={openTrackingCheckboxId}
+              className="block max-w-max text-lg font-semibold leading-none text-zinc-200 hover:text-zinc-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Open Tracking
+            </label>
+            <p className="mt-1 text-balance text-sm text-zinc-400">
+              We will track the open rate of your email. We will add a tracking
+              pixel to your email, and when the user opens the email, we will
+              track the open.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -1,13 +1,4 @@
-import {
-  BarChart2,
-  Box,
-  FolderOpen,
-  Wand2,
-  Mail,
-  Package2,
-  LayoutTemplate,
-  Fingerprint,
-} from 'lucide-react';
+import { BarChart2, Box, FolderOpen, Mail, Fingerprint } from 'lucide-react';
 import { cn } from '../../utils/classname';
 
 type ProjectNavigationProps = {
@@ -18,7 +9,7 @@ type ProjectNavigationProps = {
 };
 
 export function ProjectNavigation(props: ProjectNavigationProps) {
-  const { url: defaultUrl, projectName, projectId, identityId } = props;
+  const { url: defaultUrl = '', projectName, projectId, identityId } = props;
   const url = new URL(defaultUrl || '');
 
   const primaryLinks = [
@@ -63,6 +54,7 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
         </a>
         {primaryLinks.map((item) => (
           <a
+            key={item.name}
             className={cn(
               'flex items-center gap-1.5 py-2.5 text-sm text-zinc-500 hover:text-zinc-50',
               {

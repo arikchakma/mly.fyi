@@ -19,7 +19,7 @@ export function ProjectIdentityItem(props: ProjectIdentityItemProps) {
     new Date(identity.updatedAt),
   ).toRelative();
 
-  const verifyIdentity = useMutation(
+  const triggerVerifyDomain = useMutation(
     {
       mutationKey: ['project-identity', projectId, identity.id, 'verify'],
       mutationFn: () => {
@@ -44,8 +44,8 @@ export function ProjectIdentityItem(props: ProjectIdentityItemProps) {
           <button
             className="text-zinc-400 hover:text-zinc-50"
             onClick={() => {
-              toast.promise(verifyIdentity.mutateAsync(), {
-                loading: 'Verifying identity...',
+              toast.promise(triggerVerifyDomain.mutateAsync(), {
+                loading: 'Refreshing Identity status..',
                 success: 'Refreshed Identity status',
                 error: (err) => {
                   return err?.message || 'Something went wrong';

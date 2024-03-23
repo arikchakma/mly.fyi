@@ -3,14 +3,6 @@ import type { ListProjectIdentityResponse } from '@/pages/api/v1/projects/[proje
 import { queryClient } from '@/utils/query-client';
 import { useQuery } from '@tanstack/react-query';
 import { LoadingMessage } from '../LoadingMessage';
-import {
-  ArrowUpRight,
-  MoreHorizontal,
-  RefreshCcw,
-  Trash,
-  Trash2,
-} from 'lucide-react';
-import { DateTime } from 'luxon';
 import { ProjectIdentityItem } from './ProjectIdentityItem';
 
 type ListProjectIdentitiesProps = {
@@ -56,7 +48,7 @@ export function ListProjectIdentities(props: ListProjectIdentitiesProps) {
         )}
 
         {identities.length > 0 && (
-          <ul className="grid grid-cols-3">
+          <ul className="grid grid-cols-3 gap-2">
             {identities.map((identity) => {
               return (
                 <li key={identity.id}>
