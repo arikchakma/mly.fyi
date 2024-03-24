@@ -137,6 +137,7 @@ async function handle(params: VerifyProjectIdentityRequest) {
       ...(isFailed ? { status: 'failed' } : {}),
       ...(isPending ? { status: 'pending' } : {}),
       records,
+      updatedAt: new Date(),
     })
     .where(eq(projectIdentities.id, identityId));
 

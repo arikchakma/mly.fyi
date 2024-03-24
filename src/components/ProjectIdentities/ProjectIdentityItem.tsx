@@ -21,12 +21,17 @@ export function ProjectIdentityItem(props: ProjectIdentityItemProps) {
 
   const triggerVerifyDomain = useMutation(
     {
-      mutationKey: ['project-identity', projectId, identity.id, 'verify'],
+      mutationKey: ['project-identities', projectId, identity.id, 'verify'],
       mutationFn: () => {
         return httpPost(
           `/api/v1/projects/${projectId}/identities/${identity.id}/verify`,
           {},
         );
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['project-identities', projectId],
+        });
       },
     },
     queryClient,

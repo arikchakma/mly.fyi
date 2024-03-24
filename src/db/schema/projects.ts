@@ -144,6 +144,16 @@ export const projectIdentities = sqliteTable(
     })
       .$type<ProjectIdentityRecord[]>()
       .default(sql`'[]'`),
+    clickTracking: integer('click_tracking', {
+      mode: 'boolean',
+    })
+      .notNull()
+      .default(false),
+    openTracking: integer('open_tracking', {
+      mode: 'boolean',
+    })
+      .notNull()
+      .default(false),
     configurationSetName: text('configuration_set_name'),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .notNull()

@@ -1,12 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient } from '../../utils/query-client';
-import { httpGet } from '../../lib/http';
+import { httpGet, httpPatch } from '../../lib/http';
 import type { ProjectIdentity } from '@/db/types';
 import { Box } from 'lucide-react';
 import { CopyableTableField } from './CopyableTableField';
 import { LoadingMessage } from '../LoadingMessage';
 import { useId } from 'react';
 import { Checkbox } from '../Interface/Checkbox';
+import { DateTime } from 'luxon';
+import { toast } from 'sonner';
 
 type ProjectIdentityDetailsProps = {
   projectId: string;
@@ -31,14 +33,65 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
     queryClient,
   );
 
+  const updateConfigurationSet = useMutation(
+    {
+      mutationKey: ['update-configuration-set', projectId, identityId],
+      mutationFn: (body: {
+        openTracking?: boolean;
+        clickTracking?: boolean;
+      }) => {
+        return httpPatch<{ status: 'ok' }>(
+          `/api/v1/projects/${projectId}/identities/${identityId}/update`,
+          body,
+        );
+      },
+      onMutate: async (body) => {
+        await queryClient.cancelQueries({
+          queryKey: ['project-identity', projectId, identityId],
+        });
+        const previousIdentity = queryClient.getQueryData<ProjectIdentity>([
+          'project-identity',
+          projectId,
+          identityId,
+        ]);
+
+        if (!previousIdentity) {
+          return;
+        }
+
+        queryClient.setQueryData(
+          ['project-identity', projectId, identityId],
+          (old) => {
+            return {
+              ...(old || {}),
+              ...body,
+            };
+          },
+        );
+
+        return { previousIdentity };
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['project-identity', projectId, identityId],
+        });
+      },
+    },
+    queryClient,
+  );
+
   if (!identity) {
     return <LoadingMessage message="Loading Project Identity.." />;
   }
 
+  const createAt = DateTime.fromJSDate(
+    new Date(identity.createdAt),
+  ).toRelative();
+
   return (
     <section>
       <div className="flex items-center gap-4">
-        <span className="flex h-12 w-12 items-center justify-center rounded-md border border-zinc-700">
+        <span className="flex h-12 w-12 items-center justify-center rounded-md border  border-zinc-800 bg-zinc-900">
           <Box size={28} />
         </span>
         <div>
@@ -47,7 +100,20 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-10 flex items-start gap-3">
+        <div>
+          <h3 className="text-xs uppercase text-zinc-400">Created At</h3>
+          <span className="mt-1 font-semibold capitalize">{createAt}</span>
+        </div>
+        <div>
+          <h3 className="text-xs uppercase text-zinc-400">Status</h3>
+          <span className="mt-1 font-semibold capitalize">
+            {identity.status}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-10">
         <h3 className="text-xl font-semibold">Records</h3>
         <p className="mt-1 text-sm text-zinc-500">
           These are the DNS records you need to add to your domain.
@@ -125,7 +191,32 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
         </p>
 
         <div className="mt-4 flex items-start gap-3">
-          <Checkbox id={clickTrackingCheckboxId} />
+          <Checkbox
+            id={clickTrackingCheckboxId}
+            checked={identity.clickTracking}
+            onCheckedChange={(checked) => {
+              // intermediate state means the user clicked on the checkbox
+              // but the state is not yet updated
+              if (checked === 'indeterminate') {
+                return;
+              }
+
+              toast.promise(
+                updateConfigurationSet.mutateAsync({
+                  clickTracking: checked,
+                }),
+                {
+                  loading: 'Updating Configuration Set...',
+                  success: 'Configuration Set Updated!',
+                  error: (err) => {
+                    return (
+                      err?.message || 'Failed to update Configuration Set!'
+                    );
+                  },
+                },
+              );
+            }}
+          />
           <div>
             <label
               htmlFor={clickTrackingCheckboxId}
@@ -133,7 +224,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
             >
               Click Tracking
             </label>
-            <p className="mt-1 text-balance text-sm text-zinc-400">
+            <p className="mt-1 text-balance text-sm text-zinc-500">
               For every link in your email, we will modify the links in the
               email, and whenver the user clicks on the link, we will track the
               click.
@@ -142,7 +233,32 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
         </div>
 
         <div className="mt-4 flex items-start gap-3">
-          <Checkbox id={openTrackingCheckboxId} />
+          <Checkbox
+            id={openTrackingCheckboxId}
+            checked={identity.openTracking}
+            onCheckedChange={(checked) => {
+              // intermediate state means the user clicked on the checkbox
+              // but the state is not yet updated
+              if (checked === 'indeterminate') {
+                return;
+              }
+
+              toast.promise(
+                updateConfigurationSet.mutateAsync({
+                  openTracking: checked,
+                }),
+                {
+                  loading: 'Updating Configuration Set...',
+                  success: 'Configuration Set Updated!',
+                  error: (err) => {
+                    return (
+                      err?.message || 'Failed to update Configuration Set!'
+                    );
+                  },
+                },
+              );
+            }}
+          />
           <div>
             <label
               htmlFor={openTrackingCheckboxId}
@@ -150,7 +266,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
             >
               Open Tracking
             </label>
-            <p className="mt-1 text-balance text-sm text-zinc-400">
+            <p className="mt-1 text-balance text-sm text-zinc-500">
               We will track the open rate of your email. We will add a tracking
               pixel to your email, and when the user opens the email, we will
               track the open.

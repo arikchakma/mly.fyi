@@ -1,6 +1,8 @@
 import {
+  ConfigurationSetDoesNotExistException,
   CreateConfigurationSetCommand,
   CreateConfigurationSetEventDestinationCommand,
+  EventType,
   ListConfigurationSetsCommand,
   UpdateConfigurationSetEventDestinationCommand,
   UpdateConfigurationSetTrackingOptionsCommand,
@@ -9,6 +11,17 @@ import { sesClient } from './ses';
 import { logError } from './logger';
 import { setupEmailFeedbackHandling } from './notification';
 import { newId } from './new-id';
+import { UserErrorException } from '@aws-sdk/client-sns';
+
+const EVENT_DESTINATION_NAME = 'Feedback';
+const DEFAULT_EVENT_TYPES = [
+  'send',
+  'reject',
+  'bounce',
+  'complaint',
+  'delivery',
+  'renderingFailure',
+] as const;
 
 export async function createConfigurationSet() {
   try {
@@ -28,9 +41,6 @@ export async function createConfigurationSet() {
     // Now we need to create a rule set for this configuration set
     // to handle feedbacks using SNS topic
     const feedbackTopicArn = await setupEmailFeedbackHandling();
-    console.log('-'.repeat(20));
-    console.log('Feedback Topic ARN:', feedbackTopicArn);
-    console.log('-'.repeat(20));
     if (!feedbackTopicArn) {
       throw new Error('Failed to setup email feedback handling');
     }
@@ -39,16 +49,9 @@ export async function createConfigurationSet() {
       new CreateConfigurationSetEventDestinationCommand({
         ConfigurationSetName: configurationSetName,
         EventDestination: {
-          Name: 'Feedback',
+          Name: EVENT_DESTINATION_NAME,
           Enabled: true,
-          MatchingEventTypes: [
-            'send',
-            'reject',
-            'bounce',
-            'complaint',
-            'delivery',
-            'renderingFailure',
-          ],
+          MatchingEventTypes: [...DEFAULT_EVENT_TYPES],
           SNSDestination: {
             TopicARN: feedbackTopicArn,
           },
@@ -63,15 +66,6 @@ export async function createConfigurationSet() {
     }
 
     return configurationSetName;
-  } catch (error) {
-    logError(error, (error as Error)?.stack);
-    return null;
-  }
-}
-
-export async function setDefaultConfigurationSet(name: string, domain: string) {
-  try {
-    const setDefaultConfigurationSetCommand = '';
   } catch (error) {
     logError(error, (error as Error)?.stack);
     return null;
@@ -96,6 +90,45 @@ export async function updateConfigurationSetTrackingOptions(
     );
     if (!setTrackingOptionsResponse) {
       throw new Error('Failed to set tracking options');
+    }
+
+    return true;
+  } catch (error) {
+    logError(error, (error as Error)?.stack);
+    return false;
+  }
+}
+
+export type SetEventType = 'open' | 'click';
+
+export async function updateConfigurationSetEvent(
+  configurationSetName: string,
+  events: SetEventType[],
+) {
+  try {
+    const topicArn = await setupEmailFeedbackHandling();
+    if (!topicArn) {
+      throw new Error('Failed to setup email feedback handling');
+    }
+
+    const updateConfigurationSetEventDestinationCommand =
+      new UpdateConfigurationSetEventDestinationCommand({
+        ConfigurationSetName: configurationSetName,
+        EventDestination: {
+          Name: EVENT_DESTINATION_NAME,
+          Enabled: true,
+          MatchingEventTypes: [...DEFAULT_EVENT_TYPES, ...events],
+          SNSDestination: {
+            TopicARN: topicArn,
+          },
+        },
+      });
+
+    const updateEventDestinationResponse = await sesClient.send(
+      updateConfigurationSetEventDestinationCommand,
+    );
+    if (!updateEventDestinationResponse) {
+      throw new Error('Failed to update event destination');
     }
 
     return true;

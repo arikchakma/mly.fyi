@@ -8,8 +8,8 @@ import {
 import { json } from '@/lib/response';
 import { db } from '@/db';
 import { projects, projectIdentities } from '@/db/schema';
-import type { Project, ProjectIdentity } from '@/db/types';
-import { and, count, eq, inArray, or } from 'drizzle-orm';
+import type { ProjectIdentity } from '@/db/types';
+import { and, eq } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
 import { requireProjectMember } from '@/helpers/project';
 import Joi from 'joi';
