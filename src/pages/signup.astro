@@ -1,0 +1,32 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+import { RegistrationForm } from '../components/AuthenticationFlow/RegistrationForm';
+
+const { currentUserId } = Astro.locals;
+if (currentUserId) {
+  return Astro.redirect('/');
+}
+---
+
+<AuthLayout title='Sign Up'>
+  <div
+    class='mx-auto flex flex-col items-start justify-start pb-28 pt-10 sm:max-w-[400px] sm:items-center sm:justify-center sm:pt-20'
+  >
+    <div class='mb-2 text-left sm:mb-5 sm:text-center'>
+      <h1 class='mb-2 text-3xl font-semibold sm:mb-5 sm:text-5xl'>Sign Up</h1>
+      <p class='mb-3 text-base leading-6 text-zinc-400'>
+        Create an account to start your amazing journey.
+      </p>
+    </div>
+
+    <RegistrationForm client:load />
+
+    <div class='mt-6 text-center text-sm text-zinc-400'>
+      Already have an account? <a
+        href='/login'
+        class='font-semibold text-zinc-100 underline underline-offset-2 hover:underline'
+        >Login</a
+      >
+    </div>
+  </div>
+</AuthLayout>

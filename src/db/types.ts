@@ -1,4 +1,18 @@
 import type { InferSelectModel } from 'drizzle-orm';
-import { users } from './schema/users.ts';
+import type {
+  emailEvents,
+  emailLogs,
+  projectApiKeys,
+  projectIdentities,
+  projectMembers,
+  projects,
+  users,
+} from './schema';
 
 export type User = InferSelectModel<typeof users>;
+export type EmailLog = InferSelectModel<typeof emailLogs>;
+export type EmailEvent = InferSelectModel<typeof emailEvents>;
+export type Project = InferSelectModel<typeof projects>;
+export type ProjectMember = InferSelectModel<typeof projectMembers>;
+export type ProjectIdentity = InferSelectModel<typeof projectIdentities>;
+export type ProjectApiKey = InferSelectModel<typeof projectApiKeys>;

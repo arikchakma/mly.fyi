@@ -1,14 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { db } from '../db';
-
-const users = await db.query.users.findMany();
-
-console.log('-'.repeat(20));
-console.log('Users: ', users);
-console.log('-'.repeat(20));
+return Astro.redirect('/projects');
 ---
 
-<Layout title='Tiny Mail'>
+<Layout title='mly.fyi'>
   <main class='mx-auto my-8 max-w-2xl px-4'>Hello</main>
 </Layout>

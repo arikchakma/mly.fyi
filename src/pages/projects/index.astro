@@ -1,0 +1,85 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { projectApi } from '../../api/project';
+
+const { currentUser } = Astro.locals;
+if (!currentUser) {
+  return Astro.redirect('/login');
+}
+
+const projectClient = projectApi(Astro);
+const { response: projects, error: projectError } =
+  await projectClient.listProjects();
+---
+
+<Layout title='Projects'>
+  <div class='relative mx-auto max-w-lg px-5'>
+    <div class='w-full px-2 py-20'>
+      {
+        !projectError && projects?.length === 0 && (
+          <div class='flex flex-col items-center'>
+            <h2 class={'mb-1 text-center text-2xl font-bold'}>No Projects</h2>
+            <p class={'mb-5 text-center text-zinc-400'}>
+              You do not have any projects.
+            </p>
+
+            <a
+              class='inline-flex items-center justify-center gap-2 rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-50 outline-none hover:opacity-90 focus:ring-2 focus:ring-[#333] disabled:cursor-not-allowed disabled:opacity-60'
+              href='/projects/new'
+            >
+              <span class='mr-2'>+</span>
+              <span>Create a Project</span>
+            </a>
+          </div>
+        )
+      }
+
+      {
+        !projectError && projects && projects?.length > 0 && (
+          <Fragment>
+            <div class={'mb-4'}>
+              <h2 class='text-3xl font-bold text-zinc-50 sm:text-4xl'>
+                Projects
+              </h2>
+              <p class='mt-2 text-zinc-400'>Please select a project</p>
+            </div>
+            <ul class='mb-3 flex flex-col gap-1'>
+              {projects?.map((project) => {
+                const pageLink =
+                  project.status === 'invited'
+                    ? `/respond-invite/${project.memberId}`
+                    : `/projects/${project.id}/dashboard`;
+
+                return (
+                  <li>
+                    <a
+                      class='flex h-10 w-full cursor-pointer items-center justify-between gap-2 rounded border border-zinc-700 bg-zinc-800 p-2  text-sm font-medium text-zinc-50 hover:opacity-90'
+                      href={pageLink}
+                    >
+                      <span class='flex flex-grow items-center gap-2'>
+                        {project.status === 'invited' && (
+                          <span class='rounded-md bg-red-600 px-1.5 py-0.5 text-xs text-white '>
+                            Invite
+                          </span>
+                        )}
+                        <span class='truncate'>{project.name}</span>
+                      </span>
+                      <span>&rarr;</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+            <a
+              class='inline-flex h-10 w-full items-center justify-center gap-2 rounded border border-zinc-700 bg-zinc-800 p-2 py-1.5 text-sm font-medium text-zinc-50 outline-none hover:opacity-90 focus:ring-2 focus:ring-[#333] disabled:cursor-not-allowed disabled:opacity-60'
+              href='/projects/new'
+            >
+              <span class='mr-2'>+</span>
+              <span>New Project</span>
+            </a>
+          </Fragment>
+        )
+      }
+    </div>
+  </div>
+</Layout>

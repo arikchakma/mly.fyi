@@ -1,22 +1,45 @@
 ---
-interface Props {
+import { Toaster } from 'sonner';
+
+export interface Props {
   title: string;
+  description?: string;
+  noIndex?: boolean;
 }
 
-const { title } = Astro.props;
+const isDev = import.meta.env.DEV === true;
+const { title = 'Tiny EMail', description = '', noIndex = false } = Astro.props;
 ---
 
 <!doctype html>
 <html lang='en'>
   <head>
     <meta charset='UTF-8' />
-    <meta name='description' content='Tiny tool to visualize emails' />
-    <meta name='viewport' content='width=device-width' />
-    <link rel='icon' type='image/svg+xml' href='/favicon.svg' />
-    <meta name='generator' content={Astro.generator} />
+    <meta
+      name='viewport'
+      content='width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'
+    />
+
+    <meta http-equiv='X-UA-Compatible' content='ie=edge' />
+    <link rel='shortcut icon' type='image/x-icon' href='/favicon.svg' />
+    <meta name='twitter:card' content='summary' />
+    <meta name='twitter:creator' content='@imarikchakma' />
+    <meta property='og:title' content={title} />
     <title>{title}</title>
+    <meta name='description' content={description} />
+
+    <link rel='shortcut icon' href='/favicon.svg' type='image/x-icon' />
+
+    {noIndex && <meta name='robots' content='noindex' />}
+    {!isDev && <link rel='manifest' href='/manifest.json' />}
   </head>
-  <body>
-    <slot />
+  <body
+    class='bg-black text-gray-100 selection:bg-zinc-200 selection:text-zinc-900'
+  >
+    <main class='relative mx-auto min-h-screen max-w-[1750px]'>
+      <slot />
+
+      <Toaster position='bottom-center' client:load />
+    </main>
   </body>
 </html>

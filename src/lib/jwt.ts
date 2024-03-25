@@ -1,6 +1,8 @@
+import './server-only';
+
 import type { APIContext, AstroGlobal } from 'astro';
 import * as jose from 'jose';
-import { config } from './config';
+import { serverConfig } from './config';
 
 export const TOKEN_COOKIE_NAME = '__tiny_jt__';
 
@@ -10,7 +12,7 @@ export type TokenPayload = {
 };
 
 export async function createToken(data: TokenPayload): Promise<string> {
-  const secret = new TextEncoder().encode(config.jwt.secret);
+  const secret = new TextEncoder().encode(serverConfig.jwt.secret);
   const tokenPayload: TokenPayload = {
     id: data.id,
     email: data.email,
@@ -18,12 +20,12 @@ export async function createToken(data: TokenPayload): Promise<string> {
 
   return await new jose.SignJWT(tokenPayload)
     .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime(config.jwt.expiresIn)
+    .setExpirationTime(serverConfig.jwt.expiresIn)
     .sign(secret);
 }
 
 export async function verifyToken(token: string): Promise<TokenPayload> {
-  const secret = new TextEncoder().encode(config.jwt.secret);
+  const secret = new TextEncoder().encode(serverConfig.jwt.secret);
 
   const { payload } = await jose.jwtVerify(token, secret);
 
@@ -39,7 +41,12 @@ export function decodeToken(token: string): TokenPayload {
 export function readTokenCookie(
   context: APIContext | AstroGlobal,
 ): string | undefined {
-  const token = context.cookies.get(TOKEN_COOKIE_NAME)?.value;
+  let token = context.cookies.get(TOKEN_COOKIE_NAME)?.value;
+
+  if (!token) {
+    const authorization = context.request.headers.get('Authorization') || '';
+    token = authorization.replace('Bearer ', '');
+  }
 
   if (!token) {
     return undefined;
@@ -49,21 +56,6 @@ export function readTokenCookie(
   if (!claims?.email || !claims?.id) {
     return undefined;
   }
-
-  return token;
-}
-
-export function createTokenCookie(context: APIContext, token: string): string {
-  // Make the cookie to never expire, we will use the token expiration date instead
-  // Date after 10 years
-  const expires = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
-
-  context.cookies.set(TOKEN_COOKIE_NAME, token, {
-    httpOnly: false,
-    path: '/',
-    sameSite: 'lax',
-    expires,
-  });
 
   return token;
 }
