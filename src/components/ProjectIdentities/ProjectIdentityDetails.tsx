@@ -76,6 +76,14 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
           queryKey: ['project-identity', projectId, identityId],
         });
       },
+      onError(_, __, context) {
+        if (context?.previousIdentity) {
+          queryClient.setQueryData(
+            ['project-identity', projectId, identityId],
+            context.previousIdentity,
+          );
+        }
+      },
     },
     queryClient,
   );
