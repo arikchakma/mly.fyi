@@ -130,6 +130,7 @@ async function handle(params: UpdateProjectIdentityRequest) {
     .set({
       openTracking: openTracking ?? identity.openTracking,
       clickTracking: clickTracking ?? identity.clickTracking,
+      updatedAt: new Date(),
     })
     .where(
       and(
