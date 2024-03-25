@@ -19,13 +19,13 @@ import { HttpError } from '@/lib/http-error';
 import { requireProjectMember } from '@/helpers/project';
 import Joi from 'joi';
 
-export interface ListProjectResponse extends Project {
+export interface GetProjectResponse extends Project {
   memberId: string;
   role: AllowedMemberRoles;
   status: AllowedProjectMemberStatus;
 }
 
-export interface ListProjectRequest
+export interface GetProjectRequest
   extends RouteParams<
     any,
     any,
@@ -34,7 +34,7 @@ export interface ListProjectRequest
     }
   > {}
 
-async function validate(params: ListProjectRequest) {
+async function validate(params: GetProjectRequest) {
   const paramsSchema = Joi.object({
     projectId: Joi.string().required(),
   });
@@ -51,7 +51,7 @@ async function validate(params: ListProjectRequest) {
   return params;
 }
 
-async function handle(params: ListProjectRequest) {
+async function handle(params: GetProjectRequest) {
   const { user: currentUser, context } = params;
 
   if (!currentUser) {
@@ -69,7 +69,7 @@ async function handle(params: ListProjectRequest) {
 
   const member = await requireProjectMember(currentUser.id, projectId);
 
-  return json<ListProjectResponse>({
+  return json<GetProjectResponse>({
     ...project,
     status: member.status,
     role: member.role,
@@ -78,8 +78,8 @@ async function handle(params: ListProjectRequest) {
 }
 
 export const GET: APIRoute = handler(
-  handle satisfies HandleRoute<ListProjectRequest>,
-  validate satisfies ValidateRoute<ListProjectRequest>,
+  handle satisfies HandleRoute<GetProjectRequest>,
+  validate satisfies ValidateRoute<GetProjectRequest>,
   {
     isProtected: true,
   },

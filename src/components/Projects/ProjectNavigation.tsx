@@ -1,15 +1,29 @@
-import { BarChart2, Box, FolderOpen, Mail, Fingerprint } from 'lucide-react';
+import {
+  BarChart2,
+  Box,
+  FolderOpen,
+  Mail,
+  Fingerprint,
+  Key,
+} from 'lucide-react';
 import { cn } from '../../utils/classname';
 
 type ProjectNavigationProps = {
   url: string;
   projectName: string;
   projectId: string;
-  identityId: string;
+  identityId?: string;
+  keyId?: string;
 };
 
 export function ProjectNavigation(props: ProjectNavigationProps) {
-  const { url: defaultUrl = '', projectName, projectId, identityId } = props;
+  const {
+    url: defaultUrl = '',
+    projectName,
+    projectId,
+    identityId,
+    keyId,
+  } = props;
   const url = new URL(defaultUrl || '');
 
   const primaryLinks = [
@@ -26,6 +40,15 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
       alts: [
         `/projects/${projectId}/identities/new`,
         `/projects/${projectId}/identities/${identityId}`,
+      ],
+    },
+    {
+      name: 'Key',
+      icon: Key,
+      href: `/projects/${projectId}/keys`,
+      alts: [
+        `/projects/${projectId}/keys/new`,
+        `/projects/${projectId}/keys/${keyId}`,
       ],
     },
     {

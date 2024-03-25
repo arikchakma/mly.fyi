@@ -1,4 +1,4 @@
-import type { ListProjectIdentityResponse } from '../../pages/api/v1/projects/[projectId]/identities/index';
+import type { ListProjectIdentitiesResponse } from '../../pages/api/v1/projects/[projectId]/identities/index';
 import { DateTime } from 'luxon';
 import { ArrowUpRight, RefreshCcw, Trash2 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 type ProjectIdentityItemProps = {
   projectId: string;
-  identity: ListProjectIdentityResponse['data'][number];
+  identity: ListProjectIdentitiesResponse['data'][number];
 };
 
 export function ProjectIdentityItem(props: ProjectIdentityItemProps) {

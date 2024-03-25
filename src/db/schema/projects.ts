@@ -164,3 +164,40 @@ export const projectIdentities = sqliteTable(
   },
   (projectIdentities) => ({}),
 );
+
+export const allowedProjectApiKeyStatus = ['active', 'inactive'] as const;
+export type AllowedProjectApiKeyStatus =
+  (typeof allowedProjectApiKeyStatus)[number];
+
+export const projectApiKeys = sqliteTable(
+  'project_api_keys',
+  {
+    id: text('id').unique().primaryKey(),
+    name: text('name').notNull(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => projects.id, {
+        onDelete: 'cascade',
+      }),
+    creatorId: text('creator_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'restrict',
+      }),
+    status: text('status', {
+      enum: allowedProjectApiKeyStatus,
+    })
+      .notNull()
+      .default('active'),
+    key: text('key').unique().notNull(),
+    usageCount: integer('usage_count').default(0),
+    lastUsedAt: integer('last_used_at', { mode: 'timestamp' }),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: integer('updated_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (projectApiKeys) => ({}),
+);

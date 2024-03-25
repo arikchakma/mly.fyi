@@ -7,46 +7,36 @@ import {
 } from '@/lib/handler';
 import { json } from '@/lib/response';
 import { db } from '@/db';
-import { projects, projectIdentities } from '@/db/schema';
-import type { Project, ProjectIdentity } from '@/db/types';
-import { and, count, eq, inArray, or } from 'drizzle-orm';
+import { projects, projectApiKeys } from '@/db/schema';
+import type { ProjectApiKey } from '@/db/types';
+import { count, eq } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
 import { requireProjectMember } from '@/helpers/project';
 import Joi from 'joi';
 
-export interface ListProjectIdentitiesResponse {
-  data: Pick<
-    ProjectIdentity,
-    | 'id'
-    | 'projectId'
-    | 'type'
-    | 'email'
-    | 'domain'
-    | 'status'
-    | 'createdAt'
-    | 'updatedAt'
-  >[];
+export interface ListProjectApiKeysResponse {
+  data: Omit<ProjectApiKey, 'key' | 'usageCount'>[];
   totalCount: number;
   totalPages: number;
   currPage: number;
   perPage: number;
 }
 
-export interface ListProjectIdentitiesQuery {
+export interface ListProjectApiKeysQuery {
   currPage: number;
   perPage: number;
 }
 
-export interface ListProjectIdentitiesRequest
+export interface ListProjectApiKeysRequest
   extends RouteParams<
     any,
-    ListProjectIdentitiesQuery,
+    ListProjectApiKeysQuery,
     {
       projectId: string;
     }
   > {}
 
-async function validate(params: ListProjectIdentitiesRequest) {
+async function validate(params: ListProjectApiKeysRequest) {
   const paramsSchema = Joi.object({
     projectId: Joi.string().required(),
   });
@@ -80,7 +70,7 @@ async function validate(params: ListProjectIdentitiesRequest) {
   };
 }
 
-async function handle(params: ListProjectIdentitiesRequest) {
+async function handle(params: ListProjectApiKeysRequest) {
   const { user: currentUser, context, query } = params;
   const { currPage, perPage } = query;
 
@@ -101,34 +91,28 @@ async function handle(params: ListProjectIdentitiesRequest) {
 
   const total = await db
     .select({ count: count() })
-    .from(projectIdentities)
-    .where(eq(projectIdentities.projectId, projectId));
+    .from(projectApiKeys)
+    .where(eq(projectApiKeys.projectId, projectId));
 
   const totalCount = total[0].count;
   const totalPages = Math.ceil(totalCount / perPage);
   const skip = (currPage - 1) * perPage;
 
-  const identities = await db.query.projectIdentities.findMany({
-    where: eq(projectIdentities.projectId, projectId),
+  const apiKeys = await db.query.projectApiKeys.findMany({
+    where: eq(projectApiKeys.projectId, projectId),
     offset: skip,
     limit: perPage,
     orderBy: (fields, { desc }) => {
       return desc(fields.createdAt);
     },
     columns: {
-      id: true,
-      projectId: true,
-      type: true,
-      email: true,
-      domain: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
+      key: false,
+      usageCount: false,
     },
   });
 
-  return json<ListProjectIdentitiesResponse>({
-    data: identities,
+  return json<ListProjectApiKeysResponse>({
+    data: apiKeys,
     totalCount,
     totalPages,
     currPage,
@@ -137,8 +121,8 @@ async function handle(params: ListProjectIdentitiesRequest) {
 }
 
 export const GET: APIRoute = handler(
-  handle satisfies HandleRoute<ListProjectIdentitiesRequest>,
-  validate satisfies ValidateRoute<ListProjectIdentitiesRequest>,
+  handle satisfies HandleRoute<ListProjectApiKeysRequest>,
+  validate satisfies ValidateRoute<ListProjectApiKeysRequest>,
   {
     isProtected: true,
   },

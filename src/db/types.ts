@@ -2,6 +2,7 @@ import type { InferSelectModel } from 'drizzle-orm';
 import type {
   emailEvents,
   emailLogs,
+  projectApiKeys,
   projectIdentities,
   projectMembers,
   projects,
@@ -14,3 +15,4 @@ export type EmailEvent = InferSelectModel<typeof emailEvents>;
 export type Project = InferSelectModel<typeof projects>;
 export type ProjectMember = InferSelectModel<typeof projectMembers>;
 export type ProjectIdentity = InferSelectModel<typeof projectIdentities>;
+export type ProjectApiKey = InferSelectModel<typeof projectApiKeys>;

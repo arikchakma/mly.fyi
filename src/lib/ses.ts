@@ -8,9 +8,7 @@ import {
   VerifyEmailIdentityCommand,
 } from '@aws-sdk/client-ses';
 import { logError } from './logger';
-import { setupEmailFeedbackHandling } from './notification';
 import { serverConfig } from './config';
-import type { AllowedProjectSetupStatus } from '@/db/schema/projects';
 
 export const sesClient = new SESClient({
   region: serverConfig.ses.region,
@@ -92,24 +90,6 @@ export async function verifyEmailIdentity(identity: string) {
     logError(err, (err as Error)?.stack);
     return false;
   }
-}
-
-export async function verifyIdentityAndStatus(fromEmail: string) {
-  let status: AllowedProjectSetupStatus = 'verification-pending';
-  const isValidSESIdentity = await checkIsValidSESIdentity(fromEmail);
-
-  if (isValidSESIdentity) {
-    const { emailStatus, domainStatus } =
-      (await getIdentityVerificationAttributes(fromEmail)) || {};
-    if (emailStatus === 'Success' || domainStatus === 'Success') {
-      status = 'completed';
-    }
-  } else {
-    await verifyEmailIdentity(fromEmail);
-  }
-
-  await setupEmailFeedbackHandling(fromEmail);
-  return status;
 }
 
 type SetIdentityNotificationTopicCommandParams = {

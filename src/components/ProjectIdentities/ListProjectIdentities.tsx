@@ -1,9 +1,9 @@
 import { httpGet } from '@/lib/http';
-import type { ListProjectIdentityResponse } from '@/pages/api/v1/projects/[projectId]/identities';
 import { queryClient } from '@/utils/query-client';
 import { useQuery } from '@tanstack/react-query';
 import { LoadingMessage } from '../LoadingMessage';
 import { ProjectIdentityItem } from './ProjectIdentityItem';
+import type { ListProjectIdentitiesResponse } from '@/pages/api/v1/projects/[projectId]/identities';
 
 type ListProjectIdentitiesProps = {
   projectId: string;
@@ -16,7 +16,7 @@ export function ListProjectIdentities(props: ListProjectIdentitiesProps) {
     {
       queryKey: ['project-identities', projectId],
       queryFn: () => {
-        return httpGet<ListProjectIdentityResponse>(
+        return httpGet<ListProjectIdentitiesResponse>(
           `/api/v1/projects/${projectId}/identities`,
         );
       },
