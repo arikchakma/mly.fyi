@@ -14,7 +14,11 @@ import { requireProjectMember } from '@/helpers/project';
 import { eq } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
 import type { Project } from '@/db/types';
-import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import {
+  createSESServiceClient,
+  DEFAULT_SES_REGION,
+  isValidConfiguration,
+} from '@/lib/ses';
 
 export interface ConfigureProjectResponse {
   status: 'ok';
@@ -22,7 +26,7 @@ export interface ConfigureProjectResponse {
 
 export type ConfigureProjectBody = Pick<
   Project,
-  'accessKeyId' | 'secretAccessKey'
+  'accessKeyId' | 'secretAccessKey' | 'region'
 >;
 
 export interface ConfigureProjectRequest
@@ -38,6 +42,7 @@ async function validate(params: ConfigureProjectRequest) {
   const schema = Joi.object({
     accessKeyId: Joi.string().required(),
     secretAccessKey: Joi.string().required(),
+    region: Joi.string().allow('').optional(),
   });
 
   const { error, value } = schema.validate(params.body, {
@@ -51,7 +56,6 @@ async function validate(params: ConfigureProjectRequest) {
 
   const paramsSchema = Joi.object({
     projectId: Joi.string().required(),
-    identityId: Joi.string().required(),
   });
 
   const { error: paramsError } = paramsSchema.validate(params.context.params, {
@@ -81,14 +85,18 @@ async function handle(params: ConfigureProjectRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  await requireProjectMember(projectId, userId!, ['admin']);
+  await requireProjectMember(userId!, projectId, ['admin']);
 
-  const { accessKeyId, secretAccessKey } = body;
+  const { accessKeyId, secretAccessKey, region } = body;
   if (!accessKeyId || !secretAccessKey) {
     throw new HttpError('bad_request', 'Invalid AWS credentials');
   }
 
-  const sesClient = createSESServiceClient(accessKeyId, secretAccessKey);
+  const sesClient = createSESServiceClient(
+    accessKeyId,
+    secretAccessKey,
+    region,
+  );
   const isValidConfig = await isValidConfiguration(sesClient);
   if (!isValidConfig) {
     throw new HttpError('bad_request', 'Invalid AWS credentials');

@@ -10,58 +10,14 @@ import Joi from 'joi';
 import { authenticateApiKey } from '@/lib/authenticate-api-key';
 import { db } from '@/db';
 import { HttpError } from '@/lib/http-error';
+import { sendEmail, type SendEmailBody } from '@/lib/email';
+import { DEFAULT_SES_REGION } from '@/lib/ses';
+import { newId } from '@/lib/new-id';
+import { emailLogEvents, emailLogs } from '@/db/schema';
 
-export interface SendEmailResponse {}
-
-type RequireAtLeastOne<T> = {
-  [K in keyof T]-?: Required<Pick<T, K>> &
-    Partial<Pick<T, Exclude<keyof T, K>>>;
-}[keyof T];
-
-interface EmailRenderOptions {
-  /**
-   * The plain text content of the email.
-   */
-  text?: string;
-
-  /**
-   * The HTML content of the email.
-   */
-  html?: string;
+export interface SendEmailResponse {
+  id: string;
 }
-
-interface EmailOptions extends EmailRenderOptions {
-  /**
-   * The email address that appears as the sender of the email.
-   * Use a friendly name and a valid email address.
-   *
-   * Example: `John Doe <johndoe@example.com>`
-   */
-  from: string;
-
-  /**
-   * The recipient(s) of the email. Can be a single email address or an array of email addresses.
-   */
-  to: string;
-
-  /**
-   * The email address that should be used for replies. If not provided, replies will go to the 'from' address.
-   */
-  replyTo?: string;
-
-  /**
-   * The subject line of the email.
-   */
-  subject: string;
-
-  /**
-   * Additional headers to include in the email.
-   */
-  headers?: Record<string, string>;
-}
-
-export type SendEmailBody = RequireAtLeastOne<EmailRenderOptions> &
-  EmailOptions;
 
 export interface SendEmailRequest extends RouteParams<SendEmailBody> {}
 
@@ -115,10 +71,109 @@ async function handle(params: SendEmailRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  // TODO: Validate if the sending email is a valid email
-  // and it must be verified identity in SES
+  const { from, to, replyTo, subject, text, html, headers } = body;
+  if (Array.isArray(to) || Array.isArray(replyTo)) {
+    throw new HttpError(
+      'bad_request',
+      'Multiple recipients are not supported.',
+    );
+  }
 
-  return json<SendEmailResponse>({});
+  const fromDomain = from.split('@')[1];
+
+  const identity = await db.query.projectIdentities.findFirst({
+    where(fields, { and, eq }) {
+      return and(
+        eq(fields.projectId, project.id),
+        eq(fields.domain, fromDomain),
+      );
+    },
+  });
+  if (!identity) {
+    throw new HttpError(
+      'bad_request',
+      `You are not allowed to send email from ${fromDomain} domain.`,
+    );
+  }
+
+  if (identity.status !== 'success') {
+    throw new HttpError(
+      'bad_request',
+      `Identity ${fromDomain} is not verified.`,
+    );
+  }
+
+  const { accessKeyId, secretAccessKey, region } = project;
+  if (!accessKeyId || !secretAccessKey) {
+    throw new HttpError('bad_request', 'Invalid project credentials');
+  }
+
+  const { data, error } = await sendEmail(
+    {
+      provider: 'ses',
+      ses: {
+        accessKeyId,
+        secretAccessKey,
+        region: region || DEFAULT_SES_REGION,
+      },
+    },
+    body,
+  );
+
+  const emailLogId = newId('emailLog');
+  const emailLogEventId = newId('emailLogEvent');
+  if (error) {
+    await db.insert(emailLogs).values({
+      id: newId('emailLog'),
+      projectId: project.id,
+      apiKeyId: projectApiKey.id,
+      from,
+      to,
+      replyTo,
+      subject,
+      text,
+      html,
+      status: 'error',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await db.insert(emailLogEvents).values({
+      id: emailLogEventId,
+      emailLogId,
+      email: to,
+      type: 'error',
+      timestamp: new Date(),
+    });
+    throw new HttpError('bad_request', error.message);
+  }
+
+  await db.insert(emailLogs).values({
+    id: emailLogId,
+    messageId: data.messageId,
+    projectId: project.id,
+    apiKeyId: projectApiKey.id,
+    from,
+    to,
+    replyTo,
+    subject,
+    text,
+    html,
+    status: 'sent',
+    sendAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  await db.insert(emailLogEvents).values({
+    id: emailLogEventId,
+    emailLogId,
+    email: to,
+    type: 'sent',
+    timestamp: new Date(),
+  });
+
+  return json<SendEmailResponse>({
+    id: emailLogId,
+  });
 }
 
 export const POST: APIRoute = handler(

@@ -21,7 +21,11 @@ import { HttpError } from '@/lib/http-error';
 import { addMailFromDomain, verifyDomainDkim } from '@/lib/domain';
 import { serverConfig } from '@/lib/config';
 import { createConfigurationSet } from '@/lib/configuration-set';
-import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import {
+  createSESServiceClient,
+  DEFAULT_SES_REGION,
+  isValidConfiguration,
+} from '@/lib/ses';
 import { createSNSServiceClient } from '@/lib/notification';
 
 export interface CreateProjectIdentityResponse {
@@ -125,13 +129,21 @@ async function handle(params: CreateProjectIdentityRequest) {
     );
   }
 
-  const { accessKeyId, secretAccessKey } = project;
+  const { accessKeyId, secretAccessKey, region = DEFAULT_SES_REGION } = project;
   if (!accessKeyId || !secretAccessKey) {
     throw new HttpError('bad_request', 'Project does not have AWS credentials');
   }
 
-  const sesClient = createSESServiceClient(accessKeyId, secretAccessKey);
-  const snsClient = createSNSServiceClient(accessKeyId, secretAccessKey);
+  const sesClient = createSESServiceClient(
+    accessKeyId,
+    secretAccessKey,
+    region,
+  );
+  const snsClient = createSNSServiceClient(
+    accessKeyId,
+    secretAccessKey,
+    region,
+  );
 
   const isValidConfig = await isValidConfiguration(sesClient);
   if (!isValidConfig) {
@@ -183,7 +195,6 @@ async function handle(params: CreateProjectIdentityRequest) {
       });
     });
 
-    const sesRegion = serverConfig.ses.region;
     if (mailFromDomain) {
       // Sender Policy Framework (SPF) records
       // it will let Amazon SES send emails on your behalf
@@ -193,7 +204,7 @@ async function handle(params: CreateProjectIdentityRequest) {
         type: 'MX',
         status: 'not-started',
         // For feedbacks like bounces and complaints
-        value: `feedback-smtp.${sesRegion}.amazonses.com`,
+        value: `feedback-smtp.${region}.amazonses.com`,
         priority: 10,
         ttl: 'Auto',
       });

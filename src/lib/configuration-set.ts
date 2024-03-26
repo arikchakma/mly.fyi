@@ -2,6 +2,7 @@ import {
   ConfigurationSetDoesNotExistException,
   CreateConfigurationSetCommand,
   CreateConfigurationSetEventDestinationCommand,
+  CreateConfigurationSetTrackingOptionsCommand,
   EventType,
   ListConfigurationSetsCommand,
   SESClient,
@@ -75,26 +76,21 @@ export async function createConfigurationSet(
   }
 }
 
-export async function updateConfigurationSetTrackingOptions(
+export async function createConfigurationSetTrackingOptions(
   client: SESClient,
   configurationSetName: string,
   redirectDomain: string,
 ) {
   try {
     const setTrackingOptionsCommand =
-      new UpdateConfigurationSetTrackingOptionsCommand({
+      new CreateConfigurationSetTrackingOptionsCommand({
         ConfigurationSetName: configurationSetName,
         TrackingOptions: {
           CustomRedirectDomain: redirectDomain,
         },
       });
 
-    const setTrackingOptionsResponse = await client.send(
-      setTrackingOptionsCommand,
-    );
-    if (!setTrackingOptionsResponse) {
-      throw new Error('Failed to set tracking options');
-    }
+    await client.send(setTrackingOptionsCommand);
 
     return true;
   } catch (error) {

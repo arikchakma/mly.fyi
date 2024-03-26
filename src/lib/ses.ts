@@ -2,6 +2,7 @@ import {
   GetSendQuotaCommand,
   ListIdentitiesCommand,
   SESClient,
+  SESServiceException,
 } from '@aws-sdk/client-ses';
 import { logError } from './logger';
 
@@ -10,10 +11,10 @@ export const DEFAULT_SES_REGION = 'ap-south-1';
 export function createSESServiceClient(
   accessKeyId: string,
   secretAccessKey: string,
-  region = DEFAULT_SES_REGION,
+  region?: string | null,
 ) {
   return new SESClient({
-    region,
+    region: region || DEFAULT_SES_REGION,
     credentials: {
       accessKeyId,
       secretAccessKey,
@@ -23,7 +24,8 @@ export function createSESServiceClient(
 
 export async function isValidConfiguration(client: SESClient) {
   try {
-    await client.send(new GetSendQuotaCommand({}));
+    const command = new GetSendQuotaCommand({});
+    await client.send(command);
     return true;
   } catch (err) {
     logError(err, (err as Error)?.stack);

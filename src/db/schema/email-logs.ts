@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { text, sqliteTable, integer, index } from 'drizzle-orm/sqlite-core';
+import { projectApiKeys, projects } from './projects';
 
 export const allowedEmailLogStatus = [
   'sent',
@@ -14,7 +15,17 @@ export const allowedEmailLogStatus = [
 
 export const emailLogs = sqliteTable('email_logs', {
   id: text('id').unique().primaryKey(),
-  messageId: text('message_id').notNull(),
+  messageId: text('message_id'),
+  projectId: text('project_id')
+    .notNull()
+    .references(() => projects.id, {
+      onDelete: 'no action',
+    }),
+  apiKeyId: text('api_key_id')
+    .notNull()
+    .references(() => projectApiKeys.id, {
+      onDelete: 'no action',
+    }),
   from: text('from').notNull(),
   to: text('to').notNull(),
   replyTo: text('reply_to'),
@@ -33,9 +44,9 @@ export const emailLogs = sqliteTable('email_logs', {
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const emailEvents = sqliteTable('email_events', {
+export const emailLogEvents = sqliteTable('email_log_events', {
   id: text('id').unique().primaryKey(),
-  emailId: text('email_id')
+  emailLogId: text('email_log_id')
     .notNull()
     .references(() => emailLogs.id),
   email: text('email').notNull(),

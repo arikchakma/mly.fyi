@@ -28,7 +28,7 @@ const { title = 'Tiny EMail', description = '', noIndex = false } = Astro.props;
     <title>{title}</title>
     <meta name='description' content={description} />
 
-    <link rel='shortcut icon' href='/favicon.svg' type='image/x-icon' />
+    <link rel='shortcut icon' href='/brand/icon.svg' type='image/x-icon' />
 
     {noIndex && <meta name='robots' content='noindex' />}
     {!isDev && <link rel='manifest' href='/manifest.json' />}

@@ -91,14 +91,19 @@ export enum MatchRecordStatus {
   TemporaryFailure = 'temporary-failure',
 }
 
-const allowedIdentityRecord = ['DKIM', 'SPF', 'DMARC'] as const;
+const allowedIdentityRecord = [
+  'DKIM',
+  'SPF',
+  'DMARC',
+  'REDIRECT_DOMAIN',
+] as const;
 type AllowedIdentityRecord = (typeof allowedIdentityRecord)[number];
 
 export interface ProjectIdentityRecord {
   record: AllowedIdentityRecord;
   name: string;
   type: string;
-  ttl?: string;
+  ttl?: string | number;
   status: AllowedIdentityVerificationStatus;
   value: string;
   priority?: number;

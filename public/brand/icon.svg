@@ -1,0 +1,14 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    path {
+      stroke: black;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      path {
+        stroke: white;
+      }
+    }
+  </style>
+  <path d="M11.5 1.99998V3.49998M11.5 3.49998V4.99998M11.5 3.49998H10M11.5 3.49998H13M3.5 9.99998V11.5M3.5 11.5V13M3.5 11.5H2M3.5 11.5H5M3 7.49998C4.51049 7.49998 7.5 6.62516 7.5 2.99998C7.5 4.51047 8.37483 7.49998 12 7.49998C10.4895 7.49998 7.5 8.37481 7.5 12C7.5 10.4895 6.62518 7.49998 3 7.49998Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

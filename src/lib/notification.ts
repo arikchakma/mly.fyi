@@ -11,10 +11,10 @@ import { DEFAULT_SES_REGION } from './ses';
 export function createSNSServiceClient(
   accessKeyId: string,
   secretAccessKey: string,
-  region: string = DEFAULT_SES_REGION,
+  region?: string | null,
 ) {
   return new SNSClient({
-    region,
+    region: region || DEFAULT_SES_REGION,
     credentials: {
       accessKeyId,
       secretAccessKey,

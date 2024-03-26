@@ -88,12 +88,6 @@ interface EmailBodyOptions extends EmailRenderOptions {
    * Additional headers to include in the email.
    */
   headers?: Record<string, string>;
-
-  /**
-   * Additional data to be passed to the email template.
-   * This will be only for `postmark` provider.
-   */
-  metadata?: Record<string, any>;
 }
 
 export type SendEmailBody = RequireAtLeastOne<EmailRenderOptions> &
@@ -318,5 +312,5 @@ export async function sendEmail(
   options: SendEmailBody,
 ): Promise<SendEmailResponse> {
   const email = new Email(providerOptions);
-  return await email.send(options);
+  return email.send(options);
 }

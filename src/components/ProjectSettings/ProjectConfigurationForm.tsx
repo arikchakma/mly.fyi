@@ -49,10 +49,11 @@ export function ProjectConfigurationForm(props: ProjectConfigurationFormProps) {
       updateProjectConfiguration.mutateAsync({
         accessKeyId,
         secretAccessKey,
+        region,
       }),
       {
-        loading: 'Creating project...',
-        success: 'Project created successfully',
+        loading: 'Updating Configuration...',
+        success: 'Configuration updated successfully!',
         error: (error) => {
           console.error(error);
           return (
@@ -124,9 +125,8 @@ export function ProjectConfigurationForm(props: ProjectConfigurationFormProps) {
         <Input
           id={regionFieldId}
           type="text"
-          required
           className="mt-2"
-          placeholder="Secret Access Key"
+          placeholder="Region"
           value={region}
           onInput={(e) => setRegion(String((e.target as any).value))}
           autoComplete="off"

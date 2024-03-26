@@ -12,7 +12,7 @@ const prefixes = {
   projectIdentity: 'pji',
   configurationSet: 'cfg',
   emailLog: 'eml',
-  emailEvent: 'eme',
+  emailLogEvent: 'eme',
   test: 'test', // <-- for tests only
 } as const;
 
