@@ -25,7 +25,6 @@ async function validate(params: FeedbacksRequest) {
 }
 
 async function handle({ body }: FeedbacksRequest) {
-  console.log('Handling feedbacks', body);
   if (
     (body.Type === 'SubscriptionConfirmation' && body.SubscribeURL) ||
     (body.Type === 'UnsubscribeConfirmation' && body.UnsubscribeURL)

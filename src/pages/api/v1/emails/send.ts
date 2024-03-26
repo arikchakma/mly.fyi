@@ -27,16 +27,8 @@ async function validate(params: SendEmailRequest) {
     to: Joi.string().trim().lowercase().email().required(),
     replyTo: Joi.string().trim().lowercase().email().optional(),
     subject: Joi.string().trim().required(),
-    text: Joi.when('html', {
-      is: Joi.exist(),
-      then: Joi.string().trim().allow('').optional(),
-      otherwise: Joi.string().trim().required(),
-    }),
-    html: Joi.when('text', {
-      is: Joi.exist(),
-      then: Joi.string().trim().allow('').optional(),
-      otherwise: Joi.string().trim().required(),
-    }),
+    text: Joi.string().trim().allow('').optional(),
+    html: Joi.string().trim().allow('').optional(),
     headers: Joi.object()
       .pattern(Joi.string().trim().required(), Joi.string().trim().required())
       .optional()
@@ -50,6 +42,10 @@ async function validate(params: SendEmailRequest) {
 
   if (error) {
     throw error;
+  }
+
+  if (!value.text && !value.html) {
+    throw new HttpError('bad_request', 'Either text or html is required.');
   }
 
   return {
@@ -103,6 +99,13 @@ async function handle(params: SendEmailRequest) {
     );
   }
 
+  if (!identity.configurationSetName) {
+    throw new HttpError(
+      'bad_request',
+      `Configuration set is not configured for ${fromDomain} domain.`,
+    );
+  }
+
   const { accessKeyId, secretAccessKey, region } = project;
   if (!accessKeyId || !secretAccessKey) {
     throw new HttpError('bad_request', 'Invalid project credentials');
@@ -117,7 +120,13 @@ async function handle(params: SendEmailRequest) {
         region: region || DEFAULT_SES_REGION,
       },
     },
-    body,
+    {
+      ...body,
+      headers: {
+        ...headers,
+        'X-SES-CONFIGURATION-SET': identity.configurationSetName,
+      },
+    },
   );
 
   const emailLogId = newId('emailLog');
@@ -158,8 +167,7 @@ async function handle(params: SendEmailRequest) {
     subject,
     text,
     html,
-    status: 'sent',
-    sendAt: new Date(),
+    status: 'sending',
     createdAt: new Date(),
     updatedAt: new Date(),
   });
@@ -167,7 +175,7 @@ async function handle(params: SendEmailRequest) {
     id: emailLogEventId,
     emailLogId,
     email: to,
-    type: 'sent',
+    type: 'sending',
     timestamp: new Date(),
   });
 
@@ -179,7 +187,15 @@ async function handle(params: SendEmailRequest) {
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<SendEmailRequest>,
   validate satisfies ValidateRoute<SendEmailRequest>,
-  {
-    isProtected: true,
-  },
 );
+
+// curl -X POST http://localhost:3000/api/v1/emails/send \
+// -H 'Content-Type: application/json' \
+// -H 'X-Mly-Api-Key: mly_2dca2972bc6945d6b7cdffab0b58562a' \
+// -d '{
+//     "from": "hello@mly.fyi",
+//     "to": "imarikchakma@gmail.com",
+//     "subject": "Hello",
+//     "text": "Hello World",
+//     "html": "<p>Hello World</p>"
+// }'

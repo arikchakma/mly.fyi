@@ -180,7 +180,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
         <div className="mt-4 flex items-start gap-3">
           <Checkbox
             id={clickTrackingCheckboxId}
-            disabled={!isIdentityVerified}
+            disabled={!isIdentityVerified || updateConfigurationSet.isPending}
             checked={identity.clickTracking}
             onCheckedChange={(checked) => {
               // intermediate state means the user clicked on the checkbox
@@ -223,7 +223,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
         <div className="mt-4 flex items-start gap-3">
           <Checkbox
             id={openTrackingCheckboxId}
-            disabled={!isIdentityVerified}
+            disabled={!isIdentityVerified || updateConfigurationSet.isPending}
             checked={identity.openTracking}
             onCheckedChange={(checked) => {
               // intermediate state means the user clicked on the checkbox

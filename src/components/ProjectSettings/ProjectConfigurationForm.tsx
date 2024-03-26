@@ -126,7 +126,7 @@ export function ProjectConfigurationForm(props: ProjectConfigurationFormProps) {
           id={regionFieldId}
           type="text"
           className="mt-2"
-          placeholder="Region"
+          placeholder="us-west-2"
           value={region}
           onInput={(e) => setRegion(String((e.target as any).value))}
           autoComplete="off"

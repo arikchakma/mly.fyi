@@ -3,6 +3,8 @@ import { text, sqliteTable, integer, index } from 'drizzle-orm/sqlite-core';
 import { projectApiKeys, projects } from './projects';
 
 export const allowedEmailLogStatus = [
+  'queued',
+  'sending',
   'sent',
   'delivered',
   'opened',
@@ -53,6 +55,10 @@ export const emailLogEvents = sqliteTable('email_log_events', {
   type: text('type', {
     enum: allowedEmailLogStatus,
   }).notNull(),
+  rawResponse: text('raw_response'),
+  userAgent: text('user_agent'),
+  ipAddress: text('ip_address'),
+  link: text('link'),
   timestamp: integer('timestamp', { mode: 'timestamp' })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
