@@ -9,6 +9,7 @@ import { useId } from 'react';
 import { Checkbox } from '../Interface/Checkbox';
 import { DateTime } from 'luxon';
 import { toast } from 'sonner';
+import { TriggerVerifyIdentity } from './TriggerVerifyIdentity';
 
 type ProjectIdentityDetailsProps = {
   projectId: string;
@@ -123,7 +124,16 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
       </div>
 
       <div className="mt-10">
-        <h3 className="text-xl font-semibold">Records</h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-xl font-semibold">Records</h3>
+          <TriggerVerifyIdentity
+            projectId={projectId}
+            identityId={identityId}
+            label="Trigger Verify"
+            iconSize={14}
+            className="gap-1 rounded-md bg-zinc-900 p-1 px-2 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-50"
+          />
+        </div>
         <p className="mt-1 text-sm text-zinc-500">
           These are the DNS records you need to add to your domain.
         </p>

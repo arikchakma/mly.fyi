@@ -7,11 +7,9 @@ import {
 } from '@/lib/handler';
 import { json } from '@/lib/response';
 import Joi from 'joi';
+import { authenticateApiKey } from '@/lib/authenticate-api-key';
 import { db } from '@/db';
-import { projectMembers, projects } from '@/db/schema';
-import { v4 as uuidV4 } from 'uuid';
-import { newId } from '@/lib/new-id';
-import type { Project } from '@/db/types';
+import { HttpError } from '@/lib/http-error';
 
 export interface SendEmailResponse {}
 
@@ -105,7 +103,17 @@ async function validate(params: SendEmailRequest) {
 }
 
 async function handle(params: SendEmailRequest) {
-  const { body, userId, user } = params;
+  const { body, userId, user, context } = params;
+
+  const projectApiKey = await authenticateApiKey(context);
+  const project = await db.query.projects.findFirst({
+    where(fields, { eq }) {
+      return eq(fields.id, projectApiKey.projectId);
+    },
+  });
+  if (!project) {
+    throw new HttpError('not_found', 'Project not found');
+  }
 
   // TODO: Validate if the sending email is a valid email
   // and it must be verified identity in SES

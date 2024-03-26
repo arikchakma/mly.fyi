@@ -16,6 +16,8 @@ import {
   updateConfigurationSetEvent,
   type SetEventType,
 } from '@/lib/configuration-set';
+import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import { createSNSServiceClient } from '@/lib/notification';
 
 export interface UpdateProjectIdentityResponse {
   status: 'ok';
@@ -99,7 +101,7 @@ async function handle(params: UpdateProjectIdentityRequest) {
     throw new HttpError('not_found', 'Identity not found');
   }
 
-  if (identity.type !== 'domain') {
+  if (identity.type !== 'domain' || !identity.domain) {
     throw new HttpError('bad_request', 'Identity is not a domain');
   }
 
@@ -117,7 +119,22 @@ async function handle(params: UpdateProjectIdentityRequest) {
     events.push('click');
   }
 
+  const { accessKeyId, secretAccessKey } = project;
+  if (!accessKeyId || !secretAccessKey) {
+    throw new HttpError('bad_request', 'Project does not have AWS credentials');
+  }
+
+  const sesClient = createSESServiceClient(accessKeyId, secretAccessKey);
+  const snsClient = createSNSServiceClient(accessKeyId, secretAccessKey);
+
+  const isValidConfig = await isValidConfiguration(sesClient);
+  if (!isValidConfig) {
+    throw new HttpError('bad_request', 'Invalid AWS credentials');
+  }
+
   const configSetResponse = await updateConfigurationSetEvent(
+    sesClient,
+    snsClient,
     identity.configurationSetName,
     events,
   );

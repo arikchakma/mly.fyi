@@ -46,7 +46,7 @@ async function validate(params: V1LoginRequest) {
   };
 }
 
-async function handle({ body, context }: V1LoginRequest) {
+async function handle({ body }: V1LoginRequest) {
   const { email, password } = body;
 
   const associatedUser = await db.query.users.findFirst({

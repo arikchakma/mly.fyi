@@ -36,7 +36,10 @@ const deafultUrl = Astro.url.toString();
   }
   {
     hasError && (
-      <PageError error={projectError?.message || 'Something went wrong'} />
+      <PageError
+        error={projectError?.message || 'Something went wrong'}
+        className='mt-20'
+      />
     )
   }
 </Layout>

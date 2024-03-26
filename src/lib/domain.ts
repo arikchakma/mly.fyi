@@ -1,9 +1,9 @@
 import { logError } from './logger';
-import { sesClient } from './ses';
 import {
   CustomMailFromStatus,
   GetIdentityDkimAttributesCommand,
   GetIdentityMailFromDomainAttributesCommand,
+  SESClient,
   SetIdentityMailFromDomainCommand,
   VerificationStatus,
   VerifyDomainDkimCommand,
@@ -17,12 +17,15 @@ export function isValidDomain(domain: string): boolean {
   return VALID_DOMAIN_REGEX.test(domain);
 }
 
-export async function verifyDomainIdentity(domain: string): Promise<string> {
+export async function verifyDomainIdentity(
+  client: SESClient,
+  domain: string,
+): Promise<string> {
   try {
     const command = new VerifyDomainIdentityCommand({
       Domain: domain,
     });
-    const result = await sesClient.send(command);
+    const result = await client.send(command);
     return result.VerificationToken || '';
   } catch (error) {
     logError(error, (error as Error)?.stack);
@@ -30,12 +33,15 @@ export async function verifyDomainIdentity(domain: string): Promise<string> {
   }
 }
 
-export async function verifyDomainDkim(domain: string): Promise<string[]> {
+export async function verifyDomainDkim(
+  client: SESClient,
+  domain: string,
+): Promise<string[]> {
   try {
     const command = new VerifyDomainDkimCommand({
       Domain: domain,
     });
-    const result = await sesClient.send(command);
+    const result = await client.send(command);
     return result.DkimTokens || [];
   } catch (error) {
     logError(error, (error as Error)?.stack);
@@ -44,6 +50,7 @@ export async function verifyDomainDkim(domain: string): Promise<string[]> {
 }
 
 export async function addMailFromDomain(
+  client: SESClient,
   domain: string,
   mailFromDomain: string,
 ): Promise<boolean> {
@@ -54,7 +61,7 @@ export async function addMailFromDomain(
       BehaviorOnMXFailure: 'UseDefaultValue',
     });
 
-    await sesClient.send(command);
+    await client.send(command);
     return true;
   } catch (error) {
     logError(error, (error as Error)?.stack);
@@ -63,6 +70,7 @@ export async function addMailFromDomain(
 }
 
 export async function getMailFromDomainVerificationStatus(
+  client: SESClient,
   domain: string,
 ): Promise<CustomMailFromStatus> {
   try {
@@ -70,7 +78,7 @@ export async function getMailFromDomainVerificationStatus(
       Identities: [domain],
     });
 
-    const result = await sesClient.send(command);
+    const result = await client.send(command);
     const status =
       result?.MailFromDomainAttributes?.[domain]?.MailFromDomainStatus;
     if (!status) {
@@ -85,6 +93,7 @@ export async function getMailFromDomainVerificationStatus(
 }
 
 export async function getDomainDkimVerificationStatus(
+  client: SESClient,
   domain: string,
 ): Promise<VerificationStatus> {
   try {
@@ -92,7 +101,7 @@ export async function getDomainDkimVerificationStatus(
       Identities: [domain],
     });
 
-    const result = await sesClient.send(command);
+    const result = await client.send(command);
     const status = result?.DkimAttributes?.[domain]?.DkimVerificationStatus;
     if (!status) {
       throw new Error('DKIM verification status not found');

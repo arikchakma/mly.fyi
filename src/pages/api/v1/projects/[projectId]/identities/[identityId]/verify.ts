@@ -22,6 +22,8 @@ import {
   getMailFromDomainVerificationStatus,
 } from '@/lib/domain';
 import type { CustomMailFromStatus } from '@aws-sdk/client-ses';
+import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import { createSNSServiceClient } from '@/lib/notification';
 
 export interface VerifyProjectIdentityResponse {
   records: ProjectIdentityRecord[];
@@ -93,8 +95,21 @@ async function handle(params: VerifyProjectIdentityRequest) {
     throw new HttpError('bad_request', 'Identity is not a domain');
   }
 
+  const { accessKeyId, secretAccessKey } = project;
+  if (!accessKeyId || !secretAccessKey) {
+    throw new HttpError('bad_request', 'Project does not have AWS credentials');
+  }
+
+  const sesClient = createSESServiceClient(accessKeyId, secretAccessKey);
+  const snsClient = createSNSServiceClient(accessKeyId, secretAccessKey);
+
+  const isValidConfig = await isValidConfiguration(sesClient);
+  if (!isValidConfig) {
+    throw new HttpError('bad_request', 'Invalid AWS credentials');
+  }
+
   const { domain, mailFromDomain } = identity;
-  const dkimStatus = await getDomainDkimVerificationStatus(domain!);
+  const dkimStatus = await getDomainDkimVerificationStatus(sesClient, domain!);
   if (!dkimStatus) {
     throw new HttpError('not_found', 'DKIM status not found');
   }
@@ -102,7 +117,10 @@ async function handle(params: VerifyProjectIdentityRequest) {
   let mailFromDomainStatus: CustomMailFromStatus | undefined;
 
   if (mailFromDomain) {
-    mailFromDomainStatus = await getMailFromDomainVerificationStatus(domain!);
+    mailFromDomainStatus = await getMailFromDomainVerificationStatus(
+      sesClient,
+      domain!,
+    );
 
     if (!mailFromDomainStatus) {
       throw new HttpError('not_found', 'Mail from domain not found');

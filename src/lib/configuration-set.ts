@@ -4,14 +4,14 @@ import {
   CreateConfigurationSetEventDestinationCommand,
   EventType,
   ListConfigurationSetsCommand,
+  SESClient,
   UpdateConfigurationSetEventDestinationCommand,
   UpdateConfigurationSetTrackingOptionsCommand,
 } from '@aws-sdk/client-ses';
-import { sesClient } from './ses';
 import { logError } from './logger';
 import { setupEmailFeedbackHandling } from './notification';
 import { newId } from './new-id';
-import { UserErrorException } from '@aws-sdk/client-sns';
+import type { SNSClient } from '@aws-sdk/client-sns';
 
 const EVENT_DESTINATION_NAME = 'Feedback';
 const DEFAULT_EVENT_TYPES = [
@@ -23,7 +23,10 @@ const DEFAULT_EVENT_TYPES = [
   'renderingFailure',
 ] as const;
 
-export async function createConfigurationSet() {
+export async function createConfigurationSet(
+  sesClient: SESClient,
+  snsClient: SNSClient,
+) {
   try {
     const configurationSetName = newId('configurationSet');
 
@@ -40,7 +43,7 @@ export async function createConfigurationSet() {
 
     // Now we need to create a rule set for this configuration set
     // to handle feedbacks using SNS topic
-    const feedbackTopicArn = await setupEmailFeedbackHandling();
+    const feedbackTopicArn = await setupEmailFeedbackHandling(snsClient);
     if (!feedbackTopicArn) {
       throw new Error('Failed to setup email feedback handling');
     }
@@ -73,6 +76,7 @@ export async function createConfigurationSet() {
 }
 
 export async function updateConfigurationSetTrackingOptions(
+  client: SESClient,
   configurationSetName: string,
   redirectDomain: string,
 ) {
@@ -85,7 +89,7 @@ export async function updateConfigurationSetTrackingOptions(
         },
       });
 
-    const setTrackingOptionsResponse = await sesClient.send(
+    const setTrackingOptionsResponse = await client.send(
       setTrackingOptionsCommand,
     );
     if (!setTrackingOptionsResponse) {
@@ -102,11 +106,13 @@ export async function updateConfigurationSetTrackingOptions(
 export type SetEventType = 'open' | 'click';
 
 export async function updateConfigurationSetEvent(
+  sesClient: SESClient,
+  snsClient: SNSClient,
   configurationSetName: string,
   events: SetEventType[],
 ) {
   try {
-    const topicArn = await setupEmailFeedbackHandling();
+    const topicArn = await setupEmailFeedbackHandling(snsClient);
     if (!topicArn) {
       throw new Error('Failed to setup email feedback handling');
     }
@@ -138,9 +144,9 @@ export async function updateConfigurationSetEvent(
   }
 }
 
-export async function isConfirationSetExists(name: string) {
+export async function isConfirationSetExists(client: SESClient, name: string) {
   try {
-    const configurationSets = await listConfigutationSets();
+    const configurationSets = await listConfigutationSets(client);
     if (!configurationSets) {
       throw new Error('Failed to list configuration sets');
     }
@@ -152,7 +158,7 @@ export async function isConfirationSetExists(name: string) {
   }
 }
 
-export async function listConfigutationSets() {
+export async function listConfigutationSets(client: SESClient) {
   try {
     const configurationSets = new Set<string>();
     let nextToken: string | undefined;
@@ -162,7 +168,7 @@ export async function listConfigutationSets() {
         NextToken: nextToken,
       });
 
-      const response = await sesClient.send(command);
+      const response = await client.send(command);
       if (response) {
         response.ConfigurationSets?.forEach((configurationSet) => {
           configurationSets.add(configurationSet?.Name || '');

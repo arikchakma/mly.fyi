@@ -1,10 +1,7 @@
 import type { ListProjectIdentitiesResponse } from '../../pages/api/v1/projects/[projectId]/identities/index';
 import { DateTime } from 'luxon';
 import { ArrowUpRight, RefreshCcw, Trash2 } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/utils/query-client';
-import { httpPost } from '@/lib/http';
-import { toast } from 'sonner';
+import { TriggerVerifyIdentity } from './TriggerVerifyIdentity';
 
 type ProjectIdentityItemProps = {
   projectId: string;
@@ -19,24 +16,6 @@ export function ProjectIdentityItem(props: ProjectIdentityItemProps) {
     new Date(identity.updatedAt),
   ).toRelative();
 
-  const triggerVerifyDomain = useMutation(
-    {
-      mutationKey: ['project-identities', projectId, identity.id, 'verify'],
-      mutationFn: () => {
-        return httpPost(
-          `/api/v1/projects/${projectId}/identities/${identity.id}/verify`,
-          {},
-        );
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ['project-identities', projectId],
-        });
-      },
-    },
-    queryClient,
-  );
-
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-4">
       <div className="flex items-center justify-between">
@@ -46,20 +25,10 @@ export function ProjectIdentityItem(props: ProjectIdentityItemProps) {
           </span>
         </div>
         <span className="flex items-center gap-2">
-          <button
-            className="text-zinc-400 hover:text-zinc-50"
-            onClick={() => {
-              toast.promise(triggerVerifyDomain.mutateAsync(), {
-                loading: 'Refreshing Identity status..',
-                success: 'Refreshed Identity status',
-                error: (err) => {
-                  return err?.message || 'Something went wrong';
-                },
-              });
-            }}
-          >
-            <RefreshCcw size={16} />
-          </button>
+          <TriggerVerifyIdentity
+            projectId={projectId}
+            identityId={identity.id}
+          />
           <button className="text-zinc-400 hover:text-zinc-50">
             <Trash2 size={16} />
           </button>

@@ -6,18 +6,24 @@ import {
 } from '@aws-sdk/client-sns';
 import type { ListSubscriptionsCommandOutput } from '@aws-sdk/client-sns';
 import { logError, logInfo } from './logger';
-import { serverConfig } from './config';
-import { setIdentityFeedbackForwardingEnabled } from './ses';
+import { DEFAULT_SES_REGION } from './ses';
 
-export const snsClient = new SNSClient({
-  region: serverConfig.ses.region,
-  credentials: {
-    accessKeyId: serverConfig.ses.accessKeyId,
-    secretAccessKey: serverConfig.ses.secretAccessKey,
-  },
-});
+export function createSNSServiceClient(
+  accessKeyId: string,
+  secretAccessKey: string,
+  region: string = DEFAULT_SES_REGION,
+) {
+  return new SNSClient({
+    region,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+}
 
 export async function listSubscriptions(
+  snsClient: SNSClient,
   nextToken?: string,
 ): Promise<ListSubscriptionsCommandOutput | undefined> {
   const command = new ListSubscriptionsCommand({
@@ -33,6 +39,7 @@ export async function listSubscriptions(
 }
 
 export async function createTopic(
+  snsClient: SNSClient,
   topicName: string,
 ): Promise<string | undefined> {
   const command = new CreateTopicCommand({
@@ -54,6 +61,7 @@ type SubscribeToTopicParams = {
 };
 
 export async function subscribeToTopic(
+  snsClient: SNSClient,
   params: SubscribeToTopicParams,
 ): Promise<string | undefined> {
   try {
@@ -72,7 +80,9 @@ export async function subscribeToTopic(
   }
 }
 
-export async function setupEmailFeedbackHandling(): Promise<string | null> {
+export async function setupEmailFeedbackHandling(
+  snsClient: SNSClient,
+): Promise<string | null> {
   let feedbacksTopicArn: string | undefined;
   let feedbacksSubscriptionArn: string | undefined;
 
@@ -83,7 +93,7 @@ export async function setupEmailFeedbackHandling(): Promise<string | null> {
   try {
     // 1. Check if bounces and complaints subscriptions already exist
     // for their respective topics
-    const subscriptions = await listSubscriptions();
+    const subscriptions = await listSubscriptions(snsClient);
     for (const subscription of subscriptions?.Subscriptions || []) {
       if (subscription.Endpoint === feedbacksEndpoint) {
         feedbacksTopicArn = subscription.TopicArn;
@@ -93,21 +103,17 @@ export async function setupEmailFeedbackHandling(): Promise<string | null> {
 
     // 2. As the topic creation is idempotent, we can create the topics
     // and subscriptions even if they already exist
-    feedbacksTopicArn = await createTopic('feedbacks');
+    feedbacksTopicArn = await createTopic(snsClient, 'feedbacks');
 
     // 3. If 'bounces' and 'complaints' SNS topics exist,
     // create SNS subscriptions for them
     if (feedbacksTopicArn !== '') {
       // Create 'bounces' and 'complaints' SNS subscriptions
-      feedbacksSubscriptionArn = await subscribeToTopic({
+      feedbacksSubscriptionArn = await subscribeToTopic(snsClient, {
         topicArn: feedbacksTopicArn!,
         endpoint: feedbacksEndpoint,
       });
     }
-
-    console.log('-'.repeat(20));
-    console.log('Feedbacks Topic ARN:', feedbacksTopicArn);
-    console.log('-'.repeat(20));
 
     if (!feedbacksTopicArn) {
       throw new Error('Failed to create SNS topics');
@@ -162,155 +168,158 @@ export async function handleSubscriptionConfirmation(
   }
 }
 
-interface SESBounceRecipient {
-  emailAddress: string;
-  action: string;
-  status: string;
-  diagnosticCode: string;
-}
+// ----------------------------------------------------------
+// TODO: Uncomment this while implementing feedback handling
+// ----------------------------------------------------------
+// interface SESBounceRecipient {
+//   emailAddress: string;
+//   action: string;
+//   status: string;
+//   diagnosticCode: string;
+// }
 
-interface MailDetails {
-  timestamp: string;
-  source: string;
-  sourceArn: string;
-  sendingAccountId: string;
-  messageId: string;
-  destination: string[];
-  headersTruncated: boolean;
-  headers: {
-    name: string;
-    value: string;
-  }[];
-  commonHeaders: {
-    from: string[];
-    to: string[];
-    messageId: string;
-    subject: string;
-  };
-  tags: {
-    [key: string]: string[];
-  };
-}
+// interface MailDetails {
+//   timestamp: string;
+//   source: string;
+//   sourceArn: string;
+//   sendingAccountId: string;
+//   messageId: string;
+//   destination: string[];
+//   headersTruncated: boolean;
+//   headers: {
+//     name: string;
+//     value: string;
+//   }[];
+//   commonHeaders: {
+//     from: string[];
+//     to: string[];
+//     messageId: string;
+//     subject: string;
+//   };
+//   tags: {
+//     [key: string]: string[];
+//   };
+// }
 
-// Look at the following link for more information about the event structure:
-// https://docs.aws.amazon.com/ses/latest/dg/event-publishing-retrieving-sns-contents.html
-// https://docs.aws.amazon.com/ses/latest/dg/event-publishing-retrieving-sns-examples.html#event-publishing-retrieving-sns-bounce
-export interface SESBounceEvent {
-  notificationType: 'Bounce';
-  bounce: {
-    bounceType: 'Permanent' | 'Transient' | 'Undetermined';
-    bounceSubType:
-      | 'General'
-      | 'NoEmail'
-      | 'Suppressed'
-      | 'MailboxFull'
-      | 'MessageTooLarge'
-      | 'ContentRejected'
-      | 'OnAccountSuppressionList';
-    bouncedRecipients: SESBounceRecipient[];
-    timestamp: string;
-    feedbackId: string;
-    reportingMTA: string;
-  };
-  mail: MailDetails;
-}
+// // Look at the following link for more information about the event structure:
+// // https://docs.aws.amazon.com/ses/latest/dg/event-publishing-retrieving-sns-contents.html
+// // https://docs.aws.amazon.com/ses/latest/dg/event-publishing-retrieving-sns-examples.html#event-publishing-retrieving-sns-bounce
+// export interface SESBounceEvent {
+//   notificationType: 'Bounce';
+//   bounce: {
+//     bounceType: 'Permanent' | 'Transient' | 'Undetermined';
+//     bounceSubType:
+//       | 'General'
+//       | 'NoEmail'
+//       | 'Suppressed'
+//       | 'MailboxFull'
+//       | 'MessageTooLarge'
+//       | 'ContentRejected'
+//       | 'OnAccountSuppressionList';
+//     bouncedRecipients: SESBounceRecipient[];
+//     timestamp: string;
+//     feedbackId: string;
+//     reportingMTA: string;
+//   };
+//   mail: MailDetails;
+// }
 
-interface SESComplaintRecipient {
-  emailAddress: string;
-}
+// interface SESComplaintRecipient {
+//   emailAddress: string;
+// }
 
-export interface SESComplaintEvent {
-  notificationType: 'Complaint';
-  complaint: {
-    complainedRecipients: SESComplaintRecipient[];
-    timestamp: string;
-    feedbackId: string;
-    userAgent: string;
-    complaintFeedbackType: string;
-    arrivalDate: string;
-  };
-  mail: MailDetails;
-}
+// export interface SESComplaintEvent {
+//   notificationType: 'Complaint';
+//   complaint: {
+//     complainedRecipients: SESComplaintRecipient[];
+//     timestamp: string;
+//     feedbackId: string;
+//     userAgent: string;
+//     complaintFeedbackType: string;
+//     arrivalDate: string;
+//   };
+//   mail: MailDetails;
+// }
 
-interface SESDeliveryRecipient {
-  emailAddress: string;
-}
+// interface SESDeliveryRecipient {
+//   emailAddress: string;
+// }
 
-export interface SESDeliveryEvent {
-  notificationType: 'Delivery';
-  delivery: {
-    timestamp: string;
-    processingTimeMillis: number;
-    recipients: SESDeliveryRecipient[];
-    smtpResponse: string;
-    reportingMTA: string;
-  };
-  mail: MailDetails;
-}
+// export interface SESDeliveryEvent {
+//   notificationType: 'Delivery';
+//   delivery: {
+//     timestamp: string;
+//     processingTimeMillis: number;
+//     recipients: SESDeliveryRecipient[];
+//     smtpResponse: string;
+//     reportingMTA: string;
+//   };
+//   mail: MailDetails;
+// }
 
-export async function handleNotification(
-  notification: SesNotificationType,
-): Promise<boolean> {
-  try {
-    const event: SESBounceEvent | SESComplaintEvent | SESDeliveryEvent =
-      JSON.parse(notification.Message);
+// export async function handleNotification(
+//   notification: SesNotificationType,
+// ): Promise<boolean> {
+//   try {
+//     const event: SESBounceEvent | SESComplaintEvent | SESDeliveryEvent =
+//       JSON.parse(notification.Message);
 
-    if (!['Bounce', 'Complaint', 'Delivery'].includes(event.notificationType)) {
-      return false;
-    }
+//     if (!['Bounce', 'Complaint', 'Delivery'].includes(event.notificationType)) {
+//       return false;
+//     }
 
-    const { mail } = event;
-    const { messageId, destination } = mail;
+//     const { mail } = event;
+//     const { messageId, destination } = mail;
 
-    // The destination array contains the email address that the message was sent to.
-    // In our case, we only send to one email address at a time, so we can just
-    // use the first element in the array.
-    const sendEmail = destination[0] || '';
+//     // The destination array contains the email address that the message was sent to.
+//     // In our case, we only send to one email address at a time, so we can just
+//     // use the first element in the array.
+//     const sendEmail = destination[0] || '';
 
-    if (event.notificationType === 'Bounce') {
-      const { bounceType, bounceSubType } = (event as SESBounceEvent).bounce;
+//     if (event.notificationType === 'Bounce') {
+//       const { bounceType, bounceSubType } = (event as SESBounceEvent).bounce;
 
-      // Handle hard bounces
-      if (
-        bounceType === 'Permanent' &&
-        [
-          'General',
-          'NoEmail',
-          'Suppressed',
-          'OnAccountSuppressionList',
-        ].includes(bounceSubType)
-      ) {
-        // TODO: Implement handle hard bounce
-      }
-      // Handle soft bounces
-      // https://repost.aws/knowledge-center/ses-understand-soft-bounces
-      else if (
-        bounceType === 'Transient' &&
-        [
-          'General',
-          'MailboxFull',
-          'MessageTooLarge',
-          'ContentRejected',
-          'AttachmentRejected',
-        ].includes(bounceSubType)
-      ) {
-        // TODO: Implement handle soft bounce
-      } else if (bounceType === 'Permanent') {
-        // TODO: Implement handle hard bounce
-      } else {
-        logInfo('Unhandled bounce type or subtype', bounceType, bounceSubType);
-      }
+//       // Handle hard bounces
+//       if (
+//         bounceType === 'Permanent' &&
+//         [
+//           'General',
+//           'NoEmail',
+//           'Suppressed',
+//           'OnAccountSuppressionList',
+//         ].includes(bounceSubType)
+//       ) {
+//         // TODO: Implement handle hard bounce
+//       }
+//       // Handle soft bounces
+//       // https://repost.aws/knowledge-center/ses-understand-soft-bounces
+//       else if (
+//         bounceType === 'Transient' &&
+//         [
+//           'General',
+//           'MailboxFull',
+//           'MessageTooLarge',
+//           'ContentRejected',
+//           'AttachmentRejected',
+//         ].includes(bounceSubType)
+//       ) {
+//         // TODO: Implement handle soft bounce
+//       } else if (bounceType === 'Permanent') {
+//         // TODO: Implement handle hard bounce
+//       } else {
+//         logInfo('Unhandled bounce type or subtype', bounceType, bounceSubType);
+//       }
 
-      // Handle Complaints
-    } else if (event.notificationType === 'Complaint') {
-      // TODO: Implement handle complaints
-    } else if (event.notificationType === 'Delivery') {
-      // TODO: Implement handle deliveries
-    }
+//       // Handle Complaints
+//     } else if (event.notificationType === 'Complaint') {
+//       // TODO: Implement handle complaints
+//     } else if (event.notificationType === 'Delivery') {
+//       // TODO: Implement handle deliveries
+//     }
 
-    return true;
-  } catch (error) {
-    logError(error, (error as Error)?.stack);
-    return false;
-  }
-}
+//     return true;
+//   } catch (error) {
+//     logError(error, (error as Error)?.stack);
+//     return false;
+//   }
+// }

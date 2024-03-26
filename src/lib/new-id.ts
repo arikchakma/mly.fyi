@@ -22,5 +22,5 @@ export function newId(prefix: keyof typeof prefixes): string {
 
 const API_KEY_PREFIX = 'mly';
 export function newApiKey(): string {
-  return [API_KEY_PREFIX, uuidV4()].join('_');
+  return [API_KEY_PREFIX, uuidV4().replaceAll('-', '')].join('_');
 }

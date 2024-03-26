@@ -7,7 +7,6 @@ import {
 } from '@/lib/handler';
 import { json } from '@/lib/response';
 import {
-  handleNotification,
   handleSubscriptionConfirmation,
   type SesNotificationType,
 } from '@/lib/notification';

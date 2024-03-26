@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { LoadingMessage } from '../LoadingMessage';
 import { ProjectIdentityItem } from './ProjectIdentityItem';
 import type { ListProjectIdentitiesResponse } from '@/pages/api/v1/projects/[projectId]/identities';
+import { PageError } from '../Errors/PageError';
 
 type ListProjectIdentitiesProps = {
   projectId: string;
@@ -12,7 +13,7 @@ type ListProjectIdentitiesProps = {
 export function ListProjectIdentities(props: ListProjectIdentitiesProps) {
   const { projectId } = props;
 
-  const { data } = useQuery(
+  const { data, error } = useQuery(
     {
       queryKey: ['project-identities', projectId],
       queryFn: () => {
@@ -23,6 +24,15 @@ export function ListProjectIdentities(props: ListProjectIdentitiesProps) {
     },
     queryClient,
   );
+
+  if (error && !data) {
+    return (
+      <PageError
+        error={error?.message || 'Something went wrong!'}
+        className="sm:pt-0"
+      />
+    );
+  }
 
   if (!data) {
     return <LoadingMessage message="Loading Project Identities..." />;

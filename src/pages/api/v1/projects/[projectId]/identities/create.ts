@@ -21,6 +21,8 @@ import { HttpError } from '@/lib/http-error';
 import { addMailFromDomain, verifyDomainDkim } from '@/lib/domain';
 import { serverConfig } from '@/lib/config';
 import { createConfigurationSet } from '@/lib/configuration-set';
+import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import { createSNSServiceClient } from '@/lib/notification';
 
 export interface CreateProjectIdentityResponse {
   identityId: string;
@@ -123,6 +125,19 @@ async function handle(params: CreateProjectIdentityRequest) {
     );
   }
 
+  const { accessKeyId, secretAccessKey } = project;
+  if (!accessKeyId || !secretAccessKey) {
+    throw new HttpError('bad_request', 'Project does not have AWS credentials');
+  }
+
+  const sesClient = createSESServiceClient(accessKeyId, secretAccessKey);
+  const snsClient = createSNSServiceClient(accessKeyId, secretAccessKey);
+
+  const isValidConfig = await isValidConfiguration(sesClient);
+  if (!isValidConfig) {
+    throw new HttpError('bad_request', 'Invalid AWS credentials');
+  }
+
   const projectIdentityId = newId('projectIdentity');
 
   const status = await db.transaction(async (tx) => {
@@ -138,14 +153,14 @@ async function handle(params: CreateProjectIdentityRequest) {
       updatedAt: new Date(),
     });
 
-    const dkimTokens = await verifyDomainDkim(domain);
+    const dkimTokens = await verifyDomainDkim(sesClient, domain);
     if (dkimTokens.length === 0) {
       tx.rollback();
       return false;
     }
 
     if (mailFromDomain) {
-      const result = await addMailFromDomain(domain, mailFromDomain);
+      const result = await addMailFromDomain(sesClient, domain, mailFromDomain);
       if (!result) {
         tx.rollback();
         return false;
@@ -192,7 +207,10 @@ async function handle(params: CreateProjectIdentityRequest) {
       });
     }
 
-    const configurationSetName = await createConfigurationSet();
+    const configurationSetName = await createConfigurationSet(
+      sesClient,
+      snsClient,
+    );
     if (!configurationSetName) {
       tx.rollback();
       return false;

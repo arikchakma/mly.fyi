@@ -66,7 +66,7 @@ async function handle({ body }: RegisterRequest) {
   const userId = newId('user');
 
   const hashedPassword = await hashPassword(password);
-  const user = await db.insert(users).values({
+  await db.insert(users).values({
     id: userId,
     name,
     email,

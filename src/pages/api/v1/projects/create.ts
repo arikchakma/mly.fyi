@@ -9,7 +9,6 @@ import { json } from '@/lib/response';
 import Joi from 'joi';
 import { db } from '@/db';
 import { projectMembers, projects } from '@/db/schema';
-import { v4 as uuidV4 } from 'uuid';
 import { newId } from '@/lib/new-id';
 import type { Project } from '@/db/types';
 
@@ -46,7 +45,6 @@ async function handle(params: CreateProjectRequest) {
   const { name, timezone, url } = body;
 
   const projectId = newId('project');
-  const apiKey = uuidV4();
 
   const project = await db
     .insert(projects)
@@ -56,7 +54,6 @@ async function handle(params: CreateProjectRequest) {
       name,
       url,
       timezone,
-      apiKey,
       createdAt: new Date(),
       updatedAt: new Date(),
     })

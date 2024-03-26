@@ -8,6 +8,9 @@ import type {
   CreateProjectIdentityResponse,
 } from '../../pages/api/v1/projects/[projectId]/identities/create';
 import { isValidDomain } from '@/lib/domain';
+import { Loader2, Plus } from 'lucide-react';
+import { Input } from '../Interface/Input';
+import { Label } from '../Interface/Label';
 
 type ProjectIdentityFormProps = {
   projectId: string;
@@ -88,22 +91,17 @@ export function ProjectIdentityForm(props: ProjectIdentityFormProps) {
         Fill the details below to get started
       </p>
       <div>
-        <label
-          htmlFor={domainFieldId}
-          aria-required={true}
-          data-content-required="*"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 aria-required:after:ml-0.5 aria-required:after:mr-0.5 aria-required:after:text-red-600 aria-required:after:content-[attr(data-content-required)]"
-        >
+        <Label htmlFor={domainFieldId} aria-required={true}>
           Domain
-        </label>
-        <input
+        </Label>
+        <Input
           name={domainFieldId}
           id={domainFieldId}
           spellCheck={false}
           autoComplete="off"
           type="text"
           required
-          className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600"
+          className="mt-2"
           placeholder="mly.fyi"
           min={3}
           value={domain}
@@ -116,20 +114,19 @@ export function ProjectIdentityForm(props: ProjectIdentityFormProps) {
       </div>
 
       <div>
-        <label
-          htmlFor={mailFromDomainFieldId}
-          className="mt-4 block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
+        <Label htmlFor={mailFromDomainFieldId} className="mt-4">
           Mail From Domain{' '}
-          <span className="text-xs text-zinc-400">(Recomended)</span>
-        </label>
-        <input
+          <span className="text-xs leading-none text-zinc-400">
+            (Recomended)
+          </span>
+        </Label>
+        <Input
           name={mailFromDomainFieldId}
           id={mailFromDomainFieldId}
           spellCheck={false}
           autoComplete="off"
           type="text"
-          className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600"
+          className="mt-2"
           placeholder="send.mly.fyi"
           value={mailFromDomain}
           onInput={(e) => setMailFromDomain(String((e.target as any).value))}
@@ -145,7 +142,12 @@ export function ProjectIdentityForm(props: ProjectIdentityFormProps) {
         disabled={isLoading}
         className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:border-none focus:ring-2 focus:ring-zinc-500 active:outline-none disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading ? 'Please wait...' : 'Add Identity'}
+        {isLoading ? (
+          <Loader2 size={16} className="animate-spin stroke-[3px]" />
+        ) : (
+          <Plus size={16} className="stroke-[3px]" />
+        )}
+        Add Identity
       </button>
     </form>
   );
