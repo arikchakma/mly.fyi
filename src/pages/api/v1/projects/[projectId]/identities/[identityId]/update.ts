@@ -14,10 +14,16 @@ import { and, eq } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
 import {
   updateConfigurationSetEvent,
+  createConfigurationSetTrackingOptions,
   type SetEventType,
 } from '@/lib/configuration-set';
-import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import {
+  createSESServiceClient,
+  DEFAULT_SES_REGION,
+  isValidConfiguration,
+} from '@/lib/ses';
 import { createSNSServiceClient } from '@/lib/notification';
+import { getRedirectDomain } from '@/lib/domain';
 
 export interface UpdateProjectIdentityResponse {
   status: 'ok';
@@ -119,13 +125,21 @@ async function handle(params: UpdateProjectIdentityRequest) {
     events.push('click');
   }
 
-  const { accessKeyId, secretAccessKey } = project;
+  const { accessKeyId, secretAccessKey, region } = project;
   if (!accessKeyId || !secretAccessKey) {
     throw new HttpError('bad_request', 'Project does not have AWS credentials');
   }
 
-  const sesClient = createSESServiceClient(accessKeyId, secretAccessKey);
-  const snsClient = createSNSServiceClient(accessKeyId, secretAccessKey);
+  const sesClient = createSESServiceClient(
+    accessKeyId,
+    secretAccessKey,
+    region,
+  );
+  const snsClient = createSNSServiceClient(
+    accessKeyId,
+    secretAccessKey,
+    region,
+  );
 
   const isValidConfig = await isValidConfiguration(sesClient);
   if (!isValidConfig) {
@@ -142,11 +156,60 @@ async function handle(params: UpdateProjectIdentityRequest) {
     throw new HttpError('internal_error', 'Failed to update configuration set');
   }
 
+  const redirectDomainRecord = identity.records?.find(
+    (record) => record.record.toLowerCase() === 'redirect_domain',
+  );
+  const newRecords = identity.records || [];
+
+  if (!redirectDomainRecord) {
+    // --- Redirect Domain ---
+    // Every single links in the email will be masked around this domain
+    // to be able to track the clicks, opens, etc.
+    // The domain should be in the format of <region>.<domain>
+    // Example: ap-south-1.mly.fyi
+    const { name: redirectDomain, value: redirectValue } = getRedirectDomain(
+      identity.domain,
+      region || DEFAULT_SES_REGION,
+    );
+    const maskingDomain = await createConfigurationSetTrackingOptions(
+      sesClient,
+      identity.configurationSetName,
+      redirectDomain,
+    );
+
+    if (!maskingDomain) {
+      throw new HttpError(
+        'internal_error',
+        'Failed to update tracking options',
+      );
+    }
+
+    newRecords?.push({
+      record: 'REDIRECT_DOMAIN',
+      type: 'CNAME',
+      status: 'pending',
+      ttl: 'Auto',
+      name: redirectDomain,
+      value: redirectValue,
+    });
+  }
+
+  const isRedirectDomainVerified = redirectDomainRecord?.status === 'success';
+  // --- Redirect Domain ---
+
   await db
     .update(projectIdentities)
     .set({
       openTracking: openTracking ?? identity.openTracking,
       clickTracking: clickTracking ?? identity.clickTracking,
+      // --- Redirect Domain ---
+      ...(!isRedirectDomainVerified
+        ? {
+            status: 'pending',
+          }
+        : {}),
+      records: newRecords,
+      // --- Redirect Domain ---
       updatedAt: new Date(),
     })
     .where(

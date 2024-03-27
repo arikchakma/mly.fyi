@@ -7,10 +7,10 @@ import type {
   CreateProjectIdentityBody,
   CreateProjectIdentityResponse,
 } from '../../pages/api/v1/projects/[projectId]/identities/create';
-import { isValidDomain } from '@/lib/domain';
 import { Loader2, Plus } from 'lucide-react';
 import { Input } from '../Interface/Input';
 import { Label } from '../Interface/Label';
+import { isValidDomain } from '@/utils/domain';
 
 type ProjectIdentityFormProps = {
   projectId: string;

@@ -6,10 +6,9 @@ export const serverConfig = {
     expiresIn: import.meta.env.JWT_EXPIRES_IN,
   },
   ses: {
-    region: import.meta.env.AWS_SES_REGION,
-    accessKeyId: import.meta.env.AWS_SES_ACCESS_KEY,
-    secretAccessKey: import.meta.env.AWS_SES_SECRET_ACCESS_KEY,
-    fromEmail: import.meta.env.AWS_SES_FROM_EMAIL,
     sesEndpointOverrideUrl: import.meta.env.AWS_SES_ENDPOINT_OVERRIDE_URL,
+  },
+  redis: {
+    url: import.meta.env.REDIS_URL,
   },
 } as const;

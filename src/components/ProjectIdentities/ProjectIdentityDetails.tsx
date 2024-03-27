@@ -10,6 +10,7 @@ import { Checkbox } from '../Interface/Checkbox';
 import { DateTime } from 'luxon';
 import { toast } from 'sonner';
 import { TriggerVerifyIdentity } from './TriggerVerifyIdentity';
+import { ProjectIdentityDNSTable } from './ProjectIdentityDNSTable';
 
 type ProjectIdentityDetailsProps = {
   projectId: string;
@@ -98,6 +99,13 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
   ).toRelative();
   const isIdentityVerified = identity.status === 'success';
 
+  const dnsRecords = identity.records?.filter((r) => {
+    return r.record !== 'REDIRECT_DOMAIN';
+  });
+  const redirectDomainDNSRecord = identity.records?.find((r) => {
+    return r.record === 'REDIRECT_DOMAIN';
+  });
+
   return (
     <section>
       <div className="flex items-center gap-4">
@@ -134,61 +142,21 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
             className="gap-1 rounded-md bg-zinc-900 p-1 px-2 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-50"
           />
         </div>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mb-4 mt-1 text-sm text-zinc-500">
           These are the DNS records you need to add to your domain.
         </p>
-        <table className="mt-4 w-full table-fixed border-separate border-spacing-0 border-none text-left text-sm font-normal">
-          <thead>
-            <tr>
-              <th className="w-20 rounded-tl border-b border-l border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
-                Type
-              </th>
-              <th className="max-w-20 border-b border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
-                Name
-              </th>
-              <th className="max-w-20 border-b border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
-                Value
-              </th>
-              <th className="w-20 border-b border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
-                Priority
-              </th>
-              <th className="w-20 border-b border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
-                TTL
-              </th>
-              <th className="w-32 rounded-tr border-b border-r border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {identity?.records?.map((record, counter) => {
-              const status = record.status.replace('-', ' ');
+        <ProjectIdentityDNSTable records={dnsRecords || []} />
 
-              return (
-                <tr key={`${record.value}${counter}`}>
-                  <td className="border-b border-l border-zinc-700/80 px-2 py-1.5">
-                    {record.type}
-                  </td>
-                  <td className="w-full truncate border-b border-zinc-700/80 px-2 py-1.5">
-                    <CopyableTableField value={record.name} />
-                  </td>
-                  <td className="relative w-full truncate border-b border-zinc-700/80 px-2 py-1.5">
-                    <CopyableTableField value={record.value} />
-                  </td>
-                  <td className="border-b border-zinc-700/80 px-2 py-1.5">
-                    {record.priority}
-                  </td>
-                  <td className="border-b border-zinc-700/80 px-2 py-1.5">
-                    {record.ttl}
-                  </td>
-                  <td className="border-b border-r border-zinc-700/80 px-2 py-1.5 capitalize">
-                    {status}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        {redirectDomainDNSRecord && (
+          <>
+            <p className="mb-4 mt-4 text-sm text-zinc-500">
+              The following record is required for click tracking and open
+              tracking.
+            </p>
+
+            <ProjectIdentityDNSTable records={[redirectDomainDNSRecord]} />
+          </>
+        )}
       </div>
 
       <div className="mt-6">
@@ -212,7 +180,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
         <div className="mt-4 flex items-start gap-3">
           <Checkbox
             id={clickTrackingCheckboxId}
-            disabled={!isIdentityVerified}
+            disabled={!isIdentityVerified || updateConfigurationSet.isPending}
             checked={identity.clickTracking}
             onCheckedChange={(checked) => {
               // intermediate state means the user clicked on the checkbox
@@ -255,7 +223,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
         <div className="mt-4 flex items-start gap-3">
           <Checkbox
             id={openTrackingCheckboxId}
-            disabled={!isIdentityVerified}
+            disabled={!isIdentityVerified || updateConfigurationSet.isPending}
             checked={identity.openTracking}
             onCheckedChange={(checked) => {
               // intermediate state means the user clicked on the checkbox

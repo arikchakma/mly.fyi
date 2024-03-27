@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # Ignore drizzle files
 drizzle
+
+# Ignore idea files
+.idea

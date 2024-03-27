@@ -20,9 +20,15 @@ import { HttpError } from '@/lib/http-error';
 import {
   getDomainDkimVerificationStatus,
   getMailFromDomainVerificationStatus,
+  getRedirectDomain,
+  verifyRedirectDomain,
 } from '@/lib/domain';
 import type { CustomMailFromStatus } from '@aws-sdk/client-ses';
-import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import {
+  createSESServiceClient,
+  DEFAULT_SES_REGION,
+  isValidConfiguration,
+} from '@/lib/ses';
 import { createSNSServiceClient } from '@/lib/notification';
 
 export interface VerifyProjectIdentityResponse {
@@ -91,7 +97,7 @@ async function handle(params: VerifyProjectIdentityRequest) {
     throw new HttpError('not_found', 'Identity not found');
   }
 
-  if (identity.type !== 'domain') {
+  if (identity.type !== 'domain' || !identity.domain) {
     throw new HttpError('bad_request', 'Identity is not a domain');
   }
 
@@ -108,7 +114,7 @@ async function handle(params: VerifyProjectIdentityRequest) {
     throw new HttpError('bad_request', 'Invalid AWS credentials');
   }
 
-  const { domain, mailFromDomain } = identity;
+  const { domain, mailFromDomain, openTracking, clickTracking } = identity;
   const dkimStatus = await getDomainDkimVerificationStatus(sesClient, domain!);
   if (!dkimStatus) {
     throw new HttpError('not_found', 'DKIM status not found');
@@ -127,6 +133,20 @@ async function handle(params: VerifyProjectIdentityRequest) {
     }
   }
 
+  let redirectDomainStatus: CustomMailFromStatus | undefined;
+  if (openTracking || clickTracking) {
+    const { name: redirectDomain, value: redirectValue } = getRedirectDomain(
+      domain,
+      project.region || DEFAULT_SES_REGION,
+    );
+    redirectDomainStatus = (await verifyRedirectDomain(
+      redirectDomain,
+      redirectValue,
+    ))
+      ? 'Success'
+      : 'Failed';
+  }
+
   const records = (identity.records || []).map((r) => {
     if (r.record.toLowerCase() === 'dkim') {
       r.status = MatchRecordStatus[dkimStatus];
@@ -138,6 +158,10 @@ async function handle(params: VerifyProjectIdentityRequest) {
       r.record.toLowerCase() === 'spf'
     ) {
       r.status = MatchRecordStatus[mailFromDomainStatus];
+    }
+
+    if (r.record.toLowerCase() === 'redirect_domain' && redirectDomainStatus) {
+      r.status = MatchRecordStatus[redirectDomainStatus];
     }
 
     return r;

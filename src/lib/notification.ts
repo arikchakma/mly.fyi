@@ -7,14 +7,24 @@ import {
 import type { ListSubscriptionsCommandOutput } from '@aws-sdk/client-sns';
 import { logError, logInfo } from './logger';
 import { DEFAULT_SES_REGION } from './ses';
+import {
+  handleClickEvent,
+  handleComplaintEvent,
+  handleDeliveryEvent,
+  handleHardBounceEvent,
+  handleOpenEvent,
+  handleRejectEvent,
+  handleSendEvent,
+  handleSoftBounceEvent,
+} from '@/helpers/logs-handling';
 
 export function createSNSServiceClient(
   accessKeyId: string,
   secretAccessKey: string,
-  region: string = DEFAULT_SES_REGION,
+  region?: string | null,
 ) {
   return new SNSClient({
-    region,
+    region: region || DEFAULT_SES_REGION,
     credentials: {
       accessKeyId,
       secretAccessKey,
@@ -168,158 +178,216 @@ export async function handleSubscriptionConfirmation(
   }
 }
 
-// ----------------------------------------------------------
-// TODO: Uncomment this while implementing feedback handling
-// ----------------------------------------------------------
-// interface SESBounceRecipient {
-//   emailAddress: string;
-//   action: string;
-//   status: string;
-//   diagnosticCode: string;
-// }
+interface MailDetails {
+  timestamp: string;
+  source: string;
+  sourceArn: string;
+  sendingAccountId: string;
+  messageId: string;
+  destination: string[];
+  headersTruncated: boolean;
+  headers: {
+    name: string;
+    value: string;
+  }[];
+  commonHeaders: {
+    from: string[];
+    to: string[];
+    messageId: string;
+    subject: string;
+  };
+  tags: {
+    [key: string]: string[];
+  };
+}
 
-// interface MailDetails {
-//   timestamp: string;
-//   source: string;
-//   sourceArn: string;
-//   sendingAccountId: string;
-//   messageId: string;
-//   destination: string[];
-//   headersTruncated: boolean;
-//   headers: {
-//     name: string;
-//     value: string;
-//   }[];
-//   commonHeaders: {
-//     from: string[];
-//     to: string[];
-//     messageId: string;
-//     subject: string;
-//   };
-//   tags: {
-//     [key: string]: string[];
-//   };
-// }
+export interface SendEventNotification {
+  eventType: 'Send';
+  mail: MailDetails;
+  send: {};
+}
 
-// // Look at the following link for more information about the event structure:
-// // https://docs.aws.amazon.com/ses/latest/dg/event-publishing-retrieving-sns-contents.html
-// // https://docs.aws.amazon.com/ses/latest/dg/event-publishing-retrieving-sns-examples.html#event-publishing-retrieving-sns-bounce
-// export interface SESBounceEvent {
-//   notificationType: 'Bounce';
-//   bounce: {
-//     bounceType: 'Permanent' | 'Transient' | 'Undetermined';
-//     bounceSubType:
-//       | 'General'
-//       | 'NoEmail'
-//       | 'Suppressed'
-//       | 'MailboxFull'
-//       | 'MessageTooLarge'
-//       | 'ContentRejected'
-//       | 'OnAccountSuppressionList';
-//     bouncedRecipients: SESBounceRecipient[];
-//     timestamp: string;
-//     feedbackId: string;
-//     reportingMTA: string;
-//   };
-//   mail: MailDetails;
-// }
+export interface DeliveryEventNotification {
+  eventType: 'Delivery';
+  mail: MailDetails;
+  delivery: {
+    timestamp: string;
+    processingTimeMillis: number;
+    recipients: string[];
+    smtpResponse: string;
+    reportingMTA: string;
+  };
+}
 
-// interface SESComplaintRecipient {
-//   emailAddress: string;
-// }
+export interface BounceEventNotification {
+  eventType: 'Bounce';
+  bounce: {
+    bounceType: 'Permanent' | 'Transient';
+    bounceSubType: string;
+    bouncedRecipients: {
+      emailAddress: string;
+      action: 'failed' | 'delayed';
+      status: string;
+      diagnosticCode: string;
+    }[];
+    timestamp: string;
+    feedbackId: string;
+    reportingMTA: string;
+  };
+  mail: MailDetails;
+}
 
-// export interface SESComplaintEvent {
-//   notificationType: 'Complaint';
-//   complaint: {
-//     complainedRecipients: SESComplaintRecipient[];
-//     timestamp: string;
-//     feedbackId: string;
-//     userAgent: string;
-//     complaintFeedbackType: string;
-//     arrivalDate: string;
-//   };
-//   mail: MailDetails;
-// }
+export interface ComplaintEventNotification {
+  eventType: 'Complaint';
+  complaint: {
+    feedbackId: string;
+    complaintSubType: string;
+    complainedRecipients: {
+      emailAddress: string;
+    }[];
+    timestamp: string;
+    userAgent: string;
+    complaintFeedbackType: string;
+    arrivalDate: string;
+  };
+  mail: MailDetails;
+}
 
-// interface SESDeliveryRecipient {
-//   emailAddress: string;
-// }
+export interface OpenEventNotification {
+  eventType: 'Open';
+  mail: MailDetails;
+  open: {
+    timestamp: string;
+    userAgent: string;
+    ipAddress: string;
+  };
+}
 
-// export interface SESDeliveryEvent {
-//   notificationType: 'Delivery';
-//   delivery: {
-//     timestamp: string;
-//     processingTimeMillis: number;
-//     recipients: SESDeliveryRecipient[];
-//     smtpResponse: string;
-//     reportingMTA: string;
-//   };
-//   mail: MailDetails;
-// }
+export interface ClickEventNotification {
+  eventType: 'Click';
+  mail: MailDetails;
+  click: {
+    timestamp: string;
+    userAgent: string;
+    ipAddress: string;
+    link: string;
+    linkTags: Record<string, string>;
+  };
+}
 
-// export async function handleNotification(
-//   notification: SesNotificationType,
-// ): Promise<boolean> {
-//   try {
-//     const event: SESBounceEvent | SESComplaintEvent | SESDeliveryEvent =
-//       JSON.parse(notification.Message);
+export interface RejectEventNotification {
+  eventType: 'Reject';
+  mail: MailDetails;
+  reject: {
+    reason: string;
+  };
+}
 
-//     if (!['Bounce', 'Complaint', 'Delivery'].includes(event.notificationType)) {
-//       return false;
-//     }
+export async function handleEmailFeedbacks(
+  notification: SesNotificationType,
+): Promise<boolean> {
+  try {
+    const event:
+      | SendEventNotification
+      | DeliveryEventNotification
+      | BounceEventNotification
+      | ComplaintEventNotification
+      | OpenEventNotification
+      | ClickEventNotification
+      | RejectEventNotification = JSON.parse(notification.Message);
 
-//     const { mail } = event;
-//     const { messageId, destination } = mail;
+    if (
+      !['Bounce', 'Complaint', 'Delivery', 'Send', 'Open', 'Click'].includes(
+        event.eventType,
+      )
+    ) {
+      return false;
+    }
 
-//     // The destination array contains the email address that the message was sent to.
-//     // In our case, we only send to one email address at a time, so we can just
-//     // use the first element in the array.
-//     const sendEmail = destination[0] || '';
+    const { mail } = event;
+    const { messageId, destination } = mail;
 
-//     if (event.notificationType === 'Bounce') {
-//       const { bounceType, bounceSubType } = (event as SESBounceEvent).bounce;
+    // The destination array contains the email address that the message was sent to.
+    // In our case, we only send to one email address at a time, so we can just
+    // use the first element in the array.
+    if (event.eventType === 'Send') {
+      const sendEmail = destination[0];
 
-//       // Handle hard bounces
-//       if (
-//         bounceType === 'Permanent' &&
-//         [
-//           'General',
-//           'NoEmail',
-//           'Suppressed',
-//           'OnAccountSuppressionList',
-//         ].includes(bounceSubType)
-//       ) {
-//         // TODO: Implement handle hard bounce
-//       }
-//       // Handle soft bounces
-//       // https://repost.aws/knowledge-center/ses-understand-soft-bounces
-//       else if (
-//         bounceType === 'Transient' &&
-//         [
-//           'General',
-//           'MailboxFull',
-//           'MessageTooLarge',
-//           'ContentRejected',
-//           'AttachmentRejected',
-//         ].includes(bounceSubType)
-//       ) {
-//         // TODO: Implement handle soft bounce
-//       } else if (bounceType === 'Permanent') {
-//         // TODO: Implement handle hard bounce
-//       } else {
-//         logInfo('Unhandled bounce type or subtype', bounceType, bounceSubType);
-//       }
+      await handleSendEvent(messageId, sendEmail, mail.timestamp, event.send);
+    } else if (event.eventType === 'Delivery') {
+      const recipient = event.delivery.recipients[0];
 
-//       // Handle Complaints
-//     } else if (event.notificationType === 'Complaint') {
-//       // TODO: Implement handle complaints
-//     } else if (event.notificationType === 'Delivery') {
-//       // TODO: Implement handle deliveries
-//     }
+      await handleDeliveryEvent(
+        messageId,
+        recipient,
+        event.delivery.timestamp,
+        event.delivery,
+      );
+    } else if (event.eventType === 'Bounce') {
+      const { bounceType, bounceSubType } = event.bounce;
 
-//     return true;
-//   } catch (error) {
-//     logError(error, (error as Error)?.stack);
-//     return false;
-//   }
-// }
+      if (
+        bounceType === 'Permanent' &&
+        [
+          'General',
+          'NoEmail',
+          'Suppressed',
+          'OnAccountSuppressionList',
+        ].includes(bounceSubType)
+      ) {
+        const recipient = event.bounce.bouncedRecipients[0].emailAddress;
+        await handleHardBounceEvent(
+          messageId,
+          recipient,
+          event.bounce.timestamp,
+          event.bounce,
+        );
+      } else if (bounceType === 'Transient') {
+        const recipient = event.bounce.bouncedRecipients[0].emailAddress;
+        await handleSoftBounceEvent(
+          messageId,
+          recipient,
+          event.bounce.timestamp,
+          event.bounce,
+        );
+      }
+    } else if (event.eventType === 'Complaint') {
+      const recipient = event.complaint.complainedRecipients[0].emailAddress;
+      await handleComplaintEvent(
+        messageId,
+        recipient,
+        event.complaint.timestamp,
+        event.complaint,
+      );
+    } else if (event.eventType === 'Open') {
+      const recipient = event.mail.destination[0];
+      await handleOpenEvent(
+        messageId,
+        recipient,
+        event.open.timestamp,
+        event.open,
+      );
+    } else if (event.eventType === 'Click') {
+      const recipient = event.mail.destination[0];
+      await handleClickEvent(
+        messageId,
+        recipient,
+        event.click.timestamp,
+        event.click,
+      );
+    } else if (event.eventType === 'Reject') {
+      const recipient = event.mail.destination[0];
+      await handleRejectEvent(
+        messageId,
+        recipient,
+        event.mail.timestamp,
+        event.reject,
+      );
+    }
+
+    return true;
+  } catch (error) {
+    logError(error, (error as Error)?.stack);
+    return false;
+  }
+}

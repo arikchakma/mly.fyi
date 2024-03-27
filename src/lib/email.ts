@@ -88,12 +88,6 @@ interface EmailBodyOptions extends EmailRenderOptions {
    * Additional headers to include in the email.
    */
   headers?: Record<string, string>;
-
-  /**
-   * Additional data to be passed to the email template.
-   * This will be only for `postmark` provider.
-   */
-  metadata?: Record<string, any>;
 }
 
 export type SendEmailBody = RequireAtLeastOne<EmailRenderOptions> &
@@ -197,77 +191,7 @@ class SESProvider {
   }
 
   async sendEmail(options: SendEmailBody): Promise<SendEmailResponse> {
-    try {
-      if (this.options.ses.overrideEndpoint) {
-        return await this.sendSESEmail(options);
-      } else {
-        return await this.sendNodeMailerEmail(options);
-      }
-    } catch (error) {
-      logError(error, (error as Error)?.stack);
-      return {
-        data: null,
-        error: {
-          message: (error as EmailErrorType)?.message,
-          stack: (error as EmailErrorType)?.stack,
-        },
-      };
-    }
-  }
-
-  async sendSESEmail(options: SendEmailBody): Promise<SendEmailResponse> {
-    const { from, to, subject, text, html, replyTo } = options;
-
-    try {
-      const command = new AWS.SendEmailCommand({
-        Source: from,
-        Destination: {
-          ToAddresses: Array.isArray(to) ? to : [to],
-        },
-        Message: {
-          Subject: {
-            Data: subject,
-          },
-          Body: {
-            ...(text && {
-              Text: {
-                Data: text,
-              },
-            }),
-            ...(html && {
-              Html: {
-                Data: html,
-              },
-            }),
-          },
-        },
-        ...(replyTo && {
-          ReplyToAddresses: Array.isArray(replyTo) ? replyTo : [replyTo],
-        }),
-      });
-
-      const response = await this.sesClient.send(command);
-      const messageId = response.MessageId;
-      if (!messageId) {
-        throw new EmailError('Message ID not found.');
-      }
-
-      return {
-        data: {
-          messageId,
-        },
-        error: null,
-      };
-    } catch (error) {
-      logError(error, (error as Error)?.stack);
-      return {
-        data: null,
-        error: {
-          message: (error as EmailErrorType)?.message,
-          stack: (error as EmailErrorType)?.stack,
-        },
-      };
-    }
+    return this.sendNodeMailerEmail(options);
   }
 
   async sendNodeMailerEmail(
@@ -318,5 +242,5 @@ export async function sendEmail(
   options: SendEmailBody,
 ): Promise<SendEmailResponse> {
   const email = new Email(providerOptions);
-  return await email.send(options);
+  return email.send(options);
 }

@@ -7,10 +7,12 @@ import {
 } from '@/lib/handler';
 import { json } from '@/lib/response';
 import {
+  handleEmailFeedbacks,
   handleSubscriptionConfirmation,
   type SesNotificationType,
 } from '@/lib/notification';
 import { logInfo } from '@/lib/logger';
+import { isValidJSON } from '@/utils/json';
 
 export interface FeedbacksResponse {
   status: 'ok';
@@ -25,15 +27,19 @@ async function validate(params: FeedbacksRequest) {
 }
 
 async function handle({ body }: FeedbacksRequest) {
-  console.log('Handling feedbacks', body);
   if (
     (body.Type === 'SubscriptionConfirmation' && body.SubscribeURL) ||
     (body.Type === 'UnsubscribeConfirmation' && body.UnsubscribeURL)
   ) {
     await handleSubscriptionConfirmation(body);
   } else if (body.Type === 'Notification' && body.Message) {
-    logInfo('Not yet implemented', body);
+    if (isValidJSON(body.Message)) {
+      await handleEmailFeedbacks(body);
+    } else {
+      logInfo('Invalid JSON in SES notification', body);
+    }
   }
+
   return json<FeedbacksResponse>({ status: 'ok' });
 }
 
