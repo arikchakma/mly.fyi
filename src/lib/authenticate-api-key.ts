@@ -9,9 +9,6 @@ const MLY_HEADER_API_KEY = 'X-Mly-Api-Key';
 
 export async function authenticateApiKey(content: APIContext) {
   const apiKeyValue = content.request.headers.get(MLY_HEADER_API_KEY);
-  console.log('-'.repeat(20));
-  console.log('API Key Value:', apiKeyValue);
-  console.log('-'.repeat(20));
   if (!apiKeyValue) {
     throw new HttpError('unauthorized', 'Unauthorized');
   }

@@ -13,7 +13,9 @@ export const allowedEmailLogStatus = [
   'bounced',
   'complained',
   'error',
+  'rejected',
 ] as const;
+export type AllowedEmailLogStatus = (typeof allowedEmailLogStatus)[number];
 
 export const emailLogs = sqliteTable('email_logs', {
   id: text('id').unique().primaryKey(),
@@ -50,7 +52,9 @@ export const emailLogEvents = sqliteTable('email_log_events', {
   id: text('id').unique().primaryKey(),
   emailLogId: text('email_log_id')
     .notNull()
-    .references(() => emailLogs.id),
+    .references(() => emailLogs.id, {
+      onDelete: 'cascade',
+    }),
   email: text('email').notNull(),
   type: text('type', {
     enum: allowedEmailLogStatus,

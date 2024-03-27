@@ -13,7 +13,9 @@ import {
   handleDeliveryEvent,
   handleHardBounceEvent,
   handleOpenEvent,
+  handleRejectEvent,
   handleSendEvent,
+  handleSoftBounceEvent,
 } from '@/helpers/logs-handling';
 
 export function createSNSServiceClient(
@@ -273,6 +275,14 @@ export interface ClickEventNotification {
   };
 }
 
+export interface RejectEventNotification {
+  eventType: 'Reject';
+  mail: MailDetails;
+  reject: {
+    reason: string;
+  };
+}
+
 export async function handleEmailFeedbacks(
   notification: SesNotificationType,
 ): Promise<boolean> {
@@ -283,7 +293,8 @@ export async function handleEmailFeedbacks(
       | BounceEventNotification
       | ComplaintEventNotification
       | OpenEventNotification
-      | ClickEventNotification = JSON.parse(notification.Message);
+      | ClickEventNotification
+      | RejectEventNotification = JSON.parse(notification.Message);
 
     if (
       !['Bounce', 'Complaint', 'Delivery', 'Send', 'Open', 'Click'].includes(
@@ -326,7 +337,6 @@ export async function handleEmailFeedbacks(
       ) {
         const recipient = event.bounce.bouncedRecipients[0].emailAddress;
         await handleHardBounceEvent(
-          'bounced',
           messageId,
           recipient,
           event.bounce.timestamp,
@@ -334,8 +344,7 @@ export async function handleEmailFeedbacks(
         );
       } else if (bounceType === 'Transient') {
         const recipient = event.bounce.bouncedRecipients[0].emailAddress;
-        await handleHardBounceEvent(
-          'soft_bounced',
+        await handleSoftBounceEvent(
           messageId,
           recipient,
           event.bounce.timestamp,
@@ -365,6 +374,14 @@ export async function handleEmailFeedbacks(
         recipient,
         event.click.timestamp,
         event.click,
+      );
+    } else if (event.eventType === 'Reject') {
+      const recipient = event.mail.destination[0];
+      await handleRejectEvent(
+        messageId,
+        recipient,
+        event.mail.timestamp,
+        event.reject,
       );
     }
 

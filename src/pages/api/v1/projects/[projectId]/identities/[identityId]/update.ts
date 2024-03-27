@@ -23,6 +23,7 @@ import {
   isValidConfiguration,
 } from '@/lib/ses';
 import { createSNSServiceClient } from '@/lib/notification';
+import { getRedirectDomain } from '@/lib/domain';
 
 export interface UpdateProjectIdentityResponse {
   status: 'ok';
@@ -155,35 +156,45 @@ async function handle(params: UpdateProjectIdentityRequest) {
     throw new HttpError('internal_error', 'Failed to update configuration set');
   }
 
-  // --- Redirect Domain ---
-  // TODO: Implement this later when I will find out how to handle
-  // custom CNAME validation for a domain
-  // -----------------------
-  // Every single links in the email will be masked around this domain
-  // to be able to track the clicks, opens, etc.
-  // The domain should be in the format of <region>.<domain>
-  // Example: ap-south-1.mly.fyi
+  const redirectDomainRecord = identity.records?.find(
+    (record) => record.record.toLowerCase() === 'redirect_domain',
+  );
+  const newRecords = identity.records || [];
 
-  // const redirectDomain = `${region || DEFAULT_SES_REGION}.${identity.domain}`;
-  // const maskingDomain = await createConfigurationSetTrackingOptions(
-  //   sesClient,
-  //   identity.configurationSetName,
-  //   redirectDomain,
-  // );
+  if (!redirectDomainRecord) {
+    // --- Redirect Domain ---
+    // Every single links in the email will be masked around this domain
+    // to be able to track the clicks, opens, etc.
+    // The domain should be in the format of <region>.<domain>
+    // Example: ap-south-1.mly.fyi
+    const { name: redirectDomain, value: redirectValue } = getRedirectDomain(
+      identity.domain,
+      region || DEFAULT_SES_REGION,
+    );
+    const maskingDomain = await createConfigurationSetTrackingOptions(
+      sesClient,
+      identity.configurationSetName,
+      redirectDomain,
+    );
 
-  // if (!maskingDomain) {
-  //   throw new HttpError('internal_error', 'Failed to update tracking options');
-  // }
+    if (!maskingDomain) {
+      throw new HttpError(
+        'internal_error',
+        'Failed to update tracking options',
+      );
+    }
 
-  // const newRecords = identity.records;
-  // newRecords?.push({
-  //   record: 'REDIRECT_DOMAIN',
-  //   type: 'CNAME',
-  //   status: 'pending',
-  //   ttl: 'Auto',
-  //   name: redirectDomain,
-  //   value: `r.${region || DEFAULT_SES_REGION}.awstrack.me`,
-  // });
+    newRecords?.push({
+      record: 'REDIRECT_DOMAIN',
+      type: 'CNAME',
+      status: 'pending',
+      ttl: 'Auto',
+      name: redirectDomain,
+      value: redirectValue,
+    });
+  }
+
+  const isRedirectDomainVerified = redirectDomainRecord?.status === 'success';
   // --- Redirect Domain ---
 
   await db
@@ -192,8 +203,12 @@ async function handle(params: UpdateProjectIdentityRequest) {
       openTracking: openTracking ?? identity.openTracking,
       clickTracking: clickTracking ?? identity.clickTracking,
       // --- Redirect Domain ---
-      // status: 'pending',
-      // records: newRecords,
+      ...(!isRedirectDomainVerified
+        ? {
+            status: 'pending',
+          }
+        : {}),
+      records: newRecords,
       // --- Redirect Domain ---
       updatedAt: new Date(),
     })

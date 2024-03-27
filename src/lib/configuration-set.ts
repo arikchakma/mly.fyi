@@ -3,16 +3,19 @@ import {
   CreateConfigurationSetCommand,
   CreateConfigurationSetEventDestinationCommand,
   CreateConfigurationSetTrackingOptionsCommand,
-  EventType,
+  EventDestinationAlreadyExistsException,
+  InvalidSNSDestinationException,
+  InvalidTrackingOptionsException,
   ListConfigurationSetsCommand,
   SESClient,
+  SESServiceException,
   UpdateConfigurationSetEventDestinationCommand,
-  UpdateConfigurationSetTrackingOptionsCommand,
 } from '@aws-sdk/client-ses';
 import { logError } from './logger';
 import { setupEmailFeedbackHandling } from './notification';
 import { newId } from './new-id';
 import type { SNSClient } from '@aws-sdk/client-sns';
+import { HttpError } from './http-error';
 
 const EVENT_DESTINATION_NAME = 'Feedback';
 const DEFAULT_EVENT_TYPES = [
@@ -95,6 +98,21 @@ export async function createConfigurationSetTrackingOptions(
     return true;
   } catch (error) {
     logError(error, (error as Error)?.stack);
+    if (error instanceof ConfigurationSetDoesNotExistException) {
+      throw new HttpError('bad_request', 'Configuration set does not exist');
+    } else if (error instanceof InvalidTrackingOptionsException) {
+      throw new HttpError('bad_request', 'Invalid tracking options');
+    } else if (error instanceof SESServiceException) {
+      if (error.name === 'TrackingOptionsAlreadyExists') {
+        throw new HttpError('bad_request', 'Tracking options already exists');
+      } else {
+        throw new HttpError(
+          'internal_error',
+          error?.message || 'Failed to create tracking options',
+        );
+      }
+    }
+
     return false;
   }
 }
@@ -126,16 +144,23 @@ export async function updateConfigurationSetEvent(
         },
       });
 
-    const updateEventDestinationResponse = await sesClient.send(
-      updateConfigurationSetEventDestinationCommand,
-    );
-    if (!updateEventDestinationResponse) {
-      throw new Error('Failed to update event destination');
-    }
-
+    await sesClient.send(updateConfigurationSetEventDestinationCommand);
     return true;
   } catch (error) {
     logError(error, (error as Error)?.stack);
+    if (error instanceof ConfigurationSetDoesNotExistException) {
+      throw new HttpError('bad_request', 'Configuration set does not exist');
+    } else if (error instanceof EventDestinationAlreadyExistsException) {
+      throw new HttpError('bad_request', 'Event destination already exists');
+    } else if (error instanceof InvalidSNSDestinationException) {
+      throw new HttpError('bad_request', 'Invalid SNS destination');
+    } else if (error instanceof SESServiceException) {
+      throw new HttpError(
+        'internal_error',
+        error?.message || 'Failed to update event destination',
+      );
+    }
+
     return false;
   }
 }
@@ -179,6 +204,12 @@ export async function listConfigutationSets(client: SESClient) {
     return configurationSets;
   } catch (error) {
     logError(error, (error as Error)?.stack);
+    if (error instanceof SESServiceException) {
+      throw new HttpError(
+        'internal_error',
+        error?.message || 'Failed to check configuration set',
+      );
+    }
     return null;
   }
 }

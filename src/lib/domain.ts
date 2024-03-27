@@ -1,3 +1,6 @@
+import '@/lib/server-only';
+
+import { resolveCname } from 'dns/promises';
 import { logError } from './logger';
 import {
   CustomMailFromStatus,
@@ -9,13 +12,6 @@ import {
   VerifyDomainDkimCommand,
   VerifyDomainIdentityCommand,
 } from '@aws-sdk/client-ses';
-
-export const VALID_DOMAIN_REGEX =
-  /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}$/;
-
-export function isValidDomain(domain: string): boolean {
-  return VALID_DOMAIN_REGEX.test(domain);
-}
 
 export async function verifyDomainIdentity(
   client: SESClient,
@@ -111,5 +107,25 @@ export async function getDomainDkimVerificationStatus(
   } catch (error) {
     logError(error, (error as Error)?.stack);
     return 'Failed';
+  }
+}
+
+export function getRedirectDomain(domain: string, region: string) {
+  return {
+    name: `${region}.${domain}`,
+    value: `r.${region}.awstrack.me`,
+  };
+}
+
+export async function verifyRedirectDomain(cname: string, target: string) {
+  try {
+    const cnameRecord = await resolveCname(cname);
+    if (cnameRecord[0] !== target) {
+      throw new Error('CNAME record does not match target');
+    }
+    return true;
+  } catch (error) {
+    logError(error, (error as Error)?.stack);
+    return false;
   }
 }

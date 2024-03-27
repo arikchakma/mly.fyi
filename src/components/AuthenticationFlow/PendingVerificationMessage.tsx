@@ -15,10 +15,6 @@ export function PendingVerificationMessage(
   const { email } = props;
   const [isEmailResent, setIsEmailResent] = useState(false);
 
-  console.log('-'.repeat(20));
-  console.log('Is Server: ', import.meta.env.SSR);
-  console.log('-'.repeat(20));
-
   const sendVerificationEmail = useMutation(
     {
       mutationKey: ['send-verification-email'],

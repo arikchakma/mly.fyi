@@ -188,14 +188,3 @@ export const POST: APIRoute = handler(
   handle satisfies HandleRoute<SendEmailRequest>,
   validate satisfies ValidateRoute<SendEmailRequest>,
 );
-
-// curl -X POST http://localhost:3000/api/v1/emails/send \
-// -H 'Content-Type: application/json' \
-// -H 'X-Mly-Api-Key: mly_2dca2972bc6945d6b7cdffab0b58562a' \
-// -d '{
-//     "from": "hello@mly.fyi",
-//     "to": "imarikchakma@gmail.com",
-//     "subject": "Hello",
-//     "text": "Hello World",
-//     "html": "<p>Hello World</p>"
-// }'

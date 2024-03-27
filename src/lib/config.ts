@@ -8,4 +8,7 @@ export const serverConfig = {
   ses: {
     sesEndpointOverrideUrl: import.meta.env.AWS_SES_ENDPOINT_OVERRIDE_URL,
   },
+  redis: {
+    url: import.meta.env.REDIS_URL,
+  },
 } as const;
