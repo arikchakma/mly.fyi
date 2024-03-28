@@ -22,6 +22,7 @@ async function handleEvent(
     },
     columns: {
       id: true,
+      sendAt: true,
     },
   });
 
@@ -46,6 +47,9 @@ async function handleEvent(
     .update(emailLogs)
     .set({
       status: type,
+      ...(type === 'sent' && !emailLog?.sendAt
+        ? { sendAt: new Date(timestamp) }
+        : {}),
       updatedAt: new Date(),
     })
     .where(eq(emailLogs.id, emailLog.id));
@@ -54,7 +58,7 @@ async function handleEvent(
 export const handleSendEvent = handleEvent.bind(null, 'sent');
 export const handleDeliveryEvent = handleEvent.bind(null, 'delivered');
 export const handleHardBounceEvent = handleEvent.bind(null, 'bounced');
-export const handleSoftBounceEvent = handleEvent.bind(null, 'soft_bounced');
+export const handleSoftBounceEvent = handleEvent.bind(null, 'soft-bounced');
 export const handleComplaintEvent = handleEvent.bind(null, 'complained');
 export const handleOpenEvent = handleEvent.bind(null, 'opened');
 export const handleClickEvent = handleEvent.bind(null, 'clicked');

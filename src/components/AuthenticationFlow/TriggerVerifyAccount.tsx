@@ -19,7 +19,6 @@ export function TriggerVerifyAccount(props: TriggerVerifyAccountProps) {
     {
       mutationKey: ['v1-verify-account'],
       mutationFn: async () => {
-        await new Promise((resolve) => setTimeout(resolve, 5000));
         return httpPost<{ token: string }>(`/api/v1/auth/verify-account`, {
           code,
         });

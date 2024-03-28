@@ -4,14 +4,17 @@ import { resolveCname } from 'dns/promises';
 import { logError } from './logger';
 import {
   CustomMailFromStatus,
+  DeleteIdentityCommand,
   GetIdentityDkimAttributesCommand,
   GetIdentityMailFromDomainAttributesCommand,
   SESClient,
+  SESServiceException,
   SetIdentityMailFromDomainCommand,
   VerificationStatus,
   VerifyDomainDkimCommand,
   VerifyDomainIdentityCommand,
 } from '@aws-sdk/client-ses';
+import { HttpError } from './http-error';
 
 export async function verifyDomainIdentity(
   client: SESClient,
@@ -42,6 +45,19 @@ export async function verifyDomainDkim(
   } catch (error) {
     logError(error, (error as Error)?.stack);
     return [];
+  }
+}
+
+export async function deleteIdentity(client: SESClient, identity: string) {
+  try {
+    const command = new DeleteIdentityCommand({
+      Identity: identity,
+    });
+    await client.send(command);
+    return true;
+  } catch (error) {
+    logError(error, (error as Error)?.stack);
+    return false;
   }
 }
 

@@ -9,7 +9,7 @@ export const allowedEmailLogStatus = [
   'delivered',
   'opened',
   'clicked',
-  'soft_bounced',
+  'soft-bounced',
   'bounced',
   'complained',
   'error',
