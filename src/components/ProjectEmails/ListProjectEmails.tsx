@@ -24,7 +24,6 @@ export function ListProjectEmails(props: ListProjectEmailsProps) {
           `/api/v1/projects/${projectId}/emails`,
           {
             currPage,
-            perPage: 1,
           },
         );
       },

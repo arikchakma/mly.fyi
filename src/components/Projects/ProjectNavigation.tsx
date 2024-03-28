@@ -13,6 +13,7 @@ type ProjectNavigationProps = {
   projectName: string;
   projectId: string;
   identityId?: string;
+  emailId?: string;
   keyId?: string;
 };
 
@@ -22,6 +23,7 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
     projectName,
     projectId,
     identityId,
+    emailId,
     keyId,
   } = props;
   const url = new URL(defaultUrl || '');
@@ -55,7 +57,7 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
       name: 'Email',
       icon: Mail,
       href: `/projects/${projectId}/emails`,
-      alts: [],
+      alts: [`/projects/${projectId}/emails/${emailId}`],
     },
     {
       name: 'Setting',

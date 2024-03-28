@@ -34,10 +34,14 @@ export function ListProjectEmailsTable(props: ListProjectEmailsTableProps) {
             email.sendAt &&
             DateTime.fromJSDate(new Date(email?.sendAt)).toRelative();
 
+          const detailsUrl = `/projects/${email.projectId}/emails/${email.id}`;
+
           return (
             <tr key={email.id}>
               <td className="truncate border-b border-l border-zinc-700/80 px-2 py-1.5">
-                {email.to}
+                <a href={detailsUrl} className="hover:underline">
+                  {email.to} ↗
+                </a>
               </td>
               <td className="w-full truncate border-b border-zinc-700/80 px-2 py-1.5">
                 {email.subject}
@@ -46,7 +50,7 @@ export function ListProjectEmailsTable(props: ListProjectEmailsTableProps) {
                 {status}
               </td>
               <td className="truncate border-b border-r border-zinc-700/80 px-2 py-1.5">
-                {sendAt || 'N/A'}
+                {sendAt || ''}
               </td>
             </tr>
           );

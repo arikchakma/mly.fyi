@@ -13,9 +13,10 @@ export interface Props {
   title: string;
   projectId: string;
   identityId?: string;
+  emailId?: string;
 }
 
-const { project, projectError, identityId, ...props } = Astro.props;
+const { project, projectError, identityId, emailId, ...props } = Astro.props;
 const hasError = !project?.id || !!projectError;
 const deafultUrl = Astro.url.toString();
 ---
@@ -29,6 +30,7 @@ const deafultUrl = Astro.url.toString();
           projectName={project?.name!}
           projectId={project?.id!}
           identityId={identityId!}
+          emailId={emailId!}
         />
         <slot />
       </>
