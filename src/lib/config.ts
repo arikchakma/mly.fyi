@@ -1,3 +1,5 @@
+import '@/lib/server-only';
+
 export const serverConfig = {
   appUrl: import.meta.env.PUBLIC_APP_URL,
   isDev: import.meta.env.Dev === true,

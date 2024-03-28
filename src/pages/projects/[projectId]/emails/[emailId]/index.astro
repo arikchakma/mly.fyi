@@ -1,0 +1,34 @@
+---
+import ProjectLayout from '@/layouts/ProjectLayout.astro';
+import { projectApi } from '../../../../../api/project';
+import { ProjectEmailDetails } from '@/components/ProjectEmails/ProjectEmailDetails';
+
+const { currentUser } = Astro.locals;
+if (!currentUser) {
+  return Astro.redirect('/login');
+}
+
+const { projectId, emailId } = Astro.params as {
+  projectId: string;
+  emailId: string;
+};
+
+const projectClient = projectApi(Astro);
+const { response: project, error: projectError } =
+  await projectClient.getProject(projectId);
+---
+
+<ProjectLayout
+  title={project?.name || projectError?.message || 'Project'}
+  project={{
+    id: project?.id,
+    name: project?.name,
+  }}
+  projectError={projectError}
+  projectId={projectId}
+  emailId={emailId}
+>
+  <div class='mx-auto max-w-3xl py-12'>
+    <ProjectEmailDetails projectId={projectId} emailId={emailId} client:load />
+  </div>
+</ProjectLayout>

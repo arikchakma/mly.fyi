@@ -18,9 +18,15 @@ import { newId } from '@/lib/new-id';
 import { requireProjectMember } from '@/helpers/project';
 import { and, eq } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
-import { addMailFromDomain, verifyDomainDkim } from '@/lib/domain';
-import { serverConfig } from '@/lib/config';
-import { createConfigurationSet } from '@/lib/configuration-set';
+import {
+  addMailFromDomain,
+  deleteIdentity,
+  verifyDomainDkim,
+} from '@/lib/domain';
+import {
+  createConfigurationSet,
+  deleteConfigurationSet,
+} from '@/lib/configuration-set';
 import {
   createSESServiceClient,
   DEFAULT_SES_REGION,
@@ -152,96 +158,98 @@ async function handle(params: CreateProjectIdentityRequest) {
 
   const projectIdentityId = newId('projectIdentity');
 
-  const status = await db.transaction(async (tx) => {
-    await tx.insert(projectIdentities).values({
-      id: projectIdentityId,
-      projectId,
-      creatorId: userId!,
-      type,
-      domain,
-      mailFromDomain,
-      status: 'not-started',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    const dkimTokens = await verifyDomainDkim(sesClient, domain);
-    if (dkimTokens.length === 0) {
-      tx.rollback();
-      return false;
-    }
-
-    if (mailFromDomain) {
-      const result = await addMailFromDomain(sesClient, domain, mailFromDomain);
-      if (!result) {
-        tx.rollback();
-        return false;
-      }
-    }
-
-    const records: ProjectIdentityRecord[] = [];
-
-    // DomainKeys Identified Mail (DKIM) records
-    // it will let Amazon SES sign your emails with a private key
-    // so that the recipient can verify that the email was sent by you
-    dkimTokens.forEach((token) => {
-      records.push({
-        record: 'DKIM',
-        name: `${token}._domainkey.${domain}`,
-        type: 'CNAME',
-        status: 'not-started',
-        value: `${token}.dkim.amazonses.com`,
-        ttl: 'Auto',
-      });
-    });
-
-    if (mailFromDomain) {
-      // Sender Policy Framework (SPF) records
-      // it will let Amazon SES send emails on your behalf
-      records.push({
-        record: 'SPF',
-        name: mailFromDomain,
-        type: 'MX',
-        status: 'not-started',
-        // For feedbacks like bounces and complaints
-        value: `feedback-smtp.${region}.amazonses.com`,
-        priority: 10,
-        ttl: 'Auto',
-      });
-      records.push({
-        record: 'SPF',
-        name: mailFromDomain,
-        type: 'TXT',
-        status: 'not-started',
-        value: '"v=spf1 include:amazonses.com ~all"',
-        ttl: 'Auto',
-      });
-    }
-
-    const configurationSetName = await createConfigurationSet(
-      sesClient,
-      snsClient,
-    );
-    if (!configurationSetName) {
-      tx.rollback();
-      return false;
-    }
-
-    await tx
-      .update(projectIdentities)
-      .set({
-        records,
-        configurationSetName,
-        updatedAt: new Date(),
-      })
-      .where(eq(projectIdentities.id, projectIdentityId));
-
-    return true;
+  await db.insert(projectIdentities).values({
+    id: projectIdentityId,
+    projectId,
+    creatorId: userId!,
+    type,
+    domain,
+    mailFromDomain,
+    status: 'not-started',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
-  if (!status) {
-    throw new HttpError('internal_error', 'Failed to add domain identity');
+  const dkimTokens = await verifyDomainDkim(sesClient, domain);
+  if (dkimTokens.length === 0) {
+    await db
+      .delete(projectIdentities)
+      .where(eq(projectIdentities.id, projectIdentityId));
+    throw new HttpError('bad_request', 'Failed to verify domain DKIM');
   }
+
+  if (mailFromDomain) {
+    const result = await addMailFromDomain(sesClient, domain, mailFromDomain);
+    if (!result) {
+      await deleteIdentity(sesClient, domain);
+      await db
+        .delete(projectIdentities)
+        .where(eq(projectIdentities.id, projectIdentityId));
+      throw new HttpError('bad_request', 'Failed to add mail from domain');
+    }
+  }
+
+  const records: ProjectIdentityRecord[] = [];
+
+  // DomainKeys Identified Mail (DKIM) records
+  // it will let Amazon SES sign your emails with a private key
+  // so that the recipient can verify that the email was sent by you
+  dkimTokens.forEach((token) => {
+    records.push({
+      record: 'DKIM',
+      name: `${token}._domainkey.${domain}`,
+      type: 'CNAME',
+      status: 'not-started',
+      value: `${token}.dkim.amazonses.com`,
+      ttl: 'Auto',
+    });
+  });
+
+  if (mailFromDomain) {
+    // Sender Policy Framework (SPF) records
+    // it will let Amazon SES send emails on your behalf
+    records.push({
+      record: 'SPF',
+      name: mailFromDomain,
+      type: 'MX',
+      status: 'not-started',
+      // For feedbacks like bounces and complaints
+      value: `feedback-smtp.${region}.amazonses.com`,
+      priority: 10,
+      ttl: 'Auto',
+    });
+    records.push({
+      record: 'SPF',
+      name: mailFromDomain,
+      type: 'TXT',
+      status: 'not-started',
+      value: '"v=spf1 include:amazonses.com ~all"',
+      ttl: 'Auto',
+    });
+  }
+
+  const configurationSetName = newId('configurationSet');
+  const configurationSet = await createConfigurationSet(
+    sesClient,
+    snsClient,
+    configurationSetName,
+  );
+  if (!configurationSet) {
+    await deleteIdentity(sesClient, domain);
+    await db
+      .delete(projectIdentities)
+      .where(eq(projectIdentities.id, projectIdentityId));
+    throw new HttpError('bad_request', 'Failed to create configuration set');
+  }
+
+  await db
+    .update(projectIdentities)
+    .set({
+      records,
+      configurationSetName,
+      updatedAt: new Date(),
+    })
+    .where(eq(projectIdentities.id, projectIdentityId));
 
   return json<CreateProjectIdentityResponse>({
     identityId: projectIdentityId,

@@ -94,7 +94,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
     return <LoadingMessage message="Loading Project Identity.." />;
   }
 
-  const createAt = DateTime.fromJSDate(
+  const createdAt = DateTime.fromJSDate(
     new Date(identity.createdAt),
   ).toRelative();
   const isIdentityVerified = identity.status === 'success';
@@ -121,7 +121,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
       <div className="mt-10 flex items-start gap-3">
         <div>
           <h3 className="text-xs uppercase text-zinc-400">Created At</h3>
-          <span className="mt-1 font-semibold capitalize">{createAt}</span>
+          <span className="mt-1 font-semibold capitalize">{createdAt}</span>
         </div>
         <div>
           <h3 className="text-xs uppercase text-zinc-400">Status</h3>

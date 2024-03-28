@@ -3,6 +3,7 @@ import {
   CreateConfigurationSetCommand,
   CreateConfigurationSetEventDestinationCommand,
   CreateConfigurationSetTrackingOptionsCommand,
+  DeleteConfigurationSetCommand,
   EventDestinationAlreadyExistsException,
   InvalidSNSDestinationException,
   InvalidTrackingOptionsException,
@@ -30,10 +31,9 @@ const DEFAULT_EVENT_TYPES = [
 export async function createConfigurationSet(
   sesClient: SESClient,
   snsClient: SNSClient,
+  configurationSetName: string,
 ) {
   try {
-    const configurationSetName = newId('configurationSet');
-
     const createSetcommand = new CreateConfigurationSetCommand({
       ConfigurationSet: {
         Name: configurationSetName,
@@ -76,6 +76,32 @@ export async function createConfigurationSet(
   } catch (error) {
     logError(error, (error as Error)?.stack);
     return null;
+  }
+}
+
+export async function deleteConfigurationSet(
+  client: SESClient,
+  configurationSetName: string,
+) {
+  try {
+    const command = new DeleteConfigurationSetCommand({
+      ConfigurationSetName: configurationSetName,
+    });
+
+    await client.send(command);
+    return true;
+  } catch (error) {
+    logError(error, (error as Error)?.stack);
+    if (error instanceof ConfigurationSetDoesNotExistException) {
+      throw new HttpError('bad_request', 'Configuration set does not exist');
+    } else if (error instanceof SESServiceException) {
+      throw new HttpError(
+        'internal_error',
+        error?.message || 'Failed to delete configuration set',
+      );
+    }
+
+    return false;
   }
 }
 
