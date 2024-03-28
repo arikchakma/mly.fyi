@@ -1,29 +1,29 @@
-import type { APIRoute } from 'astro';
-import {
-  handler,
-  type HandleRoute,
-  type RouteParams,
-  type ValidateRoute,
-} from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
 import { db } from '@/db';
 import { projectIdentities, projects } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
-import { and, eq } from 'drizzle-orm';
-import { HttpError } from '@/lib/http-error';
 import {
-  updateConfigurationSetEvent,
-  createConfigurationSetTrackingOptions,
   type SetEventType,
+  createConfigurationSetTrackingOptions,
+  updateConfigurationSetEvent,
 } from '@/lib/configuration-set';
+import { getRedirectDomain } from '@/lib/domain';
 import {
-  createSESServiceClient,
+  type HandleRoute,
+  type RouteParams,
+  type ValidateRoute,
+  handler,
+} from '@/lib/handler';
+import { HttpError } from '@/lib/http-error';
+import { createSNSServiceClient } from '@/lib/notification';
+import { json } from '@/lib/response';
+import {
   DEFAULT_SES_REGION,
+  createSESServiceClient,
   isValidConfiguration,
 } from '@/lib/ses';
-import { createSNSServiceClient } from '@/lib/notification';
-import { getRedirectDomain } from '@/lib/domain';
+import type { APIRoute } from 'astro';
+import { and, eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface UpdateProjectIdentityResponse {
   status: 'ok';

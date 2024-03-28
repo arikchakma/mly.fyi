@@ -1,5 +1,5 @@
-import type { ListProjectEmailsResponse } from '../../pages/api/v1/projects/[projectId]/emails';
 import { DateTime } from 'luxon';
+import type { ListProjectEmailsResponse } from '../../pages/api/v1/projects/[projectId]/emails';
 
 type ListProjectEmailsTableProps = {
   emails: ListProjectEmailsResponse['data'];
@@ -9,19 +9,19 @@ export function ListProjectEmailsTable(props: ListProjectEmailsTableProps) {
   const { emails = [] } = props;
 
   return (
-    <table className="w-full table-fixed border-separate border-spacing-0 border-none text-left text-sm font-normal">
+    <table className='w-full table-fixed border-separate border-spacing-0 border-none text-left text-sm font-normal'>
       <thead>
         <tr>
-          <th className="max-w-20 rounded-tl border-b border-l border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
+          <th className='max-w-20 rounded-tl border-b border-l border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400'>
             To
           </th>
-          <th className="max-w-20 border-b border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
+          <th className='max-w-20 border-b border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400'>
             Subject
           </th>
-          <th className="w-20 border-b border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
+          <th className='w-20 border-b border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400'>
             Status
           </th>
-          <th className="w-32 rounded-tr border-b border-r border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400">
+          <th className='w-32 rounded-tr border-b border-r border-t border-zinc-700/80 px-2 py-1.5 font-normal text-zinc-400'>
             Send At
           </th>
         </tr>
@@ -37,18 +37,18 @@ export function ListProjectEmailsTable(props: ListProjectEmailsTableProps) {
 
           return (
             <tr key={email.id}>
-              <td className="truncate border-b border-l border-zinc-700/80 px-2 py-1.5">
-                <a href={detailsUrl} className="hover:underline">
+              <td className='truncate border-b border-l border-zinc-700/80 px-2 py-1.5'>
+                <a href={detailsUrl} className='hover:underline'>
                   {email.to} ↗
                 </a>
               </td>
-              <td className="w-full truncate border-b border-zinc-700/80 px-2 py-1.5">
+              <td className='w-full truncate border-b border-zinc-700/80 px-2 py-1.5'>
                 {email.subject}
               </td>
-              <td className="relative w-full truncate border-b border-zinc-700/80 px-2 py-1.5 capitalize">
+              <td className='relative w-full truncate border-b border-zinc-700/80 px-2 py-1.5 capitalize'>
                 {status}
               </td>
-              <td className="truncate border-b border-r border-zinc-700/80 px-2 py-1.5">
+              <td className='truncate border-b border-r border-zinc-700/80 px-2 py-1.5'>
                 {sendAt || ''}
               </td>
             </tr>

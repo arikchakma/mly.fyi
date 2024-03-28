@@ -3,8 +3,8 @@ import * as AWS from '@aws-sdk/client-ses';
 import { createTransport } from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 import SESTransport from 'nodemailer/lib/ses-transport';
-import { logError } from './logger';
 import { serverConfig } from './config';
+import { logError } from './logger';
 
 export const allowedEmailProvider = ['ses'] as const;
 export type AllowedEmailProvider = (typeof allowedEmailProvider)[number];

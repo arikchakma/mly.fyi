@@ -1,16 +1,16 @@
-import React from 'react';
-import { useState, useId } from 'react';
-import type { FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { httpPatch } from '../../lib/http.ts';
-import { queryClient } from '../../utils/query-client.ts';
 import { Loader2, SlidersHorizontal } from 'lucide-react';
-import type {
-  ConfigureProjectRequest,
-  ConfigureProjectBody,
-} from '../../pages/api/v1/projects/[projectId]/configure.ts';
+import React from 'react';
+import { useId, useState } from 'react';
+import type { FormEvent } from 'react';
+import { toast } from 'sonner';
 import type { Project } from '../../db/types.ts';
+import { httpPatch } from '../../lib/http.ts';
+import type {
+  ConfigureProjectBody,
+  ConfigureProjectRequest,
+} from '../../pages/api/v1/projects/[projectId]/configure.ts';
+import { queryClient } from '../../utils/query-client.ts';
 import { Input } from '../Interface/Input.tsx';
 import { Label } from '../Interface/Label.tsx';
 
@@ -71,9 +71,9 @@ export function ProjectConfigurationForm(props: ProjectConfigurationFormProps) {
   const regionFieldId = `cfg:${useId()}`;
 
   return (
-    <form className="w-full" onSubmit={handleFormSubmit}>
-      <h2 className="mb-1 text-xl font-medium">Project Configuration</h2>
-      <p className="mb-4 text-sm text-zinc-500">
+    <form className='w-full' onSubmit={handleFormSubmit}>
+      <h2 className='mb-1 text-xl font-medium'>Project Configuration</h2>
+      <p className='mb-4 text-sm text-zinc-500'>
         Configure your project settings
       </p>
 
@@ -83,69 +83,69 @@ export function ProjectConfigurationForm(props: ProjectConfigurationFormProps) {
         </Label>
         <Input
           id={accessKeyIdFieldId}
-          type="text"
+          type='text'
           required
-          className="mt-2"
-          placeholder="Access Key"
+          className='mt-2'
+          placeholder='Access Key'
           min={3}
           value={accessKeyId}
           onInput={(e) => setAccessKey(String((e.target as any).value))}
-          autoComplete="off"
+          autoComplete='off'
           spellCheck={false}
         />
-        <p className="mt-2 text-sm text-zinc-500">Your AWS Access Key ID</p>
+        <p className='mt-2 text-sm text-zinc-500'>Your AWS Access Key ID</p>
       </div>
 
       <div>
         <Label
           htmlFor={secretAccessKeyFieldId}
           aria-required={true}
-          className="mt-4"
+          className='mt-4'
         >
           Secret Access Key
         </Label>
         <Input
           id={secretAccessKeyFieldId}
-          type="password"
+          type='password'
           required
-          className="mt-2"
-          placeholder="Secret Access Key"
+          className='mt-2'
+          placeholder='Secret Access Key'
           value={secretAccessKey}
           onInput={(e) => setSecretAccessKey(String((e.target as any).value))}
-          autoComplete="off"
+          autoComplete='off'
           spellCheck={false}
         />
-        <p className="mt-2 text-sm text-zinc-500">Your AWS Secret Access Key</p>
+        <p className='mt-2 text-sm text-zinc-500'>Your AWS Secret Access Key</p>
       </div>
 
       <div>
-        <Label htmlFor={regionFieldId} className="mt-4">
+        <Label htmlFor={regionFieldId} className='mt-4'>
           Region
         </Label>
         <Input
           id={regionFieldId}
-          type="text"
-          className="mt-2"
-          placeholder="us-west-2"
+          type='text'
+          className='mt-2'
+          placeholder='us-west-2'
           value={region}
           onInput={(e) => setRegion(String((e.target as any).value))}
-          autoComplete="off"
+          autoComplete='off'
           spellCheck={false}
         />
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className='mt-2 text-sm text-zinc-500'>
           By default it is&nbsp;<code>us-west-2</code>
         </p>
       </div>
 
       <button
-        type="submit"
+        type='submit'
         disabled={isLoading}
-        className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:border-none focus:ring-2 focus:ring-zinc-500 active:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+        className='mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:border-none focus:ring-2 focus:ring-zinc-500 active:outline-none disabled:cursor-not-allowed disabled:opacity-60'
       >
         {isLoading ? (
-          <Loader2 size={14} className="animate-spin stroke-[3px]" />
+          <Loader2 size={14} className='animate-spin stroke-[3px]' />
         ) : (
-          <SlidersHorizontal size={14} className="stroke-[3px]" />
+          <SlidersHorizontal size={14} className='stroke-[3px]' />
         )}
         Update Configuration
       </button>

@@ -1,16 +1,16 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { projectMembers, projects } from '@/db/schema';
+import type { Project } from '@/db/types';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
-import { db } from '@/db';
-import { projectMembers, projects } from '@/db/schema';
 import { newId } from '@/lib/new-id';
-import type { Project } from '@/db/types';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import Joi from 'joi';
 
 export interface CreateProjectResponse
   extends Pick<Project, 'id' | 'name' | 'url' | 'timezone'> {}

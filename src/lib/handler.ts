@@ -1,4 +1,8 @@
+import { db } from '@/db';
+import { users } from '@/db/schema';
+import type { User } from '@/db/types';
 import type { APIContext, APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
 import Joi from 'joi';
 import {
   renderHttpError,
@@ -7,10 +11,6 @@ import {
 } from './error';
 import { HttpError } from './http-error';
 import { decodeToken, readTokenCookie } from './jwt';
-import type { User } from '@/db/types';
-import { db } from '@/db';
-import { eq } from 'drizzle-orm';
-import { users } from '@/db/schema';
 
 export type RouteParams<
   B = any,

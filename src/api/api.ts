@@ -1,6 +1,6 @@
 import { serverConfig } from '@/lib/config.ts';
-import { TOKEN_COOKIE_NAME } from '../lib/jwt.ts';
 import type { APIContext } from 'astro';
+import { TOKEN_COOKIE_NAME } from '../lib/jwt.ts';
 
 type HttpOptionsType = RequestInit | { headers: Record<string, any> };
 

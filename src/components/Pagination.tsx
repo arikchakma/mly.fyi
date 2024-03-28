@@ -37,13 +37,13 @@ export function Pagination(props: PaginationProps) {
         'justify-start': variant === 'minimal',
       })}
     >
-      <div className="flex items-center gap-1 text-xs font-medium">
+      <div className='flex items-center gap-1 text-xs font-medium'>
         <button
           onClick={() => {
             onPageChange(currPage - 1);
           }}
           disabled={currPage === 1 || isDisabled}
-          className="rounded-md border border-zinc-800 px-2 py-1 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+          className='rounded-md border border-zinc-800 px-2 py-1 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40'
         >
           &larr;
         </button>
@@ -54,9 +54,9 @@ export function Pagination(props: PaginationProps) {
                 return (
                   <span
                     key={`page-${page}-${counter}`}
-                    className="hidden sm:block"
+                    className='hidden sm:block'
                   >
-                    <MoreHorizontal className="text-zinc-400" size={14} />
+                    <MoreHorizontal className='text-zinc-400' size={14} />
                   </span>
                 );
               }
@@ -83,7 +83,7 @@ export function Pagination(props: PaginationProps) {
         )}
         <button
           disabled={currPage === totalPages || isDisabled}
-          className="rounded-md border border-zinc-800 px-2 py-1 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+          className='rounded-md border border-zinc-800 px-2 py-1 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40'
           onClick={() => {
             onPageChange(currPage + 1);
           }}
@@ -91,7 +91,7 @@ export function Pagination(props: PaginationProps) {
           &rarr;
         </button>
       </div>
-      <span className="ml-2 hidden text-sm font-normal text-zinc-500 sm:block">
+      <span className='ml-2 hidden text-sm font-normal text-zinc-500 sm:block'>
         Showing {formatCommaNumber((currPage - 1) * perPage)} to{' '}
         {formatCommaNumber((currPage - 1) * perPage + perPage)} of{' '}
         {formatCommaNumber(totalCount)} entries

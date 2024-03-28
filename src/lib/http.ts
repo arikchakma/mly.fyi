@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { removeAuthToken, TOKEN_COOKIE_NAME } from './jwt-client';
+import { TOKEN_COOKIE_NAME, removeAuthToken } from './jwt-client';
 
 type HttpOptionsType = RequestInit;
 

@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { text, sqliteTable, integer, index } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { projectApiKeys, projects } from './projects';
 
 export const allowedEmailLogStatus = [

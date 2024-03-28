@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { projectMembers, type AllowedMemberRoles } from '@/db/schema';
+import { type AllowedMemberRoles, projectMembers } from '@/db/schema';
 import { HttpError } from '@/lib/http-error';
 import { and, eq } from 'drizzle-orm';
 

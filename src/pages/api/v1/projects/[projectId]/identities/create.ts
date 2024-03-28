@@ -1,38 +1,38 @@
-import type { APIRoute } from 'astro';
-import {
-  handler,
-  type HandleRoute,
-  type RouteParams,
-  type ValidateRoute,
-} from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
 import { db } from '@/db';
 import {
+  type ProjectIdentityRecord,
   allowedIdentityTypes,
   projectIdentities,
   projects,
-  type ProjectIdentityRecord,
 } from '@/db/schema';
-import { newId } from '@/lib/new-id';
 import { requireProjectMember } from '@/helpers/project';
-import { and, eq } from 'drizzle-orm';
-import { HttpError } from '@/lib/http-error';
+import {
+  createConfigurationSet,
+  deleteConfigurationSet,
+} from '@/lib/configuration-set';
 import {
   addMailFromDomain,
   deleteIdentity,
   verifyDomainDkim,
 } from '@/lib/domain';
 import {
-  createConfigurationSet,
-  deleteConfigurationSet,
-} from '@/lib/configuration-set';
+  type HandleRoute,
+  type RouteParams,
+  type ValidateRoute,
+  handler,
+} from '@/lib/handler';
+import { HttpError } from '@/lib/http-error';
+import { newId } from '@/lib/new-id';
+import { createSNSServiceClient } from '@/lib/notification';
+import { json } from '@/lib/response';
 import {
-  createSESServiceClient,
   DEFAULT_SES_REGION,
+  createSESServiceClient,
   isValidConfiguration,
 } from '@/lib/ses';
-import { createSNSServiceClient } from '@/lib/notification';
+import type { APIRoute } from 'astro';
+import { and, eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface CreateProjectIdentityResponse {
   identityId: string;

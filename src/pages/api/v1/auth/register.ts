@@ -1,19 +1,19 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { users } from '@/db/schema';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
-import { db } from '@/db';
-import { eq } from 'drizzle-orm';
-import { users } from '@/db/schema';
-import { HttpError } from '@/lib/http-error';
-import { v4 as uuidV4 } from 'uuid';
-import { newId } from '@/lib/new-id';
 import { hashPassword } from '@/lib/hash';
+import { HttpError } from '@/lib/http-error';
+import { newId } from '@/lib/new-id';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import Joi from 'joi';
+import { v4 as uuidV4 } from 'uuid';
 
 export interface RegisterResponse {
   status: 'ok';

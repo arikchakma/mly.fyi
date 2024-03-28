@@ -1,9 +1,9 @@
+import { cn } from '@/utils/classname';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { httpPost } from '../../lib/http';
 import { queryClient } from '../../utils/query-client';
-import { cn } from '@/utils/classname';
 
 type TriggerVerifyIdentityProps = {
   projectId: string;
@@ -52,7 +52,7 @@ export function TriggerVerifyIdentity(props: TriggerVerifyIdentityProps) {
       }}
     >
       {isPending ? (
-        <Loader2 size={iconSize} className="animate-spin" />
+        <Loader2 size={iconSize} className='animate-spin' />
       ) : (
         <RefreshCcw size={iconSize} />
       )}

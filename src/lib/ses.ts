@@ -4,8 +4,8 @@ import {
   SESClient,
   SESServiceException,
 } from '@aws-sdk/client-ses';
-import { logError } from './logger';
 import { HttpError } from './http-error';
+import { logError } from './logger';
 
 export const DEFAULT_SES_REGION = 'ap-south-1';
 

@@ -1,6 +1,6 @@
-import { useEffect, useSyncExternalStore } from 'react';
-import { focusManager } from '@tanstack/react-query';
 import { queryClient } from '@/utils/query-client';
+import { focusManager } from '@tanstack/react-query';
+import { useEffect, useSyncExternalStore } from 'react';
 
 export function FocusManager() {
   const isFocused = useSyncExternalStore(

@@ -1,9 +1,9 @@
-import type { APIContext } from 'astro';
-import { HttpError } from './http-error';
 import { db } from '@/db';
 import { projectApiKeys } from '@/db/schema';
 import { increment } from '@/utils/database';
+import type { APIContext } from 'astro';
 import { eq } from 'drizzle-orm';
+import { HttpError } from './http-error';
 
 const MLY_HEADER_API_KEY = 'X-Mly-Api-Key';
 

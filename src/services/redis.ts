@@ -1,6 +1,6 @@
 import { createClient } from 'redis';
-import { logError, logInfo, logWarning } from '../lib/logger';
 import { serverConfig } from '../lib/config';
+import { logError, logInfo, logWarning } from '../lib/logger';
 
 export const redisClient = createClient({
   url: serverConfig.redis.url,

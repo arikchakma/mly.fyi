@@ -1,9 +1,9 @@
+import { redirectAuthSuccess, setAuthToken } from '@/lib/jwt-client.ts';
+import { queryClient } from '@/utils/query-client.ts';
+import { useMutation } from '@tanstack/react-query';
+import { Ban, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { httpPost } from '../../lib/http.ts';
-import { Ban, Loader2 } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/utils/query-client.ts';
-import { redirectAuthSuccess, setAuthToken } from '@/lib/jwt-client.ts';
 
 type TriggerVerifyAccountProps = {
   code: string;
@@ -47,24 +47,24 @@ export function TriggerVerifyAccount(props: TriggerVerifyAccountProps) {
   }, []);
 
   const loadingMessage = isLoading && (
-    <div className="flex items-center gap-3 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 font-medium text-zinc-50">
-      <Loader2 className="mx-auto h-5 w-5 animate-spin stroke-[3]" />
-      <h3 className="text-base font-medium">
+    <div className='flex items-center gap-3 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 font-medium text-zinc-50'>
+      <Loader2 className='mx-auto h-5 w-5 animate-spin stroke-[3]' />
+      <h3 className='text-base font-medium'>
         Please wait while we verify you..
       </h3>
     </div>
   );
 
   const errorMessage = error && !isLoading && (
-    <div className="flex items-center gap-3 rounded-md border border-red-500 bg-red-700 px-3 py-1.5 font-medium text-white">
-      <Ban className="mx-auto h-5 w-5 stroke-[3]" />
-      <h3 className="text-base font-medium">{error}</h3>
+    <div className='flex items-center gap-3 rounded-md border border-red-500 bg-red-700 px-3 py-1.5 font-medium text-white'>
+      <Ban className='mx-auto h-5 w-5 stroke-[3]' />
+      <h3 className='text-base font-medium'>{error}</h3>
     </div>
   );
 
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center pt-0 sm:pt-12">
-      <div className="mx-auto max-w-md text-center">
+    <div className='mx-auto flex max-w-md flex-col items-center pt-0 sm:pt-12'>
+      <div className='mx-auto max-w-md text-center'>
         {loadingMessage}
         {errorMessage}
       </div>

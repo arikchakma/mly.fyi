@@ -1,19 +1,19 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { emailLogEvents, emailLogs } from '@/db/schema';
+import { authenticateApiKey } from '@/lib/authenticate-api-key';
+import { type SendEmailBody, sendEmail } from '@/lib/email';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
-import { authenticateApiKey } from '@/lib/authenticate-api-key';
-import { db } from '@/db';
 import { HttpError } from '@/lib/http-error';
-import { sendEmail, type SendEmailBody } from '@/lib/email';
-import { DEFAULT_SES_REGION } from '@/lib/ses';
 import { newId } from '@/lib/new-id';
-import { emailLogEvents, emailLogs } from '@/db/schema';
+import { json } from '@/lib/response';
+import { DEFAULT_SES_REGION } from '@/lib/ses';
+import type { APIRoute } from 'astro';
+import Joi from 'joi';
 
 export interface SendEmailResponse {
   id: string;

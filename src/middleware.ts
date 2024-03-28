@@ -1,8 +1,8 @@
 import { defineMiddleware } from 'astro:middleware';
-import { TOKEN_COOKIE_NAME, decodeToken } from './lib/jwt.ts';
-import { db } from './db/index.ts';
 import { eq } from 'drizzle-orm';
+import { db } from './db/index.ts';
 import { users } from './db/schema/users.ts';
+import { TOKEN_COOKIE_NAME, decodeToken } from './lib/jwt.ts';
 import { logError } from './lib/logger.ts';
 
 export const onRequest = defineMiddleware(async (context, next) => {

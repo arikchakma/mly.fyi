@@ -1,0 +1,33 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.6.3/schema.json",
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "ignore": [
+      "app-dist",
+      "dist",
+      ".idea",
+      ".github",
+      "public",
+      "node_modules",
+      "pnpm-lock.yaml"
+    ]
+  },
+  "organizeImports": { "enabled": true, "ignore": ["*.astro"] },
+  "linter": {
+    "enabled": false
+  },
+  "javascript": {
+    "globals": ["Astro"],
+    "formatter": {
+      "jsxQuoteStyle": "single",
+      "trailingComma": "all",
+      "semicolons": "always",
+      "arrowParentheses": "always",
+      "quoteStyle": "single"
+    }
+  }
+}

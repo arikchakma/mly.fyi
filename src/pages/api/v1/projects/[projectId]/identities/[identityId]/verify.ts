@@ -1,35 +1,35 @@
-import type { APIRoute } from 'astro';
-import {
-  handler,
-  type HandleRoute,
-  type RouteParams,
-  type ValidateRoute,
-} from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
 import { db } from '@/db';
 import {
   MatchRecordStatus,
+  type ProjectIdentityRecord,
   projectIdentities,
   projects,
-  type ProjectIdentityRecord,
 } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
-import { and, eq } from 'drizzle-orm';
-import { HttpError } from '@/lib/http-error';
 import {
   getDomainDkimVerificationStatus,
   getMailFromDomainVerificationStatus,
   getRedirectDomain,
   verifyRedirectDomain,
 } from '@/lib/domain';
-import type { CustomMailFromStatus } from '@aws-sdk/client-ses';
 import {
-  createSESServiceClient,
+  type HandleRoute,
+  type RouteParams,
+  type ValidateRoute,
+  handler,
+} from '@/lib/handler';
+import { HttpError } from '@/lib/http-error';
+import { createSNSServiceClient } from '@/lib/notification';
+import { json } from '@/lib/response';
+import {
   DEFAULT_SES_REGION,
+  createSESServiceClient,
   isValidConfiguration,
 } from '@/lib/ses';
-import { createSNSServiceClient } from '@/lib/notification';
+import type { CustomMailFromStatus } from '@aws-sdk/client-ses';
+import type { APIRoute } from 'astro';
+import { and, eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface VerifyProjectIdentityResponse {
   records: ProjectIdentityRecord[];

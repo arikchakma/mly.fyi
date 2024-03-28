@@ -1,8 +1,8 @@
-import { json } from './response';
-import { stripQuotes } from '../utils/string';
-import { logError } from './logger';
 import Joi from 'joi';
+import { stripQuotes } from '../utils/string';
 import type { HttpError } from './http-error';
+import { logError } from './logger';
+import { json } from './response';
 
 export const ERROR_CODE_BY_KEY = {
   bad_request: 400,
