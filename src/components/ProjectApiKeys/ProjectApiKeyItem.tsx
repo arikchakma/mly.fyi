@@ -2,6 +2,7 @@ import React from 'react';
 import { DateTime } from 'luxon';
 import { ArrowUpRight, Trash2 } from 'lucide-react';
 import type { ListProjectApiKeysResponse } from '../../pages/api/v1/projects/[projectId]/keys/index';
+import { DeleteApiKey } from './DeleteApiKey';
 
 type ProjectApiKeyItemProps = {
   projectId: string;
@@ -26,9 +27,11 @@ export function ProjectApiKeyItem(props: ProjectApiKeyItemProps) {
           </span>
         </div>
         <span className="flex items-center gap-2">
-          <button className="text-zinc-400 hover:text-zinc-50">
-            <Trash2 size={16} />
-          </button>
+          <DeleteApiKey
+            projectId={projectId}
+            apiKeyId={apiKey.id}
+            apiKeyName={apiKey.name}
+          />
         </span>
       </div>
       <h3 className="mt-4 text-lg font-semibold text-zinc-200 hover:text-zinc-50">

@@ -2,6 +2,7 @@ import type { ListProjectIdentitiesResponse } from '../../pages/api/v1/projects/
 import { DateTime } from 'luxon';
 import { ArrowUpRight, RefreshCcw, Trash2 } from 'lucide-react';
 import { TriggerVerifyIdentity } from './TriggerVerifyIdentity';
+import { DeleteIdentity } from './DeleteIdentity';
 
 type ProjectIdentityItemProps = {
   projectId: string;
@@ -24,15 +25,17 @@ export function ProjectIdentityItem(props: ProjectIdentityItemProps) {
             {status}
           </span>
         </div>
-        <span className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <TriggerVerifyIdentity
             projectId={projectId}
             identityId={identity.id}
           />
-          <button className="text-zinc-400 hover:text-zinc-50">
-            <Trash2 size={16} />
-          </button>
-        </span>
+          <DeleteIdentity
+            projectId={projectId}
+            identityId={identity.id}
+            identityDomain={identity.domain!}
+          />
+        </div>
       </div>
       <h3 className="mt-4 text-lg font-semibold text-zinc-200 hover:text-zinc-50">
         <a href={`/projects/${projectId}/identities/${identity.id}`}>

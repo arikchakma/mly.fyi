@@ -175,17 +175,16 @@ async function handle(params: CreateProjectIdentityRequest) {
     await db
       .delete(projectIdentities)
       .where(eq(projectIdentities.id, projectIdentityId));
-    await deleteIdentity(sesClient, domain);
     throw new HttpError('bad_request', 'Failed to verify domain DKIM');
   }
 
   if (mailFromDomain) {
     const result = await addMailFromDomain(sesClient, domain, mailFromDomain);
     if (!result) {
+      await deleteIdentity(sesClient, domain);
       await db
         .delete(projectIdentities)
         .where(eq(projectIdentities.id, projectIdentityId));
-      await deleteIdentity(sesClient, domain);
       throw new HttpError('bad_request', 'Failed to add mail from domain');
     }
   }
@@ -236,11 +235,10 @@ async function handle(params: CreateProjectIdentityRequest) {
     configurationSetName,
   );
   if (!configurationSet) {
+    await deleteIdentity(sesClient, domain);
     await db
       .delete(projectIdentities)
       .where(eq(projectIdentities.id, projectIdentityId));
-    await deleteIdentity(sesClient, domain);
-    await deleteConfigurationSet(sesClient, configurationSetName);
     throw new HttpError('bad_request', 'Failed to create configuration set');
   }
 

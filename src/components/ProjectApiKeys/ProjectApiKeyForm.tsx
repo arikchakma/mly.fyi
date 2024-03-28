@@ -1,4 +1,5 @@
-import React, { useId, useState } from 'react';
+import { useId, useState } from 'react';
+import type { FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryClient } from '../../utils/query-client';
@@ -8,6 +9,7 @@ import type {
   CreateProjectApiKeyResponse,
 } from '@/pages/api/v1/projects/[projectId]/keys/create';
 import { CopyableTableField } from '../ProjectIdentities/CopyableTableField';
+import { Loader2 } from 'lucide-react';
 
 type ProjectApiKeyFormProps = {
   projectId: string;
@@ -38,7 +40,7 @@ export function ProjectApiKeyForm(props: ProjectApiKeyFormProps) {
     queryClient,
   );
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     toast.promise(createProjectApiKey.mutateAsync({ name }), {
       loading: 'Creating key...',
@@ -59,7 +61,7 @@ export function ProjectApiKeyForm(props: ProjectApiKeyFormProps) {
           Your key has been created successfully.
         </p>
         <CopyableTableField
-          className="mt-1 h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600"
+          className="mt-1 h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-left outline-none placeholder:text-zinc-400 focus:border-zinc-600"
           value={key}
         />
         <p className="mt-2 text-sm text-zinc-500">
@@ -114,7 +116,11 @@ export function ProjectApiKeyForm(props: ProjectApiKeyFormProps) {
         disabled={isLoading}
         className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:border-none focus:ring-2 focus:ring-zinc-500 active:outline-none disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading ? 'Please wait...' : 'Create Key'}
+        {isLoading ? (
+          <Loader2 size={16} className="animate-spin stroke-[3px]" />
+        ) : (
+          'Create Key'
+        )}
       </button>
     </form>
   );

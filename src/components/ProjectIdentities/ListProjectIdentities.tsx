@@ -5,6 +5,8 @@ import { LoadingMessage } from '../LoadingMessage';
 import { ProjectIdentityItem } from './ProjectIdentityItem';
 import type { ListProjectIdentitiesResponse } from '@/pages/api/v1/projects/[projectId]/identities';
 import { PageError } from '../Errors/PageError';
+import { Pagination } from '../Pagination';
+import { useState } from 'react';
 
 type ListProjectIdentitiesProps = {
   projectId: string;
@@ -13,12 +15,16 @@ type ListProjectIdentitiesProps = {
 export function ListProjectIdentities(props: ListProjectIdentitiesProps) {
   const { projectId } = props;
 
+  const [currPage, setCurrPage] = useState(1);
   const { data, error } = useQuery(
     {
-      queryKey: ['project-identities', projectId],
+      queryKey: ['project-identities', projectId, currPage],
       queryFn: () => {
         return httpGet<ListProjectIdentitiesResponse>(
           `/api/v1/projects/${projectId}/identities`,
+          {
+            currPage,
+          },
         );
       },
     },
@@ -58,18 +64,29 @@ export function ListProjectIdentities(props: ListProjectIdentitiesProps) {
         )}
 
         {identities.length > 0 && (
-          <ul className="grid grid-cols-3 gap-2">
-            {identities.map((identity) => {
-              return (
-                <li key={identity.id}>
-                  <ProjectIdentityItem
-                    identity={identity}
-                    projectId={projectId}
-                  />
-                </li>
-              );
-            })}
-          </ul>
+          <>
+            <ul className="mb-4 grid grid-cols-3 gap-2">
+              {identities.map((identity) => {
+                return (
+                  <li key={identity.id}>
+                    <ProjectIdentityItem
+                      identity={identity}
+                      projectId={projectId}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+            <Pagination
+              totalPages={data.totalPages}
+              currPage={data.currPage}
+              perPage={data.perPage}
+              totalCount={data.totalCount}
+              onPageChange={(page) => {
+                setCurrPage(page);
+              }}
+            />
+          </>
         )}
       </div>
     </>

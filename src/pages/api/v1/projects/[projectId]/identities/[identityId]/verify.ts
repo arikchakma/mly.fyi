@@ -107,7 +107,6 @@ async function handle(params: VerifyProjectIdentityRequest) {
   }
 
   const sesClient = createSESServiceClient(accessKeyId, secretAccessKey);
-  const snsClient = createSNSServiceClient(accessKeyId, secretAccessKey);
 
   const isValidConfig = await isValidConfiguration(sesClient);
   if (!isValidConfig) {
