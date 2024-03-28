@@ -56,42 +56,42 @@ export function ProjectForm() {
   const urlFieldId = `pjt:${useId()}`;
 
   return (
-    <form className="w-full" onSubmit={handleFormSubmit}>
+    <form className='w-full' onSubmit={handleFormSubmit}>
       <label
         htmlFor={nameFieldId}
-        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
       >
         Project Name
       </label>
       <input
         id={nameFieldId}
-        type="text"
+        type='text'
         required
-        className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600"
-        placeholder="Project Name"
+        className='mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600'
+        placeholder='Project Name'
         min={3}
         value={name}
         onInput={(e) => setName(String((e.target as any).value))}
       />
       <label
         htmlFor={urlFieldId}
-        className="mt-4 block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        className='mt-4 block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
       >
         Project Website
       </label>
       <input
         id={urlFieldId}
-        type="url"
+        type='url'
         required
-        className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600"
-        placeholder="Project Website"
+        className='mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600'
+        placeholder='Project Website'
         value={url}
         onInput={(e) => setUrl(String((e.target as any).value))}
       />
 
       <label
-        htmlFor="text"
-        className="mt-4 block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        htmlFor='text'
+        className='mt-4 block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
       >
         Timezone
       </label>
@@ -99,9 +99,9 @@ export function ProjectForm() {
       <TimezoneSelect value={timezone} setValue={setTimezone} />
 
       <button
-        type="submit"
+        type='submit'
         disabled={isLoading}
-        className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:ring-2 focus:ring-[#333] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60"
+        className='mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:ring-2 focus:ring-[#333] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60'
       >
         {isLoading ? 'Please wait...' : 'Create Project'}
       </button>

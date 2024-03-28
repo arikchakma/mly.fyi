@@ -91,7 +91,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
   );
 
   if (!identity) {
-    return <LoadingMessage message="Loading Project Identity.." />;
+    return <LoadingMessage message='Loading Project Identity..' />;
   }
 
   const createdAt = DateTime.fromJSDate(
@@ -108,48 +108,48 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
 
   return (
     <section>
-      <div className="flex items-center gap-4">
-        <span className="flex h-12 w-12 items-center justify-center rounded-md border  border-zinc-800 bg-zinc-900">
+      <div className='flex items-center gap-4'>
+        <span className='flex h-12 w-12 items-center justify-center rounded-md border  border-zinc-800 bg-zinc-900'>
           <Box size={28} />
         </span>
         <div>
-          <span className="text-sm text-zinc-500">Identity</span>
-          <h2 className="text-xl font-semibold">{identity.domain}</h2>
+          <span className='text-sm text-zinc-500'>Identity</span>
+          <h2 className='text-xl font-semibold'>{identity.domain}</h2>
         </div>
       </div>
 
-      <div className="mt-10 flex items-start gap-3">
+      <div className='mt-10 flex items-start gap-3'>
         <div>
-          <h3 className="text-xs uppercase text-zinc-400">Created At</h3>
-          <span className="mt-1 font-semibold capitalize">{createdAt}</span>
+          <h3 className='text-xs uppercase text-zinc-400'>Created At</h3>
+          <span className='mt-1 font-semibold capitalize'>{createdAt}</span>
         </div>
         <div>
-          <h3 className="text-xs uppercase text-zinc-400">Status</h3>
-          <span className="mt-1 font-semibold capitalize">
+          <h3 className='text-xs uppercase text-zinc-400'>Status</h3>
+          <span className='mt-1 font-semibold capitalize'>
             {identity.status}
           </span>
         </div>
       </div>
 
-      <div className="mt-10">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-xl font-semibold">Records</h3>
+      <div className='mt-10'>
+        <div className='flex items-center justify-between gap-2'>
+          <h3 className='text-xl font-semibold'>Records</h3>
           <TriggerVerifyIdentity
             projectId={projectId}
             identityId={identityId}
-            label="Trigger Verify"
+            label='Trigger Verify'
             iconSize={14}
-            className="gap-1 rounded-md bg-zinc-900 p-1 px-2 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-50"
+            className='gap-1 rounded-md bg-zinc-900 p-1 px-2 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-50'
           />
         </div>
-        <p className="mb-4 mt-1 text-sm text-zinc-500">
+        <p className='mb-4 mt-1 text-sm text-zinc-500'>
           These are the DNS records you need to add to your domain.
         </p>
         <ProjectIdentityDNSTable records={dnsRecords || []} />
 
         {redirectDomainDNSRecord && (
           <>
-            <p className="mb-4 mt-4 text-sm text-zinc-500">
+            <p className='mb-4 mt-4 text-sm text-zinc-500'>
               The following record is required for click tracking and open
               tracking.
             </p>
@@ -159,25 +159,25 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
         )}
       </div>
 
-      <div className="mt-6">
-        <h3 className="text-xl font-semibold">Instructions</h3>
-        <p className="mt-1 text-sm text-zinc-500">
+      <div className='mt-6'>
+        <h3 className='text-xl font-semibold'>Instructions</h3>
+        <p className='mt-1 text-sm text-zinc-500'>
           Follow these instructions to verify your domain.
         </p>
-        <ol className="mt-4 list-inside list-decimal text-sm text-zinc-400">
+        <ol className='mt-4 list-inside list-decimal text-sm text-zinc-400'>
           <li>Add the DNS records above to your domain provider.</li>
           <li>Click the refresh button to trigger a verification check.</li>
           <li>Wait for the records to propagate.</li>
         </ol>
       </div>
 
-      <div className="mt-6">
-        <h3 className="text-xl font-semibold">Configuration</h3>
-        <p className="mt-1 text-sm text-zinc-500">
+      <div className='mt-6'>
+        <h3 className='text-xl font-semibold'>Configuration</h3>
+        <p className='mt-1 text-sm text-zinc-500'>
           Configure your domain to use the following settings.
         </p>
 
-        <div className="mt-4 flex items-start gap-3">
+        <div className='mt-4 flex items-start gap-3'>
           <Checkbox
             id={clickTrackingCheckboxId}
             disabled={!isIdentityVerified || updateConfigurationSet.isPending}
@@ -208,11 +208,11 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
           <div>
             <label
               htmlFor={clickTrackingCheckboxId}
-              className="block max-w-max text-lg font-semibold leading-none text-zinc-200 hover:text-zinc-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className='block max-w-max text-lg font-semibold leading-none text-zinc-200 hover:text-zinc-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
             >
               Click Tracking
             </label>
-            <p className="mt-1 text-balance text-sm text-zinc-500">
+            <p className='mt-1 text-balance text-sm text-zinc-500'>
               For every link in your email, we will modify the links in the
               email, and whenver the user clicks on the link, we will track the
               click.
@@ -220,7 +220,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
           </div>
         </div>
 
-        <div className="mt-4 flex items-start gap-3">
+        <div className='mt-4 flex items-start gap-3'>
           <Checkbox
             id={openTrackingCheckboxId}
             disabled={!isIdentityVerified || updateConfigurationSet.isPending}
@@ -251,11 +251,11 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
           <div>
             <label
               htmlFor={openTrackingCheckboxId}
-              className="block max-w-max text-lg font-semibold leading-none text-zinc-200 hover:text-zinc-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className='block max-w-max text-lg font-semibold leading-none text-zinc-200 hover:text-zinc-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
             >
               Open Tracking
             </label>
-            <p className="mt-1 text-balance text-sm text-zinc-500">
+            <p className='mt-1 text-balance text-sm text-zinc-500'>
               We will track the open rate of your email. We will add a tracking
               pixel to your email, and when the user opens the email, we will
               track the open.

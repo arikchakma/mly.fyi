@@ -91,19 +91,19 @@ export function DeleteApiKey(props: DeleteApiKeyProps) {
           )}
         >
           {isPending ? (
-            <Loader2 size={iconSize} className="animate-spin" />
+            <Loader2 size={iconSize} className='animate-spin' />
           ) : (
             <Trash2 size={iconSize} />
           )}
           {label && <span>{label}</span>}
         </button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-sm gap-6 p-4">
-        <AlertDialogHeader className="space-y-1">
+      <AlertDialogContent className='max-w-sm gap-6 p-4'>
+        <AlertDialogHeader className='space-y-1'>
           <AlertDialogTitle>Delete Identity</AlertDialogTitle>
-          <AlertDialogDescription className="text-balance text-zinc-400">
+          <AlertDialogDescription className='text-balance text-zinc-400'>
             This action cannot be undone. This will permanently delete the api
-            key <strong className="text-zinc-200">{apiKeyName}</strong>.
+            key <strong className='text-zinc-200'>{apiKeyName}</strong>.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -116,25 +116,25 @@ export function DeleteApiKey(props: DeleteApiKeyProps) {
             <Input
               autoFocus
               id={confirmInputFieldId}
-              type="text"
-              placeholder="CONFIRM"
-              className="mt-2"
+              type='text'
+              placeholder='CONFIRM'
+              className='mt-2'
               required
             />
           </div>
 
-          <div className="mt-2 grid grid-cols-2 gap-2">
+          <div className='mt-2 grid grid-cols-2 gap-2'>
             <Button
-              type="button"
-              variant="outline"
+              type='button'
+              variant='outline'
               disabled={isPending}
               onClick={() => setIsOpen(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" variant="destructive" disabled={isPending}>
+            <Button type='submit' variant='destructive' disabled={isPending}>
               {isPending ? (
-                <Loader2 size={16} className="animate-spin stroke-[3px]" />
+                <Loader2 size={16} className='animate-spin stroke-[3px]' />
               ) : (
                 'Continue'
               )}

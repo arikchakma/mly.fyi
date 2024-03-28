@@ -35,37 +35,37 @@ export function ListProjectIdentities(props: ListProjectIdentitiesProps) {
     return (
       <PageError
         error={error?.message || 'Something went wrong!'}
-        className="sm:pt-0"
+        className='sm:pt-0'
       />
     );
   }
 
   if (!data) {
-    return <LoadingMessage message="Loading Project Identities..." />;
+    return <LoadingMessage message='Loading Project Identities...' />;
   }
 
   const identities = data.data;
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Indentites</h2>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-xl font-semibold'>Indentites</h2>
         <a
-          className="rounded-md bg-zinc-800 px-2 py-1 text-sm text-zinc-50"
+          className='rounded-md bg-zinc-800 px-2 py-1 text-sm text-zinc-50'
           href={`/projects/${projectId}/identities/new`}
         >
-          <span className="mr-2">+</span> <span>Add Indentity</span>
+          <span className='mr-2'>+</span> <span>Add Indentity</span>
         </a>
       </div>
 
-      <div className="mt-6">
+      <div className='mt-6'>
         {identities.length === 0 && (
-          <p className="text-zinc-500">No identities found.</p>
+          <p className='text-zinc-500'>No identities found.</p>
         )}
 
         {identities.length > 0 && (
           <>
-            <ul className="mb-4 grid grid-cols-3 gap-2">
+            <ul className='mb-4 grid grid-cols-3 gap-2'>
               {identities.map((identity) => {
                 return (
                   <li key={identity.id}>

@@ -85,9 +85,9 @@ export function ProjectIdentityForm(props: ProjectIdentityFormProps) {
   const isLoading = createIdentity.isPending;
 
   return (
-    <form className="mx-auto w-full max-w-sm" onSubmit={handleSubmit}>
-      <h2 className="mb-1 text-xl font-medium">Add Indentity</h2>
-      <p className="mb-4 text-sm text-zinc-500">
+    <form className='mx-auto w-full max-w-sm' onSubmit={handleSubmit}>
+      <h2 className='mb-1 text-xl font-medium'>Add Indentity</h2>
+      <p className='mb-4 text-sm text-zinc-500'>
         Fill the details below to get started
       </p>
       <div>
@@ -98,25 +98,25 @@ export function ProjectIdentityForm(props: ProjectIdentityFormProps) {
           name={domainFieldId}
           id={domainFieldId}
           spellCheck={false}
-          autoComplete="off"
-          type="text"
+          autoComplete='off'
+          type='text'
           required
-          className="mt-2"
-          placeholder="mly.fyi"
+          className='mt-2'
+          placeholder='mly.fyi'
           min={3}
           value={domain}
           onInput={(e) => setDomain(String((e.target as any).value))}
         />
 
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className='mt-2 text-sm text-zinc-500'>
           Use Apex domain (e.g. mly.fyi)
         </p>
       </div>
 
       <div>
-        <Label htmlFor={mailFromDomainFieldId} className="mt-4">
+        <Label htmlFor={mailFromDomainFieldId} className='mt-4'>
           Mail From Domain{' '}
-          <span className="text-xs leading-none text-zinc-400">
+          <span className='text-xs leading-none text-zinc-400'>
             (Recomended)
           </span>
         </Label>
@@ -124,28 +124,28 @@ export function ProjectIdentityForm(props: ProjectIdentityFormProps) {
           name={mailFromDomainFieldId}
           id={mailFromDomainFieldId}
           spellCheck={false}
-          autoComplete="off"
-          type="text"
-          className="mt-2"
-          placeholder="send.mly.fyi"
+          autoComplete='off'
+          type='text'
+          className='mt-2'
+          placeholder='send.mly.fyi'
           value={mailFromDomain}
           onInput={(e) => setMailFromDomain(String((e.target as any).value))}
         />
 
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className='mt-2 text-sm text-zinc-500'>
           Use subdomain of domain (e.g. send.mly.fyi)
         </p>
       </div>
 
       <button
-        type="submit"
+        type='submit'
         disabled={isLoading}
-        className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:border-none focus:ring-2 focus:ring-zinc-500 active:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+        className='mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:border-none focus:ring-2 focus:ring-zinc-500 active:outline-none disabled:cursor-not-allowed disabled:opacity-60'
       >
         {isLoading ? (
-          <Loader2 size={16} className="animate-spin stroke-[3px]" />
+          <Loader2 size={16} className='animate-spin stroke-[3px]' />
         ) : (
-          <Plus size={16} className="stroke-[3px]" />
+          <Plus size={16} className='stroke-[3px]' />
         )}
         Add Identity
       </button>

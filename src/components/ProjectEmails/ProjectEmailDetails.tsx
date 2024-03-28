@@ -32,13 +32,13 @@ export function ProjectEmailDetails(props: ProjectEmailDetailsProps) {
     return (
       <PageError
         error={error?.message || 'Something went wrong!'}
-        className="sm:pt-0"
+        className='sm:pt-0'
       />
     );
   }
 
   if (!data) {
-    return <LoadingMessage message="Loading Project Identities..." />;
+    return <LoadingMessage message='Loading Project Identities...' />;
   }
 
   const status = data.status.replace('-', ' ');
@@ -46,28 +46,28 @@ export function ProjectEmailDetails(props: ProjectEmailDetailsProps) {
 
   return (
     <section>
-      <div className="flex items-center gap-4">
-        <span className="flex h-12 w-12 items-center justify-center rounded-md border  border-zinc-800 bg-zinc-900">
+      <div className='flex items-center gap-4'>
+        <span className='flex h-12 w-12 items-center justify-center rounded-md border  border-zinc-800 bg-zinc-900'>
           <Box size={28} />
         </span>
         <div>
-          <span className="text-sm text-zinc-500">Email</span>
-          <h2 className="text-xl font-semibold">{data.to}</h2>
+          <span className='text-sm text-zinc-500'>Email</span>
+          <h2 className='text-xl font-semibold'>{data.to}</h2>
         </div>
       </div>
 
-      <div className="mb-6 mt-10 grid grid-cols-2 gap-3">
+      <div className='mb-6 mt-10 grid grid-cols-2 gap-3'>
         <div>
-          <h3 className="text-xs uppercase text-zinc-400">From</h3>
-          <p className="mt-1 truncate">{data.from}</p>
+          <h3 className='text-xs uppercase text-zinc-400'>From</h3>
+          <p className='mt-1 truncate'>{data.from}</p>
         </div>
         <div>
-          <h3 className="text-xs uppercase text-zinc-400">To</h3>
-          <p className="mt-1 truncate">{data.to}</p>
+          <h3 className='text-xs uppercase text-zinc-400'>To</h3>
+          <p className='mt-1 truncate'>{data.to}</p>
         </div>
         <div>
-          <h3 className="text-xs uppercase text-zinc-400">Subject</h3>
-          <p className="mt-1 truncate">{data.subject}</p>
+          <h3 className='text-xs uppercase text-zinc-400'>Subject</h3>
+          <p className='mt-1 truncate'>{data.subject}</p>
         </div>
       </div>
 

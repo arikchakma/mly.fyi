@@ -21,7 +21,7 @@ export function CopyableTableField(props: CopyableTableProps) {
       )}
       onClick={() => copy(value)}
     >
-      <span className="truncate">{value}</span>
+      <span className='truncate'>{value}</span>
 
       <span
         className={cn(
@@ -30,7 +30,7 @@ export function CopyableTableField(props: CopyableTableProps) {
         )}
       >
         {isCopied ? (
-          <Check size={14} className="text-green-600" />
+          <Check size={14} className='text-green-600' />
         ) : (
           <Clipboard size={14} />
         )}
