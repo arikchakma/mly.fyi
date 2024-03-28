@@ -12,7 +12,7 @@ export function EmailEventTable(props: EmailEventTableProps) {
   return (
     <>
       <h3 className="text-xs uppercase text-zinc-400">Email Events</h3>
-      <ul className="mt-2 flex min-h-32 items-center overflow-x-auto rounded-md border border-zinc-800 bg-zinc-900/40 p-2">
+      <ul className="no-scrollbar mt-2 flex min-h-32 items-center overflow-x-auto rounded-md border border-zinc-800 bg-zinc-900/40 p-2">
         {events.map((event) => {
           const timestamp = DateTime.fromJSDate(
             new Date(event.timestamp),

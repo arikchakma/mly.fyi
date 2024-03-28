@@ -30,8 +30,7 @@ export function ListProjectEmailsTable(props: ListProjectEmailsTableProps) {
         {emails?.map((email) => {
           const status = email.status.replace('-', ' ');
           const sendAt =
-            email.status === 'sent' &&
-            email.sendAt &&
+            email?.sendAt &&
             DateTime.fromJSDate(new Date(email?.sendAt)).toRelative();
 
           const detailsUrl = `/projects/${email.projectId}/emails/${email.id}`;

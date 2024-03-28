@@ -1,5 +1,8 @@
 ---
+import '../styles/global.css';
 import { Toaster } from 'sonner';
+import { FocusManager } from '../components/FocusManager';
+import { OnlineManager } from '../components/OnlineManager';
 
 export interface Props {
   title: string;
@@ -40,6 +43,8 @@ const { title = 'Tiny EMail', description = '', noIndex = false } = Astro.props;
       <slot />
 
       <Toaster position='bottom-center' client:load />
+      <FocusManager client:load />
+      <OnlineManager client:load />
     </main>
   </body>
 </html>
