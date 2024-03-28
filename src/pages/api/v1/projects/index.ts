@@ -53,7 +53,7 @@ async function handle(params: ListProjectsRequest) {
   });
 
   const projectIds = associatedMembers.map((member) => member.projectId);
-  
+
   let allProjects: {
     id: string;
     name: string;

@@ -45,55 +45,55 @@ export function RegistrationForm(props: RegistrationFormProps) {
   const isLoading = register.status === 'pending';
 
   return (
-    <form className="flex w-full flex-col gap-2" onSubmit={onSubmit}>
-      <label htmlFor="name" className="sr-only">
+    <form className='flex w-full flex-col gap-2' onSubmit={onSubmit}>
+      <label htmlFor='name' className='sr-only'>
         Name
       </label>
       <input
-        name="name"
-        type="text"
-        autoComplete="name"
+        name='name'
+        type='text'
+        autoComplete='name'
         min={3}
         max={50}
         required
-        className="block w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600"
-        placeholder="Full Name"
+        className='block w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600'
+        placeholder='Full Name'
         value={name}
         onInput={(e) => setName(String((e.target as any).value))}
       />
-      <label htmlFor="email" className="sr-only">
+      <label htmlFor='email' className='sr-only'>
         Email address
       </label>
       <input
-        name="email"
-        type="email"
-        autoComplete="email"
+        name='email'
+        type='email'
+        autoComplete='email'
         required
-        className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600"
-        placeholder="Email Address"
+        className='w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600'
+        placeholder='Email Address'
         value={email}
         onInput={(e) => setEmail(String((e.target as any).value))}
       />
-      <label htmlFor="password" className="sr-only">
+      <label htmlFor='password' className='sr-only'>
         Password
       </label>
       <input
-        name="password"
-        type="password"
-        autoComplete="current-password"
+        name='password'
+        type='password'
+        autoComplete='current-password'
         min={6}
         max={50}
         required
-        className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600"
-        placeholder="Password"
+        className='w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600'
+        placeholder='Password'
         value={password}
         onInput={(e) => setPassword(String((e.target as any).value))}
       />
 
       <button
-        type="submit"
+        type='submit'
         disabled={isLoading}
-        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:ring-2 focus:ring-[#333] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60"
+        className='inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:ring-2 focus:ring-[#333] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60'
       >
         {isLoading ? 'Please wait...' : 'Continue to Verify Email'}
       </button>

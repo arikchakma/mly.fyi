@@ -52,7 +52,7 @@ export function TriggerVerifyIdentity(props: TriggerVerifyIdentityProps) {
       }}
     >
       {isPending ? (
-        <Loader2 size={iconSize} className="animate-spin" />
+        <Loader2 size={iconSize} className='animate-spin' />
       ) : (
         <RefreshCcw size={iconSize} />
       )}
