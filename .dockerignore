@@ -3,6 +3,8 @@ dist/
 
 # generated types
 .astro/
+.idea/
+.vscode/
 
 # dependencies
 node_modules/
@@ -13,6 +15,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# binaries
+litestream
+
+# data
+data/
+
 # environment variables
 .env
 .env.production
@@ -22,6 +30,3 @@ pnpm-debug.log*
 
 # Ignore .sqlite3 files
 *.sqlite3
-
-# Ignore idea files
-.idea

@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  tiny-stack:
+    image: mly-fyi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mly-fyi
+    env_file:
+      - .env.production
+    ports:
+      - "4321:4321"
+    volumes:
+      - $PWD/data:/data

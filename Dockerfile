@@ -1,0 +1,50 @@
+ARG NODE_VERSION=20
+
+FROM node:${NODE_VERSION}-slim AS base
+
+ARG BUN_VERSION=1.0.36
+
+WORKDIR /app
+
+
+# Install Bun in the specified version
+RUN apt update && apt install -y bash curl unzip && \
+ curl https://bun.sh/install | bash -s -- bun-v${BUN_VERSION}
+
+ENV PATH="${PATH}:/root/.bun/bin"
+
+COPY package.json bun.lockb ./
+
+FROM base AS build
+RUN bun install --frozen-lockfile
+
+COPY . .
+RUN npm run build
+
+FROM base AS runtime
+
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+
+# Move the drizzle directory to the runtime image
+COPY --from=build /app/drizzle ./drizzle
+
+# Move the litestream binary to the runtime image from the litestream image
+# You can use a specific version of litestream by changing the tag
+# COPY --from=litestream/litestream:0.3.13 /usr/local/bin/litestream /usr/local/bin/litestream
+COPY --from=litestream/litestream:latest /usr/local/bin/litestream /usr/local/bin/litestream
+
+# Move the run script and litestream config to the runtime image
+COPY --from=build /app/scripts/run.sh run.sh
+RUN chmod +x run.sh
+
+COPY --from=build /app/litestream.yml /etc/litestream.yml
+
+# Create the data directory for the database
+RUN mkdir -p /data
+
+ENV HOST=0.0.0.0
+ENV PORT=4321
+ENV NODE_ENV=production
+EXPOSE 4321
+CMD ["sh", "run.sh"]
