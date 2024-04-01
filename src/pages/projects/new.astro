@@ -3,12 +3,12 @@ import Layout from '../../layouts/Layout.astro';
 import { ProjectForm } from '../../components/Projects/ProjectForm';
 ---
 
-<Layout title='Projects | Roadmap Mail'>
-  <div class='mx-auto max-w-sm py-12'>
-    <h2 class='mb-1 text-xl font-medium'>Create Project</h2>
-    <p class='mb-4 text-sm text-zinc-500'>
-      Fill the details below to get started
-    </p>
-    <ProjectForm client:only='react' />
-  </div>
+<Layout title="Projects | mly.fyi">
+	<div class="mx-auto max-w-sm py-12">
+		<h2 class="mb-1 text-xl font-medium">Create Project</h2>
+		<p class="mb-4 text-sm text-zinc-500">
+			Fill the details below to get started
+		</p>
+		<ProjectForm client:load />
+	</div>
 </Layout>

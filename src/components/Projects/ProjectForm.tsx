@@ -1,20 +1,21 @@
-import type { FormEvent } from 'react';
-import { useState, useId } from 'react';
-import { httpPost } from '../../lib/http.ts';
-import { toast } from 'sonner';
-import { DateTime } from 'luxon';
+import { queryClient } from '@/utils/query-client.ts';
 import { useMutation } from '@tanstack/react-query';
+import { DateTime } from 'luxon';
+import type { FormEvent } from 'react';
+import { useId, useState } from 'react';
+import { toast } from 'sonner';
+import { httpPost } from '../../lib/http.ts';
 import type {
   CreateProjectBody,
   CreateProjectResponse,
 } from '../../pages/api/v1/projects/create.ts';
-import { TimezoneSelect } from '../TimezoneSelect.tsx';
-import { queryClient } from '@/utils/query-client.ts';
+import { Input } from '../Interface/Input.tsx';
+import { TimezonePopover } from './TimezonePopover';
 
 export function ProjectForm() {
   const [name, setName] = useState<string>('');
   const [url, setUrl] = useState<string>('');
-  const [timezone, setTimezone] = useState<string>(DateTime.local().zoneName);
+  const [timezone, setTimezone] = useState<string>('');
 
   const createProject = useMutation(
     {
@@ -63,11 +64,11 @@ export function ProjectForm() {
       >
         Project Name
       </label>
-      <input
+      <Input
         id={nameFieldId}
         type='text'
         required
-        className='mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600'
+        className='mt-1'
         placeholder='Project Name'
         min={3}
         value={name}
@@ -79,24 +80,27 @@ export function ProjectForm() {
       >
         Project Website
       </label>
-      <input
+      <Input
         id={urlFieldId}
         type='url'
         required
-        className='mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600'
+        className='mt-2'
         placeholder='Project Website'
         value={url}
         onInput={(e) => setUrl(String((e.target as any).value))}
       />
 
       <label
-        htmlFor='text'
-        className='mt-4 block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+        htmlFor='timezone-selector'
+        className='mt-4 mb-2 block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
       >
         Timezone
       </label>
 
-      <TimezoneSelect value={timezone} setValue={setTimezone} />
+      <TimezonePopover
+        timezoneId={timezone}
+        onTimezoneChange={(timezone) => setTimezone(timezone.id)}
+      />
 
       <button
         type='submit'
