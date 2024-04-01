@@ -115,8 +115,6 @@ async function handle(params: GetProjectStatsRequest) {
       ),
     );
 
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
   return json<GetProjectStatsResponse>({
     totalEmailsSent: totalEmailsSent?.[0]?.count || 0,
     totalEmailsOpened: totalEmailsOpened?.[0]?.count || 0,
