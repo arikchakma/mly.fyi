@@ -23,6 +23,7 @@ async function handleEvent(
     columns: {
       id: true,
       sendAt: true,
+      projectId: true,
     },
   });
 
@@ -33,6 +34,7 @@ async function handleEvent(
   const newEmailLogEventId = newId('emailLogEvent');
   await db.insert(emailLogEvents).values({
     id: newEmailLogEventId,
+    projectId: emailLog.projectId,
     emailLogId: emailLog.id,
     email: recipient,
     type,
