@@ -1,0 +1,20 @@
+---
+import AuthLayout from '../../layouts/AuthLayout.astro';
+import { TriggerVerifyAccount } from '../../components/AuthenticationFlow/TriggerVerifyAccount';
+
+const { verificationCode } = Astro.params;
+if (!verificationCode) {
+	return Astro.redirect('/login');
+}
+
+const { currentUserId } = Astro.locals;
+if (currentUserId) {
+	return Astro.redirect('/');
+}
+---
+
+<AuthLayout title="Verify account" noIndex={true}>
+	<div class="container mx-auto py-16">
+		<TriggerVerifyAccount code={verificationCode} client:load />
+	</div>
+</AuthLayout>

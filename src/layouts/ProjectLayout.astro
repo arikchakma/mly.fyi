@@ -5,15 +5,15 @@ import { ProjectNavigation } from '../components/Projects/ProjectNavigation';
 import { PageError } from '../components/Errors/PageError';
 
 export interface Props {
-  project?: Partial<{
-    id: string;
-    name: string;
-  }>;
-  projectError?: AppError | FetchError | null;
-  title: string;
-  projectId: string;
-  identityId?: string;
-  emailId?: string;
+	project?: Partial<{
+		id: string;
+		name: string;
+	}>;
+	projectError?: AppError | FetchError | null;
+	title: string;
+	projectId: string;
+	identityId?: string;
+	emailId?: string;
 }
 
 const { project, projectError, identityId, emailId, ...props } = Astro.props;
@@ -22,26 +22,28 @@ const deafultUrl = Astro.url.toString();
 ---
 
 <Layout {...props}>
-  {
-    !hasError && (
-      <>
-        <ProjectNavigation
-          url={deafultUrl}
-          projectName={project?.name!}
-          projectId={project?.id!}
-          identityId={identityId!}
-          emailId={emailId!}
-        />
-        <slot />
-      </>
-    )
-  }
-  {
-    hasError && (
-      <PageError
-        error={projectError?.message || 'Something went wrong'}
-        className='mt-20'
-      />
-    )
-  }
+	{
+		!hasError && (
+			<>
+				<ProjectNavigation
+					url={deafultUrl}
+					projectName={project?.name!}
+					projectId={project?.id!}
+					identityId={identityId!}
+					emailId={emailId!}
+				/>
+				<section class="px-4">
+					<slot />
+				</section>
+			</>
+		)
+	}
+	{
+		hasError && (
+			<PageError
+				error={projectError?.message || 'Something went wrong'}
+				className="mt-20"
+			/>
+		)
+	}
 </Layout>

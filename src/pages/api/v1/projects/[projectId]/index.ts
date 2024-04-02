@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import {
-  type AllowedMemberRoles,
+  type AllowedProjectMemberRole,
   type AllowedProjectMemberStatus,
   projectMembers,
   projects,
@@ -21,8 +21,9 @@ import Joi from 'joi';
 
 export interface GetProjectResponse extends Project {
   memberId: string;
-  role: AllowedMemberRoles;
+  role: AllowedProjectMemberRole;
   status: AllowedProjectMemberStatus;
+  canManage: boolean;
 }
 
 export interface GetProjectRequest
@@ -74,6 +75,7 @@ async function handle(params: GetProjectRequest) {
     status: member.status,
     role: member.role,
     memberId: member.id,
+    canManage: member.role === 'manager' || member.role === 'admin',
   });
 }
 

@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { text, sqliteTable, integer } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { users } from './users';
 
 export const allowedProjectSetupStatus = [
@@ -31,10 +31,19 @@ export const projects = sqliteTable('projects', {
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
-const allowedProjectMemberRoles = ['admin', 'manager', 'viewer'] as const;
-const allowedProjectMemberStatus = ['invited', 'joined', 'rejected'] as const;
+export const allowedProjectMemberRoles = [
+  'admin',
+  'manager',
+  'viewer',
+] as const;
+export const allowedProjectMemberStatus = [
+  'invited',
+  'joined',
+  'rejected',
+] as const;
 
-export type AllowedMemberRoles = (typeof allowedProjectMemberRoles)[number];
+export type AllowedProjectMemberRole =
+  (typeof allowedProjectMemberRoles)[number];
 export type AllowedProjectMemberStatus =
   (typeof allowedProjectMemberStatus)[number];
 
@@ -45,11 +54,9 @@ export const projectMembers = sqliteTable('project_members', {
     .references(() => projects.id, {
       onDelete: 'cascade',
     }),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, {
-      onDelete: 'cascade',
-    }),
+  userId: text('user_id').references(() => users.id, {
+    onDelete: 'cascade',
+  }),
   invitedEmail: text('invited_email').notNull(),
   role: text('role', {
     enum: allowedProjectMemberRoles,
