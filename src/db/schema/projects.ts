@@ -25,10 +25,10 @@ export const projects = sqliteTable('projects', {
   region: text('region'),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });
 
 export const allowedProjectMemberRoles = [
@@ -74,10 +74,10 @@ export const projectMembers = sqliteTable('project_members', {
   resendInviteCount: integer('resend_invite_count').default(0),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });
 
 const allowedIdentityVerificationStatus = [
@@ -161,10 +161,10 @@ export const projectIdentities = sqliteTable('project_identities', {
   configurationSetName: text('configuration_set_name'),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });
 
 export const allowedProjectApiKeyStatus = ['active', 'inactive'] as const;
@@ -194,8 +194,8 @@ export const projectApiKeys = sqliteTable('project_api_keys', {
   lastUsedAt: integer('last_used_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });

@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../Interface/Popover';
 import { TimezonePopoverContent } from './TimezonePopoverContent';
 
 type TimezonePopoverProps = {
-  timezoneId?: string;
+  timezoneId?: TimezoneInfo['id'] | null;
   onTimezoneChange?: (timezone: TimezoneInfo) => void;
 };
 
@@ -28,7 +28,7 @@ export function TimezonePopover(props: TimezonePopoverProps) {
           className='justify-between px-3 text-base font-normal'
         >
           {timezoneInfo ? (
-            <span>{timezoneInfo.standardName}</span>
+            <span>{timezoneInfo.name}</span>
           ) : (
             <span className='text-zinc-400'>Select timezone</span>
           )}

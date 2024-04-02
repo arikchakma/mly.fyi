@@ -44,10 +44,10 @@ export const emailLogs = sqliteTable(
     sendAt: integer('send_at', { mode: 'timestamp' }),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(unixepoch())`),
     updatedAt: integer('updated_at', { mode: 'timestamp' })
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(unixepoch())`),
   },
   (emailLogs) => {
     return {
@@ -86,5 +86,5 @@ export const emailLogEvents = sqliteTable('email_log_events', {
   link: text('link'),
   timestamp: integer('timestamp', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });

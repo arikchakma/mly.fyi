@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { emailLogEvents, emailLogs, projects } from '@/db/schema';
+import { emailLogEvents, projects } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
 import {
   type HandleRoute,
@@ -9,22 +9,42 @@ import {
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
 import { json } from '@/lib/response';
+import { getAllDatesBetween } from '@/utils/date';
 import type { APIRoute } from 'astro';
-import { and, count, countDistinct, eq, isNotNull } from 'drizzle-orm';
+import { and, asc, countDistinct, eq, sql } from 'drizzle-orm';
 import Joi from 'joi';
+import { DateTime } from 'luxon';
+
+type ProjectStat = {
+  date: string;
+  sent: number;
+  delivered: number;
+  opened: number;
+  clicked: number;
+  bounced: number;
+  complained: number;
+};
 
 export interface GetProjectStatsResponse {
-  totalEmailsSent: number;
-  totalEmailsOpened: number;
-  totalEmailsClicked: number;
-  totalEmailsBounced: number;
-  totalEmailsMarkedAsSpam: number;
+  stats: ProjectStat[];
+  total: {
+    sent: number;
+    delivered: number;
+    opened: number;
+    clicked: number;
+    bounced: number;
+    complained: number;
+  };
+}
+
+export interface GetProjectStatsQuery {
+  days: number;
 }
 
 export interface GetProjectStatsRequest
   extends RouteParams<
     any,
-    any,
+    GetProjectStatsQuery,
     {
       projectId: string;
     }
@@ -44,7 +64,26 @@ async function validate(params: GetProjectStatsRequest) {
     throw paramsError;
   }
 
-  return params;
+  const querySchema = Joi.object({
+    days: Joi.number().min(1).max(365).default(10),
+  });
+
+  const { error: queryError, value: queryValue } = querySchema.validate(
+    params.query,
+    {
+      abortEarly: false,
+      stripUnknown: true,
+    },
+  );
+
+  if (queryError) {
+    throw queryError;
+  }
+
+  return {
+    ...params,
+    query: queryValue,
+  };
 }
 
 async function handle(params: GetProjectStatsRequest) {
@@ -65,62 +104,83 @@ async function handle(params: GetProjectStatsRequest) {
 
   await requireProjectMember(currentUser.id, projectId);
 
-  const totalEmailsSent = await db
-    .select({ count: countDistinct(emailLogEvents.emailLogId) })
-    .from(emailLogEvents)
-    .where(
-      and(
-        eq(emailLogEvents.projectId, projectId),
-        eq(emailLogEvents.type, 'sent'),
-      ),
-    );
+  const { days } = params.query;
 
-  const totalEmailsOpened = await db
-    .select({ count: countDistinct(emailLogEvents.emailLogId) })
-    .from(emailLogEvents)
-    .where(
-      and(
-        eq(emailLogEvents.projectId, projectId),
-        eq(emailLogEvents.type, 'opened'),
-      ),
-    );
+  const from = DateTime.now().minus({ days: days - 1 });
+  const to = DateTime.now();
 
-  const totalEmailsClicked = await db
-    .select({ count: countDistinct(emailLogEvents.emailLogId) })
+  const stats = await db
+    .select({
+      // TODO: Implement timezone support
+      // date: sql<string>`strftime('%Y-%m-%d', datetime(timestamp, 'unixepoch', 'localtime', '+00:00')) AS date`,
+      date: sql<string>`strftime('%Y-%m-%d', datetime(timestamp, 'unixepoch', 'localtime')) AS date`,
+      sent: countDistinct(
+        sql`CASE WHEN type = 'sent' THEN email_log_id ELSE NULL END`,
+      ),
+      delivered: countDistinct(
+        sql`CASE WHEN type = 'delivered' THEN email_log_id ELSE NULL END`,
+      ),
+      opened: countDistinct(
+        sql`CASE WHEN type = 'opened' THEN email_log_id ELSE NULL END`,
+      ),
+      clicked: countDistinct(
+        sql`CASE WHEN type = 'clicked' THEN email_log_id ELSE NULL END`,
+      ),
+      bounced: countDistinct(
+        sql`CASE WHEN type = 'bounced' THEN email_log_id ELSE NULL END`,
+      ),
+      complained: countDistinct(
+        sql`CASE WHEN type = 'complained' THEN email_log_id ELSE NULL END`,
+      ),
+    })
     .from(emailLogEvents)
     .where(
       and(
         eq(emailLogEvents.projectId, projectId),
-        eq(emailLogEvents.type, 'clicked'),
+        sql`"timestamp" >= ${from.toMillis() / 1000}`,
+        sql`"timestamp" <= ${to.toMillis() / 1000}`,
       ),
-    );
+    )
+    .groupBy(sql`date`)
+    .orderBy(asc(sql`date`));
 
-  const totalEmailsBounced = await db
-    .select({ count: countDistinct(emailLogEvents.emailLogId) })
-    .from(emailLogEvents)
-    .where(
-      and(
-        eq(emailLogEvents.projectId, projectId),
-        eq(emailLogEvents.type, 'bounced'),
-      ),
-    );
+  const enrichedStats = getAllDatesBetween(from, to).map((date) => {
+    const stat = stats.find((s) => s.date === date);
 
-  const totalEmailsMarkedAsSpam = await db
-    .select({ count: count(emailLogEvents.id) })
-    .from(emailLogEvents)
-    .where(
-      and(
-        eq(emailLogEvents.projectId, projectId),
-        eq(emailLogEvents.type, 'complained'),
-      ),
-    );
+    return {
+      date,
+      sent: stat?.sent || 0,
+      delivered: stat?.delivered || 0,
+      opened: stat?.opened || 0,
+      clicked: stat?.clicked || 0,
+      bounced: stat?.bounced || 0,
+      complained: stat?.complained || 0,
+    };
+  });
+
+  const total = enrichedStats.reduce(
+    (acc, stat) => {
+      acc.sent += stat.sent;
+      acc.delivered += stat.delivered;
+      acc.opened += stat.opened;
+      acc.clicked += stat.clicked;
+      acc.bounced += stat.bounced;
+      acc.complained += stat.complained;
+      return acc;
+    },
+    {
+      sent: 0,
+      delivered: 0,
+      opened: 0,
+      clicked: 0,
+      bounced: 0,
+      complained: 0,
+    },
+  );
 
   return json<GetProjectStatsResponse>({
-    totalEmailsSent: totalEmailsSent?.[0]?.count || 0,
-    totalEmailsOpened: totalEmailsOpened?.[0]?.count || 0,
-    totalEmailsClicked: totalEmailsClicked?.[0]?.count || 0,
-    totalEmailsBounced: totalEmailsBounced?.[0]?.count || 0,
-    totalEmailsMarkedAsSpam: totalEmailsMarkedAsSpam?.[0]?.count || 0,
+    stats: enrichedStats,
+    total,
   });
 }
 

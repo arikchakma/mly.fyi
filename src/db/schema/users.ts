@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { text, sqliteTable, integer, index } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const allowedAuthProvider = ['github', 'google', 'email'] as const;
 
@@ -28,10 +28,10 @@ export const users = sqliteTable(
     verifiedAt: integer('verified_at', { mode: 'timestamp' }),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(unixepoch())`),
     updatedAt: integer('updated_at', { mode: 'timestamp' })
       .notNull()
-      .default(sql`CURRENT_TIMESTAMP`),
+      .default(sql`(unixepoch())`),
   },
   (users) => ({
     emailIdx: index('email_idx').on(users.email),

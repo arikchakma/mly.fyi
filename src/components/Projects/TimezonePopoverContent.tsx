@@ -5,7 +5,7 @@ import {
   type TimezoneInfo,
   getTimezoneInfo,
   getTimezoneMatches,
-} from '../../utils/timezone.js';
+} from '../../utils/timezone';
 
 type TimezonePopoverContentProps = {
   onClose?: () => void;
@@ -149,11 +149,9 @@ export function TimezonePopoverContent(props: TimezonePopoverContentProps) {
                     fontFeatureSettings: '"tnum", "lnum"',
                   }}
                 >
-                  GMT{timezoneInfo?.gmtSign}
-                  {timezoneInfo?.gmtOffset}
+                  GTM{timezoneInfo?.offset}
                 </span>
-                {timezoneInfo?.country || timezoneInfo?.name} —{' '}
-                {timezoneInfo?.city}
+                {timezoneInfo?.name}
               </button>
             );
           })}

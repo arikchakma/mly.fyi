@@ -9,13 +9,15 @@ import type {
   CreateProjectBody,
   CreateProjectResponse,
 } from '../../pages/api/v1/projects/create.ts';
+import { Button } from '../Interface/Button.tsx';
 import { Input } from '../Interface/Input.tsx';
+import { Label } from '../Interface/Label.tsx';
 import { TimezonePopover } from './TimezonePopover';
 
 export function ProjectForm() {
   const [name, setName] = useState<string>('');
   const [url, setUrl] = useState<string>('');
-  const [timezone, setTimezone] = useState<string>('');
+  const [timezone, setTimezone] = useState(DateTime.local().zoneName);
 
   const createProject = useMutation(
     {
@@ -35,8 +37,8 @@ export function ProjectForm() {
     toast.promise(
       createProject.mutateAsync({
         name,
-        timezone,
         url,
+        timezone,
       }),
       {
         loading: 'Creating project...',
@@ -58,28 +60,22 @@ export function ProjectForm() {
 
   return (
     <form className='w-full' onSubmit={handleFormSubmit}>
-      <label
-        htmlFor={nameFieldId}
-        className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-      >
+      <Label htmlFor={nameFieldId} aria-required={true}>
         Project Name
-      </label>
+      </Label>
       <Input
         id={nameFieldId}
         type='text'
         required
-        className='mt-1'
+        className='mt-2'
         placeholder='Project Name'
         min={3}
         value={name}
         onInput={(e) => setName(String((e.target as any).value))}
       />
-      <label
-        htmlFor={urlFieldId}
-        className='mt-4 block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-      >
+      <Label htmlFor={urlFieldId} className='mt-4' aria-required={true}>
         Project Website
-      </label>
+      </Label>
       <Input
         id={urlFieldId}
         type='url'
@@ -90,25 +86,18 @@ export function ProjectForm() {
         onInput={(e) => setUrl(String((e.target as any).value))}
       />
 
-      <label
-        htmlFor='timezone-selector'
-        className='mt-4 mb-2 block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-      >
+      <Label htmlFor='timezone-selector' className='mt-4 mb-2'>
         Timezone
-      </label>
+      </Label>
 
       <TimezonePopover
         timezoneId={timezone}
         onTimezoneChange={(timezone) => setTimezone(timezone.id)}
       />
 
-      <button
-        type='submit'
-        disabled={isLoading}
-        className='mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:ring-2 focus:ring-[#333] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60'
-      >
+      <Button type='submit' disabled={isLoading} className='mt-4'>
         {isLoading ? 'Please wait...' : 'Create Project'}
-      </button>
+      </Button>
     </form>
   );
 }

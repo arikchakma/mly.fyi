@@ -1,5 +1,7 @@
-import { formatCommaNumber } from '@/utils/number';
+import { cn } from '@/utils/classname';
+import { formatCommaNumber, getPercentage } from '@/utils/number';
 import { useQuery } from '@tanstack/react-query';
+import { DateTime } from 'luxon';
 import { httpGet } from '../../lib/http';
 import type { GetProjectStatsResponse } from '../../pages/api/v1/projects/[projectId]/stats';
 import { queryClient } from '../../utils/query-client';
@@ -39,6 +41,38 @@ export function ProjectDashboard(props: ProjectDashboardProps) {
     return <LoadingMessage message='Loading Project Identities...' />;
   }
 
+  const { total, stats } = data;
+  const deliveredEvents = stats.map((stat) => {
+    return {
+      date: stat.date,
+      count: stat.delivered,
+    };
+  });
+  const openedEvents = stats.map((stat) => {
+    return {
+      date: stat.date,
+      count: stat.opened,
+    };
+  });
+  const clickedEvents = stats.map((stat) => {
+    return {
+      date: stat.date,
+      count: stat.clicked,
+    };
+  });
+  const bouncedEvents = stats.map((stat) => {
+    return {
+      date: stat.date,
+      count: stat.bounced,
+    };
+  });
+  const complainedEvents = stats.map((stat) => {
+    return {
+      date: stat.date,
+      count: stat.complained,
+    };
+  });
+
   return (
     <div className=''>
       <h3 className='text-xl font-semibold'>Email Statistics</h3>
@@ -46,23 +80,41 @@ export function ProjectDashboard(props: ProjectDashboardProps) {
         Overview of email statistics for the project.
       </p>
 
-      <div className='grid grid-cols-1 gap-1.5 mt-6 sm:grid-cols-2'>
+      <div className='grid grid-cols-3 gap-6 mt-10'>
         <ProjectStatisticColumn
-          label='Total Sent'
-          value={data.totalEmailsSent}
+          label='Delivered'
+          total={total.delivered}
+          percentage={getPercentage(total.delivered, total.sent)}
+          events={deliveredEvents}
+          barClassName='bg-green-950 after:bg-green-400'
         />
-        <ProjectStatisticColumn label='Opened' value={data.totalEmailsOpened} />
+        <ProjectStatisticColumn
+          label='Opened'
+          total={total.opened}
+          percentage={getPercentage(total.opened, total.sent)}
+          events={openedEvents}
+          barClassName='bg-blue-950 after:bg-blue-400'
+        />
         <ProjectStatisticColumn
           label='Clicked'
-          value={data.totalEmailsClicked}
+          total={total.clicked}
+          percentage={getPercentage(total.clicked, total.sent)}
+          events={clickedEvents}
+          barClassName='bg-purple-950 after:bg-purple-400'
         />
         <ProjectStatisticColumn
           label='Bounced'
-          value={data.totalEmailsBounced}
+          total={total.bounced}
+          percentage={getPercentage(total.bounced, total.sent)}
+          events={bouncedEvents}
+          barClassName='bg-red-950 after:bg-red-400'
         />
         <ProjectStatisticColumn
           label='Complaints'
-          value={data.totalEmailsMarkedAsSpam}
+          total={total.complained}
+          percentage={getPercentage(total.complained, total.sent)}
+          events={complainedEvents}
+          barClassName='bg-yellow-950 after:bg-yellow-400'
         />
       </div>
     </div>
@@ -71,20 +123,56 @@ export function ProjectDashboard(props: ProjectDashboardProps) {
 
 type ProjectStatisticColumnProps = {
   label: string;
-  value: number;
+  total: number;
+  percentage: string;
+  events: { date: string; count: number }[];
+  barClassName?: string;
 };
 
 function ProjectStatisticColumn(props: ProjectStatisticColumnProps) {
-  const { label, value } = props;
+  const { label, total, percentage, events, barClassName } = props;
 
   return (
-    <div className='bg-zinc-900 border border-zinc-800 rounded-md p-2.5'>
-      <h3 className='text-sm tracking-tight text-zinc-400 font-medium'>
-        {label}
-      </h3>
-      <p className='mt-1 font-semibold font-mono tabular-nums'>
-        {formatCommaNumber(value)}
+    <div>
+      <h4 className='text-sm'>{label}</h4>
+      <p className='mt-1 text-lg font-semibold font-mono tabular-nums'>
+        {formatCommaNumber(total)}
+        <span className='text-sm ml-2 font-normal'>({percentage}%)</span>
       </p>
+
+      <div
+        className='h-[180px] grid gap-px items-end mt-6'
+        style={{
+          gridTemplateColumns: `repeat(${events.length}, 1fr)`,
+          gridTemplateRows: `repeat(1, 1fr)`,
+        }}
+      >
+        {events.map((event) => {
+          const percentage = getPercentage(event.count, total);
+          const date = DateTime.fromISO(event.date).toFormat('dd');
+
+          return (
+            <div
+              key={event.date}
+              className='h-full gap-3 flex flex-col justify-end items-center'
+            >
+              <div
+                style={{
+                  height: `${percentage}%`,
+                }}
+                className={cn(
+                  'w-full relative after:absolute after:bottom-full after:left-0 after:w-full after:h-0.5 after:bg-zinc-400',
+                  barClassName,
+                )}
+              />
+
+              <span className='text-xs text-zinc-600 font-mono tabular-nums'>
+                {date}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
