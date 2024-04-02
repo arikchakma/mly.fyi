@@ -1,12 +1,12 @@
 import { db } from '@/db';
-import { projectMembers, type AllowedMemberRoles } from '@/db/schema';
+import { type AllowedProjectMemberRole, projectMembers } from '@/db/schema';
 import { HttpError } from '@/lib/http-error';
 import { and, eq } from 'drizzle-orm';
 
 export async function requireProjectMember(
   userId: string,
   projectId: string,
-  allowedRoles: AllowedMemberRoles[] = [],
+  allowedRoles: AllowedProjectMemberRole[] = [],
 ) {
   const projectMember = await db.query.projectMembers.findFirst({
     where: and(

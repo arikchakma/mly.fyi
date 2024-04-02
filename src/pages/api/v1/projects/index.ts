@@ -1,26 +1,26 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
 import {
-  handler,
+  type AllowedProjectMemberRole,
+  type AllowedProjectMemberStatus,
+  projectMembers,
+  projects,
+} from '@/db/schema';
+import type { Project } from '@/db/types';
+import {
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import { db } from '@/db';
-import {
-  projectMembers,
-  projects,
-  type AllowedProjectMemberStatus,
-  type AllowedMemberRoles,
-} from '@/db/schema';
-import type { Project } from '@/db/types';
-import { and, eq, inArray, or } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import { and, eq, inArray, or } from 'drizzle-orm';
 
 export interface ListProjectsResponse
   extends Pick<Project, 'id' | 'name' | 'url'> {
   memberId: string;
-  role: AllowedMemberRoles;
+  role: AllowedProjectMemberRole;
   status: AllowedProjectMemberStatus;
 }
 

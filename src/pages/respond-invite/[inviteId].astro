@@ -1,0 +1,22 @@
+---
+import AuthLayout from '../../layouts/AuthLayout.astro';
+import { RespondInviteForm } from '../../components/AuthenticationFlow/RespondInviteForm';
+
+const { inviteId } = Astro.params;
+if (!inviteId) {
+	return Astro.redirect('/login');
+}
+
+const { currentUserId } = Astro.locals;
+if (!currentUserId) {
+	return Astro.redirect('/login');
+}
+---
+
+<AuthLayout title="Respond Invite" noIndex={true}>
+	<div
+		class="mx-auto flex flex-col items-start justify-start pb-28 pt-10 sm:max-w-[400px] sm:items-center sm:justify-center sm:pt-20"
+	>
+		<RespondInviteForm inviteId={inviteId} client:load />
+	</div>
+</AuthLayout>

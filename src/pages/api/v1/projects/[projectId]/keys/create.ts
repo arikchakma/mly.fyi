@@ -1,18 +1,18 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { projectApiKeys, projects } from '@/db/schema';
+import { requireProjectMember } from '@/helpers/project';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
-import { db } from '@/db';
-import { projectApiKeys, projects } from '@/db/schema';
-import { newApiKey, newId } from '@/lib/new-id';
-import { requireProjectMember } from '@/helpers/project';
-import { eq } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
+import { newApiKey, newId } from '@/lib/new-id';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface CreateProjectApiKeyResponse {
   key: string;
@@ -32,6 +32,19 @@ export interface CreateProjectApiKeyRequest
   > {}
 
 async function validate(params: CreateProjectApiKeyRequest) {
+  const paramSchema = Joi.object({
+    projectId: Joi.string().required(),
+  });
+
+  const { error: paramError } = paramSchema.validate(params.context.params, {
+    abortEarly: false,
+    stripUnknown: true,
+  });
+
+  if (paramError) {
+    throw paramError;
+  }
+
   const schema = Joi.object({
     name: Joi.string().min(3).required(),
   });

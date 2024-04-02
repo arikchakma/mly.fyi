@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { text, sqliteTable, integer } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { users } from './users';
 
 export const allowedProjectSetupStatus = [
@@ -25,16 +25,25 @@ export const projects = sqliteTable('projects', {
   region: text('region'),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });
 
-const allowedProjectMemberRoles = ['admin', 'manager', 'viewer'] as const;
-const allowedProjectMemberStatus = ['invited', 'joined', 'rejected'] as const;
+export const allowedProjectMemberRoles = [
+  'admin',
+  'manager',
+  'viewer',
+] as const;
+export const allowedProjectMemberStatus = [
+  'invited',
+  'joined',
+  'rejected',
+] as const;
 
-export type AllowedMemberRoles = (typeof allowedProjectMemberRoles)[number];
+export type AllowedProjectMemberRole =
+  (typeof allowedProjectMemberRoles)[number];
 export type AllowedProjectMemberStatus =
   (typeof allowedProjectMemberStatus)[number];
 
@@ -45,11 +54,9 @@ export const projectMembers = sqliteTable('project_members', {
     .references(() => projects.id, {
       onDelete: 'cascade',
     }),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, {
-      onDelete: 'cascade',
-    }),
+  userId: text('user_id').references(() => users.id, {
+    onDelete: 'cascade',
+  }),
   invitedEmail: text('invited_email').notNull(),
   role: text('role', {
     enum: allowedProjectMemberRoles,
@@ -67,10 +74,10 @@ export const projectMembers = sqliteTable('project_members', {
   resendInviteCount: integer('resend_invite_count').default(0),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });
 
 const allowedIdentityVerificationStatus = [
@@ -154,10 +161,10 @@ export const projectIdentities = sqliteTable('project_identities', {
   configurationSetName: text('configuration_set_name'),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });
 
 export const allowedProjectApiKeyStatus = ['active', 'inactive'] as const;
@@ -187,8 +194,8 @@ export const projectApiKeys = sqliteTable('project_api_keys', {
   lastUsedAt: integer('last_used_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .default(sql`(unixepoch())`),
 });
