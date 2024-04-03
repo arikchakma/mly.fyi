@@ -1,19 +1,19 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { emailLogEvents, emailLogs } from '@/db/schema';
+import { authenticateApiKey } from '@/lib/authenticate-api-key';
+import { type SendEmailBody, sendEmail } from '@/lib/email';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
-import { authenticateApiKey } from '@/lib/authenticate-api-key';
-import { db } from '@/db';
 import { HttpError } from '@/lib/http-error';
-import { sendEmail, type SendEmailBody } from '@/lib/email';
-import { DEFAULT_SES_REGION } from '@/lib/ses';
 import { newId } from '@/lib/new-id';
-import { emailLogEvents, emailLogs } from '@/db/schema';
+import { json } from '@/lib/response';
+import { DEFAULT_SES_REGION } from '@/lib/ses';
+import type { APIRoute } from 'astro';
+import Joi from 'joi';
 
 export interface SendEmailResponse {
   id: string;
@@ -55,7 +55,7 @@ async function validate(params: SendEmailRequest) {
 }
 
 async function handle(params: SendEmailRequest) {
-  const { body, userId, user, context } = params;
+  const { body, context } = params;
 
   const projectApiKey = await authenticateApiKey(context);
   const project = await db.query.projects.findFirst({
@@ -148,6 +148,7 @@ async function handle(params: SendEmailRequest) {
     });
     await db.insert(emailLogEvents).values({
       id: emailLogEventId,
+      projectId: project.id,
       emailLogId,
       email: to,
       type: 'error',
@@ -173,6 +174,7 @@ async function handle(params: SendEmailRequest) {
   });
   await db.insert(emailLogEvents).values({
     id: emailLogEventId,
+    projectId: project.id,
     emailLogId,
     email: to,
     type: 'sending',

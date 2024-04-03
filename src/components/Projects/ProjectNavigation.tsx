@@ -1,10 +1,11 @@
 import {
   BarChart2,
   Box,
-  FolderOpen,
-  Mail,
   Fingerprint,
+  FolderOpen,
   Key,
+  Mail,
+  Users2,
 } from 'lucide-react';
 import { cn } from '../../utils/classname';
 
@@ -60,6 +61,12 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
       alts: [`/projects/${projectId}/emails/${emailId}`],
     },
     {
+      name: 'Member',
+      icon: Users2,
+      href: `/projects/${projectId}/members`,
+      alts: [],
+    },
+    {
       name: 'Setting',
       icon: Box,
       href: `/projects/${projectId}/settings`,
@@ -68,7 +75,7 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
   ] as const;
 
   return (
-    <div className='w-full border-b border-zinc-800'>
+    <div className='w-full border-b border-zinc-800 px-4'>
       <div className='mx-auto flex max-w-3xl items-center justify-start gap-5'>
         <a
           href='/projects'

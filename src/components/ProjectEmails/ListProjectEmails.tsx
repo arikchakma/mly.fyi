@@ -1,12 +1,12 @@
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { httpGet } from '../../lib/http';
-import { queryClient } from '../../utils/query-client';
-import { useQuery } from '@tanstack/react-query';
-import { LoadingMessage } from '../LoadingMessage';
-import { PageError } from '../Errors/PageError';
 import type { ListProjectEmailsResponse } from '../../pages/api/v1/projects/[projectId]/emails/index';
-import { ListProjectEmailsTable } from './ListEmailsTable';
+import { queryClient } from '../../utils/query-client';
+import { PageError } from '../Errors/PageError';
+import { LoadingMessage } from '../LoadingMessage';
 import { Pagination } from '../Pagination';
+import { ListProjectEmailsTable } from './ListEmailsTable';
 
 type ListProjectEmailsProps = {
   projectId: string;
@@ -49,7 +49,7 @@ export function ListProjectEmails(props: ListProjectEmailsProps) {
   }
 
   if (!data) {
-    return <LoadingMessage message='Loading Project Identities...' />;
+    return <LoadingMessage message='Loading Project Emails...' />;
   }
 
   const emails = data.data;

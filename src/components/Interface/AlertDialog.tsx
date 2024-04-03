@@ -30,7 +30,7 @@ const AlertDialogContent = React.forwardRef<
     <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-zinc-800 bg-zinc-900 p-6 shadow-lg duration-200 sm:rounded-lg',
+        'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-zinc-800 bg-zinc-900 p-4 shadow-lg duration-200 sm:rounded-lg',
         className,
       )}
       {...props}
@@ -45,7 +45,7 @@ const AlertDialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col space-y-2 text-center sm:text-left',
+      'flex flex-col space-y-1 text-center sm:text-left',
       className,
     )}
     {...props}
@@ -85,7 +85,7 @@ const AlertDialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Description
     ref={ref}
-    className={cn('text-sm text-zinc-500', className)}
+    className={cn('text-sm text-balance text-zinc-400', className)}
     {...props}
   />
 ));
@@ -99,7 +99,7 @@ const AlertDialogAction = React.forwardRef<
   <AlertDialogPrimitive.Action
     ref={ref}
     className={cn(
-      buttonVariants({ variant: 'default', size: 'default' }),
+      buttonVariants({ variant: 'destructive', size: 'default' }),
       className,
     )}
     {...props}
