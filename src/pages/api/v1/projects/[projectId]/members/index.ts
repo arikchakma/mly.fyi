@@ -66,7 +66,9 @@ async function handle(params: GetProjectMembersRequest) {
     where: eq(projectMembers.projectId, projectId),
   });
 
-  const userIds = members.map((member) => member.userId);
+  const userIds = members
+    .filter((member) => member?.userId)
+    .map((member) => member.userId) as string[];
   const associatedUsers = await db
     .select({
       id: users.id,

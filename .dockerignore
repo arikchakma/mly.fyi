@@ -3,6 +3,8 @@ dist/
 
 # generated types
 .astro/
+.idea/
+.vscode/
 
 # dependencies
 node_modules/
@@ -13,6 +15,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# binaries
+litestream
+
+# data
+data/
+
 # environment variables
 .env
 .env.production
@@ -20,12 +28,5 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
-# Ignore .sqlite3 files, db.sqlite3-*
+# Ignore .sqlite3 files
 *.sqlite3
-
-# Ignore /data directory
-/data/
-!/data/.gitkeep
-
-# Ignore idea files
-.idea
