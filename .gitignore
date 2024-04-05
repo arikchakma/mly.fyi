@@ -20,8 +20,12 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
-# Ignore .sqlite3 files
+# Ignore .sqlite3 files, db.sqlite3-*
 *.sqlite3
+
+# Ignore /data directory
+/data/
+!/data/.gitkeep
 
 # Ignore idea files
 .idea

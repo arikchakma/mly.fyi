@@ -1,16 +1,20 @@
 import '@/lib/server-only';
 
+function getEnvVariable(name: string): string {
+  return import.meta.env[name] ?? process.env[name];
+}
+
 export const serverConfig = {
-  appUrl: import.meta.env.PUBLIC_APP_URL,
-  isDev: import.meta.env.Dev === true,
+  appUrl: getEnvVariable('PUBLIC_APP_URL'),
+  isDev: getEnvVariable('Dev') === 'true',
   jwt: {
-    secret: import.meta.env.JWT_SECRET,
-    expiresIn: import.meta.env.JWT_EXPIRES_IN,
+    secret: getEnvVariable('JWT_SECRET'),
+    expiresIn: getEnvVariable('JWT_EXPIRES_IN'),
   },
   ses: {
-    sesEndpointOverrideUrl: import.meta.env.AWS_SES_ENDPOINT_OVERRIDE_URL,
+    sesEndpointOverrideUrl: getEnvVariable('AWS_SES_ENDPOINT_OVERRIDE_URL'),
   },
   redis: {
-    url: import.meta.env.REDIS_URL,
+    url: getEnvVariable('REDIS_URL'),
   },
 } as const;

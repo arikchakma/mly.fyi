@@ -1,25 +1,19 @@
 ARG NODE_VERSION=20
-
 FROM node:${NODE_VERSION}-slim AS base
-
-ARG BUN_VERSION=1.0.36
+RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
 WORKDIR /app
 
-
-# Install Bun in the specified version
-RUN apt update && apt install -y bash curl unzip && \
- curl https://bun.sh/install | bash -s -- bun-v${BUN_VERSION}
-
-ENV PATH="${PATH}:/root/.bun/bin"
-
-COPY package.json bun.lockb ./
+COPY package.json pnpm-lock.yaml ./
 
 FROM base AS build
-RUN bun install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 FROM base AS runtime
 
@@ -28,6 +22,7 @@ COPY --from=build /app/dist ./dist
 
 # Move the drizzle directory to the runtime image
 COPY --from=build /app/drizzle ./drizzle
+COPY --from=build /app/scripts ./scripts
 
 # Move the litestream binary to the runtime image from the litestream image
 # You can use a specific version of litestream by changing the tag
@@ -36,9 +31,8 @@ COPY --from=litestream/litestream:latest /usr/local/bin/litestream /usr/local/bi
 
 # Move the run script and litestream config to the runtime image
 COPY --from=build /app/scripts/run.sh run.sh
-RUN chmod +x run.sh
-
 COPY --from=build /app/litestream.yml /etc/litestream.yml
+RUN chmod +x run.sh
 
 # Create the data directory for the database
 RUN mkdir -p /data

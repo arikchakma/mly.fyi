@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  tiny-stack:
+  mly-fyi:
     image: mly-fyi
     build:
       context: .

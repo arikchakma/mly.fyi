@@ -3,3 +3,6 @@ dbs:
     replicas:
       - type: s3
         bucket: ${REPLICA_BUCKET_NAME}
+        region: ${REPLICA_REGION}
+        access-key-id: ${REPLICA_ACCESS_KEY_ID}
+        secret-access-key: ${REPLICA_SECRET_ACCESS_KEY}
