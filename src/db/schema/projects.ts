@@ -199,3 +199,25 @@ export const projectApiKeys = sqliteTable('project_api_keys', {
     .notNull()
     .default(sql`(unixepoch())`),
 });
+
+export const projectStats = sqliteTable('project_stats', {
+  id: text('id').unique().primaryKey(),
+  projectId: text('project_id')
+    .notNull()
+    .references(() => projects.id, {
+      onDelete: 'cascade',
+    }),
+  date: integer('date').notNull(),
+  sent: integer('sent').default(0),
+  delivered: integer('delivered').default(0),
+  bounced: integer('bounced').default(0),
+  opened: integer('opened').default(0),
+  clicked: integer('clicked').default(0),
+  spamComplaints: integer('spam_complaints').default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
