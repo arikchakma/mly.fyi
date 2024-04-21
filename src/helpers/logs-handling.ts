@@ -3,7 +3,7 @@ import '@/lib/server-only';
 import { db } from '@/db';
 import { emailLogEvents, emailLogs, projectStats } from '@/db/schema';
 import { newId } from '@/lib/new-id';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { DateTime } from 'luxon';
 import type { AllowedEmailLogStatus } from '../db/types';
 
@@ -32,6 +32,19 @@ async function handleEvent(
     return false;
   }
 
+  const alreadyExists = await db.query.emailLogEvents.findFirst({
+    where(fields, operators) {
+      return operators.and(
+        operators.eq(fields.emailLogId, emailLog.id),
+        operators.eq(fields.email, recipient),
+        operators.eq(fields.type, type),
+      );
+    },
+    columns: {
+      id: true,
+    },
+  });
+
   const newEmailLogEventId = newId('emailLogEvent');
   await db.insert(emailLogEvents).values({
     id: newEmailLogEventId,
@@ -57,12 +70,14 @@ async function handleEvent(
     })
     .where(eq(emailLogs.id, emailLog.id));
 
-  const startOfToday = DateTime.now().startOf('day').toJSDate();
-  await updateProjectStats(
-    emailLog.projectId,
-    startOfToday,
-    type === 'soft-bounced' ? 'softBounced' : type,
-  );
+  if (!alreadyExists) {
+    const startOfToday = DateTime.now().startOf('day').toJSDate();
+    await updateProjectStats(
+      emailLog.projectId,
+      startOfToday,
+      type === 'soft-bounced' ? 'softBounced' : type,
+    );
+  }
 }
 
 export const handleSendEvent = handleEvent.bind(null, 'sent');

@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { emailLogEvents, projects } from '@/db/schema';
+import { projectStats, projects } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
 import {
   type HandleRoute,
@@ -11,7 +11,7 @@ import { HttpError } from '@/lib/http-error';
 import { json } from '@/lib/response';
 import { getAllDatesBetween } from '@/utils/date';
 import type { APIRoute } from 'astro';
-import { and, asc, countDistinct, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 import Joi from 'joi';
 import { DateTime } from 'luxon';
 
@@ -106,43 +106,30 @@ async function handle(params: GetProjectStatsRequest) {
 
   const { days } = params.query;
 
-  const from = DateTime.now().minus({ days: days - 1 });
+  const from = DateTime.now()
+    .startOf('day')
+    .minus({ days: days - 1 });
   const to = DateTime.now();
 
   const stats = await db
     .select({
-      // TODO: Implement timezone support
-      // date: sql<string>`strftime('%Y-%m-%d', datetime(timestamp, 'unixepoch', 'localtime', '+00:00')) AS date`,
-      date: sql<string>`strftime('%Y-%m-%d', datetime(timestamp, 'unixepoch', 'localtime')) AS date`,
-      sent: countDistinct(
-        sql`CASE WHEN type = 'sent' THEN email_log_id ELSE NULL END`,
-      ),
-      delivered: countDistinct(
-        sql`CASE WHEN type = 'delivered' THEN email_log_id ELSE NULL END`,
-      ),
-      opened: countDistinct(
-        sql`CASE WHEN type = 'opened' THEN email_log_id ELSE NULL END`,
-      ),
-      clicked: countDistinct(
-        sql`CASE WHEN type = 'clicked' THEN email_log_id ELSE NULL END`,
-      ),
-      bounced: countDistinct(
-        sql`CASE WHEN type = 'bounced' THEN email_log_id ELSE NULL END`,
-      ),
-      complained: countDistinct(
-        sql`CASE WHEN type = 'complained' THEN email_log_id ELSE NULL END`,
-      ),
+      date: sql<string>`strftime('%Y-%m-%d', datetime(date, 'unixepoch', 'localtime')) AS date`,
+      sent: projectStats.sent,
+      delivered: projectStats.delivered,
+      opened: projectStats.opened,
+      clicked: projectStats.clicked,
+      bounced: projectStats.bounced,
+      complained: projectStats.complained,
     })
-    .from(emailLogEvents)
+    .from(projectStats)
     .where(
       and(
-        eq(emailLogEvents.projectId, projectId),
-        sql`"timestamp" >= ${from.toMillis() / 1000}`,
-        sql`"timestamp" <= ${to.toMillis() / 1000}`,
+        eq(projectStats.projectId, projectId),
+        sql`"date" >= ${from.toMillis() / 1000}`,
+        sql`"date" <= ${to.toMillis() / 1000}`,
       ),
     )
-    .groupBy(sql`date`)
-    .orderBy(asc(sql`date`));
+    .orderBy(asc(projectStats.date));
 
   const enrichedStats = getAllDatesBetween(from, to).map((date) => {
     const stat = stats.find((s) => s.date === date);
