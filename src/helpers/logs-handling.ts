@@ -1,9 +1,10 @@
 import '@/lib/server-only';
 
 import { db } from '@/db';
-import { emailLogEvents, emailLogs } from '@/db/schema';
+import { emailLogEvents, emailLogs, projectStats } from '@/db/schema';
 import { newId } from '@/lib/new-id';
 import { eq } from 'drizzle-orm';
+import { DateTime } from 'luxon';
 import type { AllowedEmailLogStatus } from '../db/types';
 
 async function handleEvent(
@@ -55,6 +56,13 @@ async function handleEvent(
       updatedAt: new Date(),
     })
     .where(eq(emailLogs.id, emailLog.id));
+
+  const startOfToday = DateTime.now().startOf('day').toJSDate();
+  await updateProjectStats(
+    emailLog.projectId,
+    startOfToday,
+    type === 'soft-bounced' ? 'softBounced' : type,
+  );
 }
 
 export const handleSendEvent = handleEvent.bind(null, 'sent');
@@ -65,3 +73,53 @@ export const handleComplaintEvent = handleEvent.bind(null, 'complained');
 export const handleOpenEvent = handleEvent.bind(null, 'opened');
 export const handleClickEvent = handleEvent.bind(null, 'clicked');
 export const handleRejectEvent = handleEvent.bind(null, 'rejected');
+
+export async function updateProjectStats(
+  projectId: string,
+  date: Date,
+  type:
+    | 'sending'
+    | 'sent'
+    | 'delivered'
+    | 'bounced'
+    | 'opened'
+    | 'clicked'
+    | 'complained'
+    | 'softBounced'
+    | 'rejected'
+    | 'queued'
+    | 'error',
+) {
+  const stats = await db.query.projectStats.findFirst({
+    where(fields, operators) {
+      return operators.and(
+        operators.eq(fields.projectId, projectId),
+        operators.eq(fields.date, date),
+      );
+    },
+    columns: {
+      id: true,
+      [type]: true,
+    },
+  });
+
+  if (stats) {
+    await db
+      .update(projectStats)
+      .set({
+        // @ts-ignore
+        [type]: stats[type] + 1,
+        updatedAt: new Date(),
+      })
+      // @ts-ignore
+      .where(eq(projectStats.id, stats.id));
+  } else {
+    await db.insert(projectStats).values({
+      id: newId('projectStats'),
+      projectId,
+      date,
+      [type]: 1,
+      updatedAt: new Date(),
+    });
+  }
+}

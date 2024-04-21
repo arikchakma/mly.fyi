@@ -207,13 +207,20 @@ export const projectStats = sqliteTable('project_stats', {
     .references(() => projects.id, {
       onDelete: 'cascade',
     }),
-  date: integer('date').notNull(),
+  date: integer('date', {
+    mode: 'timestamp',
+  }).notNull(),
+  sending: integer('sending').default(0),
   sent: integer('sent').default(0),
   delivered: integer('delivered').default(0),
   bounced: integer('bounced').default(0),
+  softBounced: integer('soft_bounced').default(0),
   opened: integer('opened').default(0),
   clicked: integer('clicked').default(0),
-  spamComplaints: integer('spam_complaints').default(0),
+  complained: integer('complained').default(0),
+  rejected: integer('rejected').default(0),
+  queued: integer('queued').default(0),
+  error: integer('error').default(0),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
