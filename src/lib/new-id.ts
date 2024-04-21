@@ -10,6 +10,7 @@ const prefixes = {
   project: 'pjt',
   projectMember: 'pjm',
   projectIdentity: 'pji',
+  projectStats: 'pjs',
   configurationSet: 'cfg',
   emailLog: 'eml',
   emailLogEvent: 'eme',

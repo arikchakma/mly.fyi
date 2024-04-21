@@ -6,16 +6,6 @@ import { TOKEN_COOKIE_NAME, decodeToken } from './lib/jwt.ts';
 import { logError } from './lib/logger.ts';
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  if (context.url.pathname.startsWith('/api')) {
-    console.log('-'.repeat(20));
-    console.time(context.url.pathname);
-    const response = await next();
-    console.log('-'.repeat(20));
-    console.timeEnd(context.url.pathname);
-    console.log('-'.repeat(20));
-    return response;
-  }
-
   const userAuthToken = context.cookies.get(TOKEN_COOKIE_NAME)?.value;
   if (userAuthToken) {
     const { id } = decodeToken(userAuthToken);
