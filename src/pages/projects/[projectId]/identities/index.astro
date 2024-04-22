@@ -5,26 +5,27 @@ import { ListProjectIdentities } from '@/components/ProjectIdentities/ListProjec
 
 const { currentUser } = Astro.locals;
 if (!currentUser) {
-  return Astro.redirect('/login');
+	return Astro.redirect('/login');
 }
 
 const { projectId } = Astro.params as { projectId: string };
 
 const projectClient = projectApi(Astro);
 const { response: project, error: projectError } =
-  await projectClient.getProject(projectId);
+	await projectClient.getProject(projectId);
 ---
 
 <ProjectLayout
-  title={project?.name || projectError?.message || 'Project'}
-  project={{
-    id: project?.id,
-    name: project?.name,
-  }}
-  projectError={projectError}
-  projectId={projectId}
+	title={project?.name || projectError?.message || 'Project'}
+	project={{
+		id: project?.id,
+		name: project?.name,
+		isConfigurationComplete: project?.isConfigurationComplete,
+	}}
+	projectError={projectError}
+	projectId={projectId}
 >
-  <div class='mx-auto max-w-3xl py-12'>
-    <ListProjectIdentities projectId={projectId} client:load />
-  </div>
+	<div class="mx-auto max-w-3xl py-12">
+		<ListProjectIdentities projectId={projectId} client:load />
+	</div>
 </ProjectLayout>

@@ -5,38 +5,39 @@ import { ProjectIdentityDetails } from '@/components/ProjectIdentities/ProjectId
 
 const { currentUser } = Astro.locals;
 if (!currentUser) {
-  return Astro.redirect('/login');
+	return Astro.redirect('/login');
 }
 
 const { projectId, identityId } = Astro.params as {
-  projectId: string;
-  identityId: string;
+	projectId: string;
+	identityId: string;
 };
 
 if (!projectId) {
-  return Astro.redirect('/projects');
+	return Astro.redirect('/projects');
 }
 
 const projectClient = projectApi(Astro);
 const { response: project, error: projectError } =
-  await projectClient.getProject(projectId);
+	await projectClient.getProject(projectId);
 ---
 
 <ProjectLayout
-  title={project?.name || projectError?.message || 'Project'}
-  project={{
-    id: project?.id,
-    name: project?.name,
-  }}
-  projectError={projectError}
-  projectId={projectId}
-  identityId={identityId}
+	title={project?.name || projectError?.message || 'Project'}
+	project={{
+		id: project?.id,
+		name: project?.name,
+		isConfigurationComplete: project?.isConfigurationComplete,
+	}}
+	projectError={projectError}
+	projectId={projectId}
+	identityId={identityId}
 >
-  <div class='mx-auto max-w-3xl py-12'>
-    <ProjectIdentityDetails
-      projectId={projectId}
-      identityId={identityId}
-      client:load
-    />
-  </div>
+	<div class="mx-auto max-w-3xl py-12">
+		<ProjectIdentityDetails
+			projectId={projectId}
+			identityId={identityId}
+			client:load
+		/>
+	</div>
 </ProjectLayout>

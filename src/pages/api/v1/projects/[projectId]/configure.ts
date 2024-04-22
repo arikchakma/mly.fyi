@@ -11,11 +11,7 @@ import {
 import { HttpError } from '@/lib/http-error';
 import { newApiKey, newId } from '@/lib/new-id';
 import { json } from '@/lib/response';
-import {
-  DEFAULT_SES_REGION,
-  createSESServiceClient,
-  isValidConfiguration,
-} from '@/lib/ses';
+import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -42,7 +38,7 @@ async function validate(params: ConfigureProjectRequest) {
   const schema = Joi.object({
     accessKeyId: Joi.string().required(),
     secretAccessKey: Joi.string().required(),
-    region: Joi.string().allow('').optional(),
+    region: Joi.string().required(),
   });
 
   const { error, value } = schema.validate(params.body, {
@@ -88,7 +84,7 @@ async function handle(params: ConfigureProjectRequest) {
   await requireProjectMember(userId!, projectId, ['admin']);
 
   const { accessKeyId, secretAccessKey, region } = body;
-  if (!accessKeyId || !secretAccessKey) {
+  if (!accessKeyId || !secretAccessKey || !region) {
     throw new HttpError('bad_request', 'Invalid AWS credentials');
   }
 
@@ -107,7 +103,7 @@ async function handle(params: ConfigureProjectRequest) {
     .set({
       accessKeyId,
       secretAccessKey,
-      region: region || DEFAULT_SES_REGION,
+      region,
     })
     .where(eq(projects.id, projectId));
 

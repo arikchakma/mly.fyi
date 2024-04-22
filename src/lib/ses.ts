@@ -4,18 +4,16 @@ import {
   SESClient,
   SESServiceException,
 } from '@aws-sdk/client-ses';
-import { logError } from './logger';
 import { HttpError } from './http-error';
-
-export const DEFAULT_SES_REGION = 'ap-south-1';
+import { logError } from './logger';
 
 export function createSESServiceClient(
   accessKeyId: string,
   secretAccessKey: string,
-  region?: string | null,
+  region: string,
 ) {
   return new SESClient({
-    region: region || DEFAULT_SES_REGION,
+    region,
     credentials: {
       accessKeyId,
       secretAccessKey,

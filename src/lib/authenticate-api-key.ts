@@ -1,14 +1,14 @@
-import type { APIContext } from 'astro';
-import { HttpError } from './http-error';
 import { db } from '@/db';
 import { projectApiKeys } from '@/db/schema';
 import { increment } from '@/utils/database';
+import type { APIContext } from 'astro';
 import { eq } from 'drizzle-orm';
+import { HttpError } from './http-error';
 
 const MLY_HEADER_API_KEY = 'X-Mly-Api-Key';
 
-export async function authenticateApiKey(content: APIContext) {
-  const apiKeyValue = content.request.headers.get(MLY_HEADER_API_KEY);
+export async function authenticateApiKey(context: APIContext) {
+  const apiKeyValue = context.request.headers.get(MLY_HEADER_API_KEY);
   if (!apiKeyValue) {
     throw new HttpError('unauthorized', 'Unauthorized');
   }

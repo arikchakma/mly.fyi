@@ -1,13 +1,4 @@
 import {
-  SNSClient,
-  ListSubscriptionsCommand,
-  CreateTopicCommand,
-  SubscribeCommand,
-} from '@aws-sdk/client-sns';
-import type { ListSubscriptionsCommandOutput } from '@aws-sdk/client-sns';
-import { logError, logInfo } from './logger';
-import { DEFAULT_SES_REGION } from './ses';
-import {
   handleClickEvent,
   handleComplaintEvent,
   handleDeliveryEvent,
@@ -17,14 +8,22 @@ import {
   handleSendEvent,
   handleSoftBounceEvent,
 } from '@/helpers/logs-handling';
+import {
+  CreateTopicCommand,
+  ListSubscriptionsCommand,
+  SNSClient,
+  SubscribeCommand,
+} from '@aws-sdk/client-sns';
+import type { ListSubscriptionsCommandOutput } from '@aws-sdk/client-sns';
+import { logError, logInfo } from './logger';
 
 export function createSNSServiceClient(
   accessKeyId: string,
   secretAccessKey: string,
-  region?: string | null,
+  region: string,
 ) {
   return new SNSClient({
-    region: region || DEFAULT_SES_REGION,
+    region,
     credentials: {
       accessKeyId,
       secretAccessKey,

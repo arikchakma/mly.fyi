@@ -3,12 +3,15 @@ import Layout from './Layout.astro';
 import type { AppError, FetchError } from '../api/api';
 import { ProjectNavigation } from '../components/Projects/ProjectNavigation';
 import { PageError } from '../components/Errors/PageError';
+import { ProjectConfigurationPending } from '@/components/ProjectSettings/ProjectConfigurationPending';
 
 export interface Props {
 	project?: Partial<{
 		id: string;
 		name: string;
+		isConfigurationComplete: boolean;
 	}>;
+	requireSetup?: boolean;
 	projectError?: AppError | FetchError | null;
 	title: string;
 	projectId: string;
@@ -16,9 +19,18 @@ export interface Props {
 	emailId?: string;
 }
 
-const { project, projectError, identityId, emailId, ...props } = Astro.props;
+const {
+	project,
+	projectError,
+	identityId,
+	emailId,
+	requireSetup = true,
+	...props
+} = Astro.props;
 const hasError = !project?.id || !!projectError;
 const deafultUrl = Astro.url.toString();
+
+const isProjectConfigured = !requireSetup || project?.isConfigurationComplete;
 ---
 
 <Layout {...props}>
@@ -32,9 +44,13 @@ const deafultUrl = Astro.url.toString();
 					identityId={identityId!}
 					emailId={emailId!}
 				/>
-				<section class="px-4">
-					<slot />
-				</section>
+				{isProjectConfigured ? (
+					<section class="px-4">
+						<slot />
+					</section>
+				) : (
+					<ProjectConfigurationPending projectId={project.id!} />
+				)}
 			</>
 		)
 	}

@@ -1,29 +1,25 @@
-import type { APIRoute } from 'astro';
-import {
-  handler,
-  type HandleRoute,
-  type RouteParams,
-  type ValidateRoute,
-} from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
 import { db } from '@/db';
 import { projectIdentities, projects } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
-import { and, eq } from 'drizzle-orm';
-import { HttpError } from '@/lib/http-error';
 import {
-  updateConfigurationSetEvent,
-  createConfigurationSetTrackingOptions,
   type SetEventType,
+  createConfigurationSetTrackingOptions,
+  updateConfigurationSetEvent,
 } from '@/lib/configuration-set';
-import {
-  createSESServiceClient,
-  DEFAULT_SES_REGION,
-  isValidConfiguration,
-} from '@/lib/ses';
-import { createSNSServiceClient } from '@/lib/notification';
 import { getRedirectDomain } from '@/lib/domain';
+import {
+  type HandleRoute,
+  type RouteParams,
+  type ValidateRoute,
+  handler,
+} from '@/lib/handler';
+import { HttpError } from '@/lib/http-error';
+import { createSNSServiceClient } from '@/lib/notification';
+import { json } from '@/lib/response';
+import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import type { APIRoute } from 'astro';
+import { and, eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface UpdateProjectIdentityResponse {
   status: 'ok';
@@ -126,7 +122,7 @@ async function handle(params: UpdateProjectIdentityRequest) {
   }
 
   const { accessKeyId, secretAccessKey, region } = project;
-  if (!accessKeyId || !secretAccessKey) {
+  if (!accessKeyId || !secretAccessKey || !region) {
     throw new HttpError('bad_request', 'Project does not have AWS credentials');
   }
 
@@ -169,7 +165,7 @@ async function handle(params: UpdateProjectIdentityRequest) {
     // Example: ap-south-1.mly.fyi
     const { name: redirectDomain, value: redirectValue } = getRedirectDomain(
       identity.domain,
-      region || DEFAULT_SES_REGION,
+      region,
     );
     const maskingDomain = await createConfigurationSetTrackingOptions(
       sesClient,

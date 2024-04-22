@@ -20,9 +20,11 @@ const { response: project, error: projectError } =
 	project={{
 		id: project?.id,
 		name: project?.name,
+		isConfigurationComplete: project?.isConfigurationComplete,
 	}}
 	projectError={projectError}
 	projectId={projectId}
+	requireSetup={false}
 >
 	<div class="mx-auto max-w-3xl py-12">
 		<ListProjectMembers

@@ -119,7 +119,7 @@ export function ProjectConfigurationForm(props: ProjectConfigurationFormProps) {
       </div>
 
       <div>
-        <Label htmlFor={regionFieldId} className='mt-4'>
+        <Label htmlFor={regionFieldId} aria-required={true} className='mt-4'>
           Region
         </Label>
         <Input
@@ -131,9 +131,10 @@ export function ProjectConfigurationForm(props: ProjectConfigurationFormProps) {
           onInput={(e) => setRegion(String((e.target as any).value))}
           autoComplete='off'
           spellCheck={false}
+          required
         />
         <p className='mt-2 text-sm text-zinc-500'>
-          By default it is&nbsp;<code>us-west-2</code>
+          The AWS region where your project is hosted
         </p>
       </div>
 

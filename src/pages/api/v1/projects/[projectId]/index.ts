@@ -2,7 +2,6 @@ import { db } from '@/db';
 import {
   type AllowedProjectMemberRole,
   type AllowedProjectMemberStatus,
-  projectMembers,
   projects,
 } from '@/db/schema';
 import type { Project } from '@/db/types';
@@ -24,6 +23,7 @@ export interface GetProjectResponse extends Project {
   role: AllowedProjectMemberRole;
   status: AllowedProjectMemberStatus;
   canManage: boolean;
+  isConfigurationComplete: boolean;
 }
 
 export interface GetProjectRequest
@@ -70,12 +70,18 @@ async function handle(params: GetProjectRequest) {
 
   const member = await requireProjectMember(currentUser.id, projectId);
 
+  const { secretAccessKey, accessKeyId, region } = project;
+  const isConfigurationComplete = Boolean(
+    secretAccessKey && accessKeyId && region,
+  );
+
   return json<GetProjectResponse>({
     ...project,
     status: member.status,
     role: member.role,
     memberId: member.id,
-    canManage: member.role === 'manager' || member.role === 'admin',
+    canManage: ['manager', 'admin'].includes(member.role),
+    isConfigurationComplete,
   });
 }
 

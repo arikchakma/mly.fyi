@@ -1,6 +1,6 @@
 ---
 import ProjectLayout from '@/layouts/ProjectLayout.astro';
-import { projectApi } from '../../../api/project';
+import { projectApi } from '@/api/project';
 import { ProjectDashboard } from '@/components/ProjectDashboard/ProjectDashboard';
 
 const { currentUser } = Astro.locals;
@@ -20,6 +20,7 @@ const { response: project, error: projectError } =
 	project={{
 		id: project?.id,
 		name: project?.name,
+		isConfigurationComplete: project?.isConfigurationComplete,
 	}}
 	projectError={projectError}
 	projectId={projectId}

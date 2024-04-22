@@ -1,35 +1,31 @@
-import type { APIRoute } from 'astro';
-import {
-  handler,
-  type HandleRoute,
-  type RouteParams,
-  type ValidateRoute,
-} from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
 import { db } from '@/db';
 import {
   MatchRecordStatus,
+  type ProjectIdentityRecord,
   projectIdentities,
   projects,
-  type ProjectIdentityRecord,
 } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
-import { and, eq } from 'drizzle-orm';
-import { HttpError } from '@/lib/http-error';
 import {
   getDomainDkimVerificationStatus,
   getMailFromDomainVerificationStatus,
   getRedirectDomain,
   verifyRedirectDomain,
 } from '@/lib/domain';
-import type { CustomMailFromStatus } from '@aws-sdk/client-ses';
 import {
-  createSESServiceClient,
-  DEFAULT_SES_REGION,
-  isValidConfiguration,
-} from '@/lib/ses';
+  type HandleRoute,
+  type RouteParams,
+  type ValidateRoute,
+  handler,
+} from '@/lib/handler';
+import { HttpError } from '@/lib/http-error';
 import { createSNSServiceClient } from '@/lib/notification';
+import { json } from '@/lib/response';
+import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import type { CustomMailFromStatus } from '@aws-sdk/client-ses';
+import type { APIRoute } from 'astro';
+import { and, eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface VerifyProjectIdentityResponse {
   records: ProjectIdentityRecord[];
@@ -101,12 +97,16 @@ async function handle(params: VerifyProjectIdentityRequest) {
     throw new HttpError('bad_request', 'Identity is not a domain');
   }
 
-  const { accessKeyId, secretAccessKey } = project;
-  if (!accessKeyId || !secretAccessKey) {
+  const { accessKeyId, secretAccessKey, region } = project;
+  if (!accessKeyId || !secretAccessKey || !region) {
     throw new HttpError('bad_request', 'Project does not have AWS credentials');
   }
 
-  const sesClient = createSESServiceClient(accessKeyId, secretAccessKey);
+  const sesClient = createSESServiceClient(
+    accessKeyId,
+    secretAccessKey,
+    region,
+  );
 
   const isValidConfig = await isValidConfiguration(sesClient);
   if (!isValidConfig) {
@@ -136,7 +136,7 @@ async function handle(params: VerifyProjectIdentityRequest) {
   if (openTracking || clickTracking) {
     const { name: redirectDomain, value: redirectValue } = getRedirectDomain(
       domain,
-      project.region || DEFAULT_SES_REGION,
+      region,
     );
     redirectDomainStatus = (await verifyRedirectDomain(
       redirectDomain,

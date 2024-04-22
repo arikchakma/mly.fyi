@@ -11,7 +11,6 @@ import {
 import { HttpError } from '@/lib/http-error';
 import { newId } from '@/lib/new-id';
 import { json } from '@/lib/response';
-import { DEFAULT_SES_REGION } from '@/lib/ses';
 import type { APIRoute } from 'astro';
 import Joi from 'joi';
 
@@ -107,7 +106,7 @@ async function handle(params: SendEmailRequest) {
   }
 
   const { accessKeyId, secretAccessKey, region } = project;
-  if (!accessKeyId || !secretAccessKey) {
+  if (!accessKeyId || !secretAccessKey || !region) {
     throw new HttpError('bad_request', 'Invalid project credentials');
   }
 
@@ -117,7 +116,7 @@ async function handle(params: SendEmailRequest) {
       ses: {
         accessKeyId,
         secretAccessKey,
-        region: region || DEFAULT_SES_REGION,
+        region,
       },
     },
     {

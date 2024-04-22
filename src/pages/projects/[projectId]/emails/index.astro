@@ -18,9 +18,10 @@ const { response: project, error: projectError } =
 <ProjectLayout
   title={project?.name || projectError?.message || 'Project'}
   project={{
-    id: project?.id,
-    name: project?.name,
-  }}
+		id: project?.id,
+		name: project?.name,
+		isConfigurationComplete: project?.isConfigurationComplete,
+	}}
   projectError={projectError}
   projectId={projectId}
 >
