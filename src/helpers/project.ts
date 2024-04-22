@@ -1,6 +1,12 @@
 import { db } from '@/db';
-import { type AllowedProjectMemberRole, projectMembers } from '@/db/schema';
+import {
+  type AllowedProjectMemberRole,
+  projectMembers,
+  projects,
+} from '@/db/schema';
+import type { Project } from '@/db/types';
 import { HttpError } from '@/lib/http-error';
+import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
 import { and, eq } from 'drizzle-orm';
 
 export async function requireProjectMember(
@@ -31,4 +37,23 @@ export async function requireProjectMember(
   }
 
   return projectMember;
+}
+
+export async function requireProjectConfiguration(project: Project) {
+  const { accessKeyId, secretAccessKey, region } = project;
+
+  if (!accessKeyId || !secretAccessKey || !region) {
+    throw new HttpError('bad_request', 'Project is not fully configured');
+  }
+
+  const sesClient = createSESServiceClient(
+    accessKeyId,
+    secretAccessKey,
+    region,
+  );
+  if (!isValidConfiguration(sesClient)) {
+    throw new HttpError('bad_request', 'Invalid SES configuration');
+  }
+
+  return true;
 }

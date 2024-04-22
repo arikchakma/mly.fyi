@@ -1,20 +1,19 @@
 import '@/lib/server-only';
 
-import { resolveCname } from 'dns/promises';
-import { logError } from './logger';
 import {
   CustomMailFromStatus,
   DeleteIdentityCommand,
   GetIdentityDkimAttributesCommand,
   GetIdentityMailFromDomainAttributesCommand,
   SESClient,
-  SESServiceException,
   SetIdentityMailFromDomainCommand,
   VerificationStatus,
   VerifyDomainDkimCommand,
   VerifyDomainIdentityCommand,
 } from '@aws-sdk/client-ses';
+import { resolveCname } from 'dns/promises';
 import { HttpError } from './http-error';
+import { logError } from './logger';
 
 export async function verifyDomainIdentity(
   client: SESClient,
