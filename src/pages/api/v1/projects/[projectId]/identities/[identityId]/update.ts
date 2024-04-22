@@ -1,6 +1,9 @@
 import { db } from '@/db';
 import { projectIdentities, projects } from '@/db/schema';
-import { requireProjectMember } from '@/helpers/project';
+import {
+  requireProjectConfiguration,
+  requireProjectMember,
+} from '@/helpers/project';
 import {
   type SetEventType,
   createConfigurationSetTrackingOptions,
@@ -90,7 +93,8 @@ async function handle(params: UpdateProjectIdentityRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  await requireProjectMember(currentUser.id, projectId);
+  await requireProjectMember(currentUser.id, projectId, ['admin', 'manager']);
+  await requireProjectConfiguration(project);
 
   const identity = await db.query.projectIdentities.findFirst({
     where: and(

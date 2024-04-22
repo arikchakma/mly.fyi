@@ -126,8 +126,8 @@ async function handle(params: CreateProjectIdentityRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
+  await requireProjectMember(userId!, projectId, ['admin', 'manager']);
   await requireProjectConfiguration(project);
-  await requireProjectMember(userId!, projectId, ['admin']);
 
   const { domain, mailFromDomain } = body;
   if (
