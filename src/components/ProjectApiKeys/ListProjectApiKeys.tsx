@@ -1,8 +1,9 @@
 import { httpGet } from '@/lib/http';
+import type { ListProjectApiKeysResponse } from '@/pages/api/v1/projects/[projectId]/keys/index';
 import { queryClient } from '@/utils/query-client';
 import { useQuery } from '@tanstack/react-query';
+import { PageError } from '../Errors/PageError';
 import { LoadingMessage } from '../LoadingMessage';
-import type { ListProjectApiKeysResponse } from '@/pages/api/v1/projects/[projectId]/keys/index';
 import { ProjectApiKeyItem } from './ProjectApiKeyItem';
 
 type ListProjectApiKeysProps = {
@@ -12,7 +13,7 @@ type ListProjectApiKeysProps = {
 export function ListProjectApiKeys(props: ListProjectApiKeysProps) {
   const { projectId } = props;
 
-  const { data } = useQuery(
+  const { data, error } = useQuery(
     {
       queryKey: ['project-api-keys', projectId],
       queryFn: () => {
@@ -24,8 +25,17 @@ export function ListProjectApiKeys(props: ListProjectApiKeysProps) {
     queryClient,
   );
 
+  if (error && !data) {
+    return (
+      <PageError
+        error={error?.message || 'Something went wrong!'}
+        className='sm:pt-0'
+      />
+    );
+  }
+
   if (!data) {
-    return <LoadingMessage message='Loading Project Identities...' />;
+    return <LoadingMessage message='Loading Project Api Keys...' />;
   }
 
   const apiKeys = data.data;

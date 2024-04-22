@@ -17,6 +17,7 @@ export interface Props {
 	projectId: string;
 	identityId?: string;
 	emailId?: string;
+	keyId?: string;
 }
 
 const {
@@ -24,6 +25,7 @@ const {
 	projectError,
 	identityId,
 	emailId,
+	keyId,
 	requireSetup = true,
 	...props
 } = Astro.props;
@@ -43,6 +45,7 @@ const isProjectConfigured = !requireSetup || project?.isConfigurationComplete;
 					projectId={project?.id!}
 					identityId={identityId!}
 					emailId={emailId!}
+					keyId={keyId!}
 				/>
 				{isProjectConfigured ? (
 					<section class="px-4">
