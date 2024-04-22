@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { projectIdentities, projects } from '@/db/schema';
-import type { Project, ProjectIdentity } from '@/db/types';
+import type { ProjectIdentity } from '@/db/types';
 import { requireProjectMember } from '@/helpers/project';
 import {
   type HandleRoute,

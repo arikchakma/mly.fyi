@@ -2,7 +2,7 @@ import { queryClient } from '@/utils/query-client.ts';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { httpDelete } from '../../lib/http.ts';
+import { httpDelete } from '@/lib/http.ts';
 import {
   AlertDialog,
   AlertDialogAction,

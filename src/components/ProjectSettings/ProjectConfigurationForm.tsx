@@ -3,13 +3,13 @@ import { Loader2, SlidersHorizontal } from 'lucide-react';
 import { useId, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import type { Project } from '../../db/types.ts';
-import { httpPatch } from '../../lib/http.ts';
+import type { Project } from '@/db/types.ts';
+import { httpPatch } from '@/lib/http.ts';
 import type {
   ConfigureProjectBody,
   ConfigureProjectRequest,
-} from '../../pages/api/v1/projects/[projectId]/configure.ts';
-import { queryClient } from '../../utils/query-client.ts';
+} from '@/pages/api/v1/projects/[projectId]/configure.ts';
+import { queryClient } from '@/utils/query-client.ts';
 import { Input } from '../Interface/Input.tsx';
 import { Label } from '../Interface/Label.tsx';
 

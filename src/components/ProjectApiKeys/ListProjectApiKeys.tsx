@@ -1,8 +1,8 @@
-import { httpGet } from '../../lib/http';
-import { queryClient } from '../../utils/query-client';
+import { httpGet } from '@/lib/http';
+import { queryClient } from '@/utils/query-client';
 import { useQuery } from '@tanstack/react-query';
 import { LoadingMessage } from '../LoadingMessage';
-import type { ListProjectApiKeysResponse } from '../../pages/api/v1/projects/[projectId]/keys/index';
+import type { ListProjectApiKeysResponse } from '@/pages/api/v1/projects/[projectId]/keys/index';
 import { ProjectApiKeyItem } from './ProjectApiKeyItem';
 
 type ListProjectApiKeysProps = {

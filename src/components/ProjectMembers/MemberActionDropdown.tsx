@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { httpDelete, httpPatch, httpPut } from '../../lib/http.ts';
+import { httpDelete, httpPatch, httpPut } from '@/lib/http.ts';
 import {
   DropdownMenu,
   DropdownMenuContent,

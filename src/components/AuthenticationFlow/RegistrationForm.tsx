@@ -1,12 +1,12 @@
+import { httpPost } from '@/lib/http';
+import type {
+  RegisterBody,
+  RegisterResponse,
+} from '@/pages/api/v1/auth/register';
+import { queryClient } from '@/utils/query-client';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { httpPost } from '../../lib/http';
-import { queryClient } from '../../utils/query-client';
-import type {
-  RegisterResponse,
-  RegisterBody,
-} from '../../pages/api/v1/auth/register';
 import { toast } from 'sonner';
 
 type RegistrationFormProps = {};

@@ -1,4 +1,4 @@
-import type { ListProjectEmailsResponse } from '../../pages/api/v1/projects/[projectId]/emails';
+import type { ListProjectEmailsResponse } from '@/pages/api/v1/projects/[projectId]/emails';
 import { DateTime } from 'luxon';
 
 type ListProjectEmailsTableProps = {

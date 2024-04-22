@@ -2,9 +2,9 @@ import { cn } from '@/utils/classname';
 import { formatCommaNumber, getPercentage } from '@/utils/number';
 import { useQuery } from '@tanstack/react-query';
 import { DateTime } from 'luxon';
-import { httpGet } from '../../lib/http';
-import type { GetProjectStatsResponse } from '../../pages/api/v1/projects/[projectId]/stats';
-import { queryClient } from '../../utils/query-client';
+import { httpGet } from '@/lib/http';
+import type { GetProjectStatsResponse } from '@/pages/api/v1/projects/[projectId]/stats';
+import { queryClient } from '@/utils/query-client';
 import { PageError } from '../Errors/PageError';
 import { LoadingMessage } from '../LoadingMessage';
 

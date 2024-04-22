@@ -4,9 +4,9 @@ import type { FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { httpDelete } from '../../lib/http';
-import { queryClient } from '../../utils/query-client';
-import { cn } from '../../utils/classname';
+import { httpDelete } from '@/lib/http';
+import { queryClient } from '@/utils/query-client';
+import { cn } from '@/utils/classname';
 import {
   AlertDialog,
   AlertDialogContent,

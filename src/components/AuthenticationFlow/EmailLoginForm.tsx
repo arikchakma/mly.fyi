@@ -1,11 +1,10 @@
-import React from 'react';
+import { httpPost } from '@/lib/http';
+import { redirectAuthSuccess, setAuthToken } from '@/lib/jwt-client';
+import { queryClient } from '@/utils/query-client';
+import { useMutation } from '@tanstack/react-query';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
-import { httpPost } from '../../lib/http';
-import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { redirectAuthSuccess, setAuthToken } from '../../lib/jwt-client';
-import { queryClient } from '@/utils/query-client';
 
 type EmailLoginFormProps = {};
 

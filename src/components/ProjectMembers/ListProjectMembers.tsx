@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import { httpGet } from '../../lib/http';
-import type { GetProjectMembersResponse } from '../../pages/api/v1/projects/[projectId]/members/index';
-import { queryClient } from '../../utils/query-client';
+import { httpGet } from '@/lib/http';
+import type { GetProjectMembersResponse } from '@/pages/api/v1/projects/[projectId]/members/index';
+import { queryClient } from '@/utils/query-client';
 import { PageError } from '../Errors/PageError';
 import { LoadingMessage } from '../LoadingMessage';
 import { InviteMemberButton } from './InviteMemberButton';

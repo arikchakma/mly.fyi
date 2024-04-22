@@ -4,11 +4,11 @@ import { DateTime } from 'luxon';
 import type { FormEvent } from 'react';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
-import { httpPost } from '../../lib/http.ts';
+import { httpPost } from '@/lib/http.ts';
 import type {
   CreateProjectBody,
   CreateProjectResponse,
-} from '../../pages/api/v1/projects/create.ts';
+} from '@/pages/api/v1/projects/create.ts';
 import { Button } from '../Interface/Button.tsx';
 import { Input } from '../Interface/Input.tsx';
 import { Label } from '../Interface/Label.tsx';

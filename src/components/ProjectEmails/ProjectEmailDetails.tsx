@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { httpGet } from '../../lib/http';
-import type { GetProjectEmailResponse } from '../../pages/api/v1/projects/[projectId]/emails/[emailId]/index';
-import { queryClient } from '../../utils/query-client';
+import { httpGet } from '@/lib/http';
+import type { GetProjectEmailResponse } from '@/pages/api/v1/projects/[projectId]/emails/[emailId]/index';
+import { queryClient } from '@/utils/query-client';
 import { PageError } from '../Errors/PageError';
 import { LoadingMessage } from '../LoadingMessage';
 import { Box } from 'lucide-react';

@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { DateTime } from 'luxon';
-import type { GetProjectEmailResponse } from '../../pages/api/v1/projects/[projectId]/emails/[emailId]/index';
+import type { GetProjectEmailResponse } from '@/pages/api/v1/projects/[projectId]/emails/[emailId]/index';
 
 type EmailEventTableProps = {
   events: GetProjectEmailResponse['events'];

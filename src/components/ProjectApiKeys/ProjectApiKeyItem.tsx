@@ -1,7 +1,7 @@
 import React from 'react';
 import { DateTime } from 'luxon';
 import { ArrowUpRight, Trash2 } from 'lucide-react';
-import type { ListProjectApiKeysResponse } from '../../pages/api/v1/projects/[projectId]/keys/index';
+import type { ListProjectApiKeysResponse } from '@/pages/api/v1/projects/[projectId]/keys/index';
 import { DeleteApiKey } from './DeleteApiKey';
 
 type ProjectApiKeyItemProps = {

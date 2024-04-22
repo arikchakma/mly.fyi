@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { queryClient } from '../../utils/query-client';
-import { httpGet, httpPatch } from '../../lib/http';
+import { queryClient } from '@/utils/query-client';
+import { httpGet, httpPatch } from '@/lib/http';
 import type { ProjectIdentity } from '@/db/types';
 import { Box } from 'lucide-react';
 import { CopyableTableField } from './CopyableTableField';

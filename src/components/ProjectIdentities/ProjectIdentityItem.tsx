@@ -1,4 +1,4 @@
-import type { ListProjectIdentitiesResponse } from '../../pages/api/v1/projects/[projectId]/identities/index';
+import type { ListProjectIdentitiesResponse } from '@/pages/api/v1/projects/[projectId]/identities/index';
 import { DateTime } from 'luxon';
 import { ArrowUpRight, RefreshCcw, Trash2 } from 'lucide-react';
 import { TriggerVerifyIdentity } from './TriggerVerifyIdentity';

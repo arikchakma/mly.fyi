@@ -1,11 +1,11 @@
-import { Globe, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { cn } from '../../utils/classname.js';
+import { cn } from '@/utils/classname';
 import {
   type TimezoneInfo,
   getTimezoneInfo,
   getTimezoneMatches,
-} from '../../utils/timezone';
+} from '@/utils/timezone';
+import { Globe, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 type TimezonePopoverContentProps = {
   onClose?: () => void;

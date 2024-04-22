@@ -9,10 +9,7 @@ import {
   requireProjectConfiguration,
   requireProjectMember,
 } from '@/helpers/project';
-import {
-  createConfigurationSet,
-  deleteConfigurationSet,
-} from '@/lib/configuration-set';
+import { createConfigurationSet } from '@/lib/configuration-set';
 import {
   addMailFromDomain,
   deleteIdentity,

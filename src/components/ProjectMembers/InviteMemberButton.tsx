@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import { httpPost } from '../../lib/http.ts';
+import { httpPost } from '@/lib/http.ts';
 import { Button } from '../Interface/Button.tsx';
 import {
   Dialog,

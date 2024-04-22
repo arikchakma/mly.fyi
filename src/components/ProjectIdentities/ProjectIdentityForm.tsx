@@ -3,12 +3,12 @@ import { useMutation } from '@tanstack/react-query';
 import { Loader2, Plus } from 'lucide-react';
 import React, { useId, useState } from 'react';
 import { toast } from 'sonner';
-import { httpPost } from '../../lib/http';
+import { httpPost } from '@/lib/http';
 import type {
   CreateProjectIdentityBody,
   CreateProjectIdentityResponse,
-} from '../../pages/api/v1/projects/[projectId]/identities/create';
-import { queryClient } from '../../utils/query-client';
+} from '@/pages/api/v1/projects/[projectId]/identities/create';
+import { queryClient } from '@/utils/query-client';
 import { Input } from '../Interface/Input';
 import { Label } from '../Interface/Label';
 

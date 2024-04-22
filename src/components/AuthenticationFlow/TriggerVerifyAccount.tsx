@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { httpPost } from '../../lib/http.ts';
+import { httpPost } from '@/lib/http.ts';
 import { Ban, Loader2 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/utils/query-client.ts';

@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { httpPost } from '../../lib/http';
-import { useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/utils/query-client';
+import { httpPost } from '@/lib/http';
 import type { SendVerificationEmailBody } from '@/pages/api/v1/auth/send-verification-email';
+import { queryClient } from '@/utils/query-client';
+import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 type PendingVerificationMessageProps = {
