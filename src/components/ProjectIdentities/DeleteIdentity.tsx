@@ -1,11 +1,11 @@
-import { useId, useState } from 'react';
-import type { FormEvent } from 'react';
+import { httpDelete } from '@/lib/http';
+import { cn } from '@/utils/classname';
+import { queryClient } from '@/utils/query-client';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2, Trash2 } from 'lucide-react';
+import { useId, useState } from 'react';
+import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import { httpDelete } from '@/lib/http';
-import { queryClient } from '@/utils/query-client';
-import { cn } from '@/utils/classname';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -14,9 +14,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../Interface/AlertDialog';
+import { Button } from '../Interface/Button';
+import { Checkbox } from '../Interface/Checkbox';
 import { Input } from '../Interface/Input';
 import { Label } from '../Interface/Label';
-import { Button } from '../Interface/Button';
 
 type DeleteIdentityProps = {
   projectId: string;
@@ -38,6 +39,9 @@ export function DeleteIdentity(props: DeleteIdentityProps) {
   } = props;
 
   const confirmInputFieldId = `idt${useId()}`;
+  const modeInputFieldId = `mode${useId()}`;
+
+  const [mode, setMode] = useState<'strict' | 'soft'>('soft');
   const [isOpen, setIsOpen] = useState(false);
 
   const deleteIdentity = useMutation(
@@ -45,7 +49,7 @@ export function DeleteIdentity(props: DeleteIdentityProps) {
       mutationKey: ['project-identities', projectId, identityId, 'delete'],
       mutationFn: () => {
         return httpDelete(
-          `/api/v1/projects/${projectId}/identities/${identityId}/delete`,
+          `/api/v1/projects/${projectId}/identities/${identityId}/delete?mode=${mode}`,
           {},
         );
       },
@@ -78,6 +82,10 @@ export function DeleteIdentity(props: DeleteIdentityProps) {
       },
     });
   };
+
+  console.log('-'.repeat(20));
+  console.log('Mode: ', mode);
+  console.log('-'.repeat(20));
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -121,6 +129,19 @@ export function DeleteIdentity(props: DeleteIdentityProps) {
               className='mt-2'
               required
             />
+          </div>
+
+          <div className='mt-2 flex items-center gap-2 border rounded-md p-2 border-zinc-800'>
+            <Checkbox
+              id={modeInputFieldId}
+              checked={mode === 'strict'}
+              onCheckedChange={(checked) => {
+                setMode(checked ? 'strict' : 'soft');
+              }}
+            />
+            <Label htmlFor={modeInputFieldId} className='text-xs'>
+              Remove identity from SES
+            </Label>
           </div>
 
           <div className='mt-2 grid grid-cols-2 gap-2'>
