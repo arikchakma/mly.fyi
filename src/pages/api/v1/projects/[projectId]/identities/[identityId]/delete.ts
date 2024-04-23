@@ -4,13 +4,8 @@ import {
   requireProjectConfiguration,
   requireProjectMember,
 } from '@/helpers/project';
-import {
-  type SetEventType,
-  createConfigurationSetTrackingOptions,
-  deleteConfigurationSet,
-  updateConfigurationSetEvent,
-} from '@/lib/configuration-set';
-import { deleteIdentity, getRedirectDomain } from '@/lib/domain';
+import { deleteConfigurationSet } from '@/lib/configuration-set';
+import { deleteIdentity } from '@/lib/domain';
 import {
   type HandleRoute,
   type RouteParams,
@@ -18,9 +13,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { createSNSServiceClient } from '@/lib/notification';
 import { json } from '@/lib/response';
-import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import { createSESServiceClient } from '@/lib/ses';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -29,12 +23,16 @@ export interface DeleteProjectIdentityResponse {
   status: 'ok';
 }
 
+export type DeleteProjectIdentityQuery = {
+  mode: 'strict' | 'soft';
+};
+
 export type DeleteProjectIdentityBody = {};
 
 export interface DeleteProjectIdentityRequest
   extends RouteParams<
     DeleteProjectIdentityBody,
-    any,
+    DeleteProjectIdentityQuery,
     {
       projectId: string;
       identityId: string;
@@ -56,11 +54,31 @@ async function validate(params: DeleteProjectIdentityRequest) {
     throw paramsError;
   }
 
-  return params;
+  const querySchema = Joi.object({
+    mode: Joi.string().valid('strict', 'soft').optional().default('soft'),
+  });
+
+  const { error: queryError, value: queryValue } = querySchema.validate(
+    params.query,
+    {
+      abortEarly: false,
+      stripUnknown: true,
+    },
+  );
+
+  if (queryError) {
+    throw queryError;
+  }
+
+  return {
+    ...params,
+    query: queryValue,
+  };
 }
 
 async function handle(params: DeleteProjectIdentityRequest) {
   const { user: currentUser, context } = params;
+  const { mode = 'soft' } = params.query;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');
@@ -104,13 +122,12 @@ async function handle(params: DeleteProjectIdentityRequest) {
     region,
   );
 
-  const isValidConfig = await isValidConfiguration(sesClient);
-  if (!isValidConfig) {
-    throw new HttpError('bad_request', 'Invalid AWS credentials');
-  }
-
+  // Remove identity from SES if mode is strict otherwise just remove from db
+  // also remove the configuration set on both cases
   await deleteConfigurationSet(sesClient, identity.configurationSetName!);
-  await deleteIdentity(sesClient, identity.domain);
+  if (mode === 'strict') {
+    await deleteIdentity(sesClient, identity.domain);
+  }
   await db
     .delete(projectIdentities)
     .where(
