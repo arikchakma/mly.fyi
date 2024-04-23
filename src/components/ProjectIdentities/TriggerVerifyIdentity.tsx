@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { Loader2, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { httpPost } from '../../lib/http';
-import { queryClient } from '../../utils/query-client';
+import { httpPost } from '@/lib/http';
+import { queryClient } from '@/utils/query-client';
 import { cn } from '@/utils/classname';
 
 type TriggerVerifyIdentityProps = {

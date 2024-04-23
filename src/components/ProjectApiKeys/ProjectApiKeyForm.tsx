@@ -2,8 +2,8 @@ import { useId, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { queryClient } from '../../utils/query-client';
-import { httpPost } from '../../lib/http';
+import { queryClient } from '@/utils/query-client';
+import { httpPost } from '@/lib/http';
 import type {
   CreateProjectApiKeyBody,
   CreateProjectApiKeyResponse,

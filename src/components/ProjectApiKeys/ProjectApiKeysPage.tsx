@@ -1,5 +1,5 @@
+import type { GetProjectResponse } from '@/pages/api/v1/projects/[projectId]/index';
 import React from 'react';
-import type { GetProjectResponse } from '../../pages/api/v1/projects/[projectId]/index.js';
 
 type ProjectApiKeysPageProps = {
   project: GetProjectResponse;

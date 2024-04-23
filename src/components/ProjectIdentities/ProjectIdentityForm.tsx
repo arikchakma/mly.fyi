@@ -1,16 +1,16 @@
-import React, { useId, useState } from 'react';
+import { isValidDomain } from '@/utils/domain';
 import { useMutation } from '@tanstack/react-query';
+import { Loader2, Plus } from 'lucide-react';
+import React, { useId, useState } from 'react';
 import { toast } from 'sonner';
-import { queryClient } from '../../utils/query-client';
-import { httpPost } from '../../lib/http';
+import { httpPost } from '@/lib/http';
 import type {
   CreateProjectIdentityBody,
   CreateProjectIdentityResponse,
-} from '../../pages/api/v1/projects/[projectId]/identities/create';
-import { Loader2, Plus } from 'lucide-react';
+} from '@/pages/api/v1/projects/[projectId]/identities/create';
+import { queryClient } from '@/utils/query-client';
 import { Input } from '../Interface/Input';
 import { Label } from '../Interface/Label';
-import { isValidDomain } from '@/utils/domain';
 
 type ProjectIdentityFormProps = {
   projectId: string;
@@ -114,7 +114,11 @@ export function ProjectIdentityForm(props: ProjectIdentityFormProps) {
       </div>
 
       <div>
-        <Label htmlFor={mailFromDomainFieldId} className='mt-4'>
+        <Label
+          htmlFor={mailFromDomainFieldId}
+          aria-required={true}
+          className='mt-4'
+        >
           Mail From Domain{' '}
           <span className='text-xs leading-none text-zinc-400'>
             (Recomended)
@@ -130,6 +134,7 @@ export function ProjectIdentityForm(props: ProjectIdentityFormProps) {
           placeholder='send.mly.fyi'
           value={mailFromDomain}
           onInput={(e) => setMailFromDomain(String((e.target as any).value))}
+          required
         />
 
         <p className='mt-2 text-sm text-zinc-500'>

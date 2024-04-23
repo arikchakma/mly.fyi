@@ -1,6 +1,6 @@
 import React from 'react';
 import { CopyableTableField } from './CopyableTableField';
-import type { ProjectIdentityRecord } from '../../db/types';
+import type { ProjectIdentityRecord } from '@/db/types';
 
 type ProjectIdentityDNSTableProps = {
   records: ProjectIdentityRecord[];

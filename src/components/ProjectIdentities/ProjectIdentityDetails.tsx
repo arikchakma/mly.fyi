@@ -1,16 +1,15 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { queryClient } from '../../utils/query-client';
-import { httpGet, httpPatch } from '../../lib/http';
 import type { ProjectIdentity } from '@/db/types';
+import { httpGet, httpPatch } from '@/lib/http';
+import { queryClient } from '@/utils/query-client';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Box } from 'lucide-react';
-import { CopyableTableField } from './CopyableTableField';
-import { LoadingMessage } from '../LoadingMessage';
-import { useId } from 'react';
-import { Checkbox } from '../Interface/Checkbox';
 import { DateTime } from 'luxon';
+import { useId } from 'react';
 import { toast } from 'sonner';
-import { TriggerVerifyIdentity } from './TriggerVerifyIdentity';
+import { Checkbox } from '../Interface/Checkbox';
+import { LoadingMessage } from '../LoadingMessage';
 import { ProjectIdentityDNSTable } from './ProjectIdentityDNSTable';
+import { TriggerVerifyIdentity } from './TriggerVerifyIdentity';
 
 type ProjectIdentityDetailsProps = {
   projectId: string;
@@ -109,7 +108,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
   return (
     <section>
       <div className='flex items-center gap-4'>
-        <span className='flex h-12 w-12 items-center justify-center rounded-md border  border-zinc-800 bg-zinc-900'>
+        <span className='flex h-[52px] w-[52px] items-center justify-center rounded-md border  border-zinc-800 bg-zinc-900'>
           <Box size={28} />
         </span>
         <div>
@@ -118,7 +117,7 @@ export function ProjectIdentityDetails(props: ProjectIdentityDetailsProps) {
         </div>
       </div>
 
-      <div className='mt-10 flex items-start gap-3'>
+      <div className='mt-10 flex items-start gap-6'>
         <div>
           <h3 className='text-xs uppercase text-zinc-400'>Created At</h3>
           <span className='mt-1 font-semibold capitalize'>{createdAt}</span>

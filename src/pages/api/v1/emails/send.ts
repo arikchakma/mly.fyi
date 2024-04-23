@@ -1,5 +1,6 @@
 import { db } from '@/db';
 import { emailLogEvents, emailLogs } from '@/db/schema';
+import { requireProjectConfiguration } from '@/helpers/project';
 import { authenticateApiKey } from '@/lib/authenticate-api-key';
 import { type SendEmailBody, sendEmail } from '@/lib/email';
 import {
@@ -65,6 +66,8 @@ async function handle(params: SendEmailRequest) {
   if (!project) {
     throw new HttpError('not_found', 'Project not found');
   }
+
+  await requireProjectConfiguration(project);
 
   const { from, to, replyTo, subject, text, html, headers } = body;
   if (Array.isArray(to) || Array.isArray(replyTo)) {

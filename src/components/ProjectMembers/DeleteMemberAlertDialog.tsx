@@ -2,7 +2,7 @@ import { httpDelete } from '@/lib/http.ts';
 import { queryClient } from '@/utils/query-client.ts';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import type { GetProjectMembersResponse } from '../../pages/api/v1/projects/[projectId]/members/index.ts';
+import type { GetProjectMembersResponse } from '@/pages/api/v1/projects/[projectId]/members/index.ts';
 import {
   AlertDialog,
   AlertDialogAction,

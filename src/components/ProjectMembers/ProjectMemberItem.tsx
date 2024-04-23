@@ -1,5 +1,5 @@
 import React from 'react';
-import type { GetProjectMembersResponse } from '../../pages/api/v1/projects/[projectId]/members/index.ts';
+import type { GetProjectMembersResponse } from '@/pages/api/v1/projects/[projectId]/members/index.ts';
 import { MemberActionDropdown } from './MemberActionDropdown.tsx';
 import { MemberRoleBadge } from './MemberRoleBadge.tsx';
 

@@ -3,7 +3,7 @@ import { queryClient } from '@/utils/query-client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import type { GetProjectMemberInviteInfoResponse } from '../../pages/api/v1/projects/invitations/[inviteId]/index';
+import type { GetProjectMemberInviteInfoResponse } from '@/pages/api/v1/projects/invitations/[inviteId]/index';
 import { PageError } from '../Errors/PageError';
 import { Button } from '../Interface/Button';
 import { LoadingMessage } from '../LoadingMessage';

@@ -1,5 +1,5 @@
 import { Check, Clipboard } from 'lucide-react';
-import { useCopyToClipboard } from '../../hooks/use-copy-to-clipboard';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { cn } from '@/utils/classname';
 
 type CopyableTableProps = {

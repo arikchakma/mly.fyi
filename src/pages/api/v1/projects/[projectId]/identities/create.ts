@@ -5,11 +5,11 @@ import {
   projectIdentities,
   projects,
 } from '@/db/schema';
-import { requireProjectMember } from '@/helpers/project';
 import {
-  createConfigurationSet,
-  deleteConfigurationSet,
-} from '@/lib/configuration-set';
+  requireProjectConfiguration,
+  requireProjectMember,
+} from '@/helpers/project';
+import { createConfigurationSet } from '@/lib/configuration-set';
 import {
   addMailFromDomain,
   deleteIdentity,
@@ -26,6 +26,11 @@ import { newId } from '@/lib/new-id';
 import { createSNSServiceClient } from '@/lib/notification';
 import { json } from '@/lib/response';
 import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
+import {
+  DEFAULT_DISALLOWED_SUBDOMAINS,
+  isSubdomain,
+  isValidDomain,
+} from '@/utils/domain';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -42,7 +47,7 @@ export type EmailIndentity = {
 export type DomainIdentity = {
   type: 'domain';
   domain: string;
-  mailFromDomain?: string;
+  mailFromDomain: string;
 };
 
 export type CreateProjectIdentityBody = EmailIndentity | DomainIdentity;
@@ -68,12 +73,20 @@ async function validate(params: CreateProjectIdentityRequest) {
     }),
     domain: Joi.string().when('type', {
       is: 'domain',
-      then: Joi.string().required(),
+      then: Joi.string()
+        .trim()
+        .lowercase()
+        .replace(/^https?:\/\//, '')
+        .required(),
       otherwise: Joi.forbidden(),
     }),
     mailFromDomain: Joi.string().when('type', {
       is: 'domain',
-      then: Joi.string().allow('').optional(),
+      then: Joi.string()
+        .trim()
+        .lowercase()
+        .replace(/^https?:\/\//, '')
+        .required(),
       otherwise: Joi.forbidden(),
     }),
   });
@@ -94,7 +107,7 @@ async function validate(params: CreateProjectIdentityRequest) {
 }
 
 async function handle(params: CreateProjectIdentityRequest) {
-  const { body, userId, user } = params;
+  const { body, userId } = params;
   const { projectId } = params.context.params;
   const { type } = body;
 
@@ -105,8 +118,6 @@ async function handle(params: CreateProjectIdentityRequest) {
     );
   }
 
-  const { domain, mailFromDomain } = body;
-
   const project = await db.query.projects.findFirst({
     where: eq(projects.id, projectId),
   });
@@ -115,7 +126,21 @@ async function handle(params: CreateProjectIdentityRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  await requireProjectMember(userId!, projectId, ['admin']);
+  await requireProjectMember(userId!, projectId, ['admin', 'manager']);
+  await requireProjectConfiguration(project);
+
+  const { domain, mailFromDomain } = body;
+  if (
+    !isSubdomain(mailFromDomain, domain, [
+      ...DEFAULT_DISALLOWED_SUBDOMAINS,
+      project?.region!, // Don't allow the region as a subdomain because it's a reserved keyword for the redirect domain
+    ])
+  ) {
+    throw new HttpError(
+      'bad_request',
+      'Mail From Domain must be a valid subdomain',
+    );
+  }
 
   const existingIdentity = await db.query.projectIdentities.findFirst({
     where: and(

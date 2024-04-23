@@ -1,6 +1,6 @@
 ---
-import AuthLayout from '../../layouts/AuthLayout.astro';
-import { TriggerVerifyAccount } from '../../components/AuthenticationFlow/TriggerVerifyAccount';
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import { TriggerVerifyAccount } from '@/components/AuthenticationFlow/TriggerVerifyAccount';
 
 const { verificationCode } = Astro.params;
 if (!verificationCode) {

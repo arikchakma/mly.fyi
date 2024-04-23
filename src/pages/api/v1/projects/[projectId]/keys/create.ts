@@ -1,6 +1,9 @@
 import { db } from '@/db';
 import { projectApiKeys, projects } from '@/db/schema';
-import { requireProjectMember } from '@/helpers/project';
+import {
+  requireProjectConfiguration,
+  requireProjectMember,
+} from '@/helpers/project';
 import {
   type HandleRoute,
   type RouteParams,
@@ -77,6 +80,7 @@ async function handle(params: CreateProjectApiKeyRequest) {
   }
 
   await requireProjectMember(userId!, projectId, ['admin']);
+  await requireProjectConfiguration(project);
 
   const apiKeyId = newId('key');
   const key = newApiKey();

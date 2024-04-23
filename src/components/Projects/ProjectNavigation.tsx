@@ -7,7 +7,7 @@ import {
   Mail,
   Users2,
 } from 'lucide-react';
-import { cn } from '../../utils/classname';
+import { cn } from '@/utils/classname';
 
 type ProjectNavigationProps = {
   url: string;
