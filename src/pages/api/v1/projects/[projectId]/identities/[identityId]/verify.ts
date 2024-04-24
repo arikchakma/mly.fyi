@@ -6,6 +6,7 @@ import {
   projects,
 } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   getDomainDkimVerificationStatus,
   getMailFromDomainVerificationStatus,
@@ -19,7 +20,6 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { createSNSServiceClient } from '@/lib/notification';
 import { json } from '@/lib/response';
 import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
 import type { CustomMailFromStatus } from '@aws-sdk/client-ses';
@@ -62,7 +62,8 @@ async function validate(params: VerifyProjectIdentityRequest) {
 }
 
 async function handle(params: VerifyProjectIdentityRequest) {
-  const { user: currentUser, context } = params;
+  const { currentUser } = params.context.locals;
+  const { context } = params;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');
@@ -190,7 +191,5 @@ async function handle(params: VerifyProjectIdentityRequest) {
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<VerifyProjectIdentityRequest>,
   validate satisfies ValidateRoute<VerifyProjectIdentityRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

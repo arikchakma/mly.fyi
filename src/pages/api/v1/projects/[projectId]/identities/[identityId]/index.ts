@@ -1,17 +1,18 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { projectIdentities, projects } from '@/db/schema';
+import type { ProjectIdentity } from '@/db/types';
+import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import { db } from '@/db';
-import { projects, projectIdentities } from '@/db/schema';
-import type { ProjectIdentity } from '@/db/types';
-import { and, eq } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
-import { requireProjectMember } from '@/helpers/project';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
 
 export interface GetProjectIdentityResponse
@@ -48,7 +49,8 @@ async function validate(params: GetProjectIdentityRequest) {
 }
 
 async function handle(params: GetProjectIdentityRequest) {
-  const { user: currentUser, context, query } = params;
+  const { context } = params;
+  const { currentUser } = params.context.locals;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');
@@ -85,7 +87,5 @@ async function handle(params: GetProjectIdentityRequest) {
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectIdentityRequest>,
   validate satisfies ValidateRoute<GetProjectIdentityRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser]
 );

@@ -1,16 +1,16 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { users } from '@/db/schema';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
-import { db } from '@/db';
-import { eq } from 'drizzle-orm';
-import { users } from '@/db/schema';
 import { HttpError } from '@/lib/http-error';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface SendVerificationEmailResponse {
   status: 'ok';
@@ -78,7 +78,10 @@ async function handle({ body }: SendVerificationEmailRequest) {
   });
 
   const verificationCode = associatedUser?.verificationCode;
-  // Send verification email
+  // TODO: Send verification email
+  console.log('-'.repeat(20));
+  console.log('Verification Code: ', verificationCode);
+  console.log('-'.repeat(20));
 
   return json<SendVerificationEmailResponse>({ status: 'ok' });
 }

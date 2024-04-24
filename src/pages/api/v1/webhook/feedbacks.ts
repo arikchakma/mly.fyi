@@ -1,18 +1,18 @@
-import type { APIRoute } from 'astro';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
+import { logInfo } from '@/lib/logger';
 import {
+  type SesNotificationType,
   handleEmailFeedbacks,
   handleSubscriptionConfirmation,
-  type SesNotificationType,
 } from '@/lib/notification';
-import { logInfo } from '@/lib/logger';
+import { json } from '@/lib/response';
 import { isValidJSON } from '@/utils/json';
+import type { APIRoute } from 'astro';
 
 export interface FeedbacksResponse {
   status: 'ok';

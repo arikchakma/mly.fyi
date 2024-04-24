@@ -1,5 +1,6 @@
 import { db } from '@/db';
 import { projectMembers } from '@/db/schema';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -60,8 +61,8 @@ async function validate(params: RespondProjectMemberInviteRequest) {
 }
 
 async function handle(params: RespondProjectMemberInviteRequest) {
-  const { user: currentUser } = params;
   const { inviteId } = params.context.params;
+  const { currentUser } = params.context.locals;
 
   const invitedMember = await db.query.projectMembers.findFirst({
     where: and(eq(projectMembers.id, inviteId)),
@@ -100,7 +101,5 @@ async function handle(params: RespondProjectMemberInviteRequest) {
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<RespondProjectMemberInviteRequest>,
   validate satisfies ValidateRoute<RespondProjectMemberInviteRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

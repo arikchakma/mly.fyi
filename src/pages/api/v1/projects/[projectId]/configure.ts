@@ -1,7 +1,8 @@
 import { db } from '@/db';
-import { projectApiKeys, projects } from '@/db/schema';
+import { projects } from '@/db/schema';
 import type { Project } from '@/db/types';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -9,7 +10,6 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { newApiKey, newId } from '@/lib/new-id';
 import { json } from '@/lib/response';
 import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
 import type { APIRoute } from 'astro';
@@ -70,8 +70,9 @@ async function validate(params: ConfigureProjectRequest) {
 }
 
 async function handle(params: ConfigureProjectRequest) {
-  const { body, userId, user } = params;
+  const { body } = params;
   const { projectId } = params.context.params;
+  const { currentUserId } = params.context.locals;
 
   const project = await db.query.projects.findFirst({
     where: eq(projects.id, projectId),
@@ -81,7 +82,7 @@ async function handle(params: ConfigureProjectRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  await requireProjectMember(userId!, projectId, ['admin']);
+  await requireProjectMember(currentUserId!, projectId, ['admin']);
 
   const { accessKeyId, secretAccessKey, region } = body;
   if (!accessKeyId || !secretAccessKey || !region) {
@@ -115,7 +116,5 @@ async function handle(params: ConfigureProjectRequest) {
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<ConfigureProjectRequest>,
   validate satisfies ValidateRoute<ConfigureProjectRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

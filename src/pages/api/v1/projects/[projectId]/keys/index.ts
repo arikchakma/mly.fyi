@@ -1,17 +1,18 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { projectApiKeys, projects } from '@/db/schema';
+import type { ProjectApiKey } from '@/db/types';
+import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import { db } from '@/db';
-import { projects, projectApiKeys } from '@/db/schema';
-import type { ProjectApiKey } from '@/db/types';
-import { count, eq } from 'drizzle-orm';
 import { HttpError } from '@/lib/http-error';
-import { requireProjectMember } from '@/helpers/project';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import { count, eq } from 'drizzle-orm';
 import Joi from 'joi';
 
 export interface ListProjectApiKeysResponse {
@@ -71,7 +72,8 @@ async function validate(params: ListProjectApiKeysRequest) {
 }
 
 async function handle(params: ListProjectApiKeysRequest) {
-  const { user: currentUser, context, query } = params;
+  const { currentUser } = params.context.locals;
+  const { context, query } = params;
   const { currPage, perPage } = query;
 
   if (!currentUser) {
@@ -123,7 +125,5 @@ async function handle(params: ListProjectApiKeysRequest) {
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<ListProjectApiKeysRequest>,
   validate satisfies ValidateRoute<ListProjectApiKeysRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

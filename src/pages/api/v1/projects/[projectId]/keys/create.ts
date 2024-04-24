@@ -4,6 +4,7 @@ import {
   requireProjectConfiguration,
   requireProjectMember,
 } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -68,7 +69,8 @@ async function validate(params: CreateProjectApiKeyRequest) {
 }
 
 async function handle(params: CreateProjectApiKeyRequest) {
-  const { body, userId, user } = params;
+  const { body } = params;
+  const { currentUserId } = params.context.locals;
   const { projectId } = params.context.params;
 
   const project = await db.query.projects.findFirst({
@@ -79,7 +81,7 @@ async function handle(params: CreateProjectApiKeyRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  await requireProjectMember(userId!, projectId, ['admin']);
+  await requireProjectMember(currentUserId!, projectId, ['admin']);
   await requireProjectConfiguration(project);
 
   const apiKeyId = newId('key');
@@ -89,7 +91,7 @@ async function handle(params: CreateProjectApiKeyRequest) {
     id: apiKeyId,
     name: body.name,
     projectId,
-    creatorId: userId!,
+    creatorId: currentUserId!,
     key,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -103,7 +105,5 @@ async function handle(params: CreateProjectApiKeyRequest) {
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<CreateProjectApiKeyRequest>,
   validate satisfies ValidateRoute<CreateProjectApiKeyRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

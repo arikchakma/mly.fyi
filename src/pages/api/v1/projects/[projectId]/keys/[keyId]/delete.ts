@@ -1,17 +1,18 @@
-import type { APIRoute } from 'astro';
-import {
-  handler,
-  type HandleRoute,
-  type RouteParams,
-  type ValidateRoute,
-} from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
 import { db } from '@/db';
 import { projectApiKeys, projects } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
-import { and, eq } from 'drizzle-orm';
+import { authenticateUser } from '@/lib/authenticate-user';
+import {
+  type HandleRoute,
+  type RouteParams,
+  type ValidateRoute,
+  handler,
+} from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import { and, eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface DeleteApiKeyResponse {
   status: 'ok';
@@ -48,7 +49,8 @@ async function validate(params: DeleteApiKeyRequest) {
 }
 
 async function handle(params: DeleteApiKeyRequest) {
-  const { user: currentUser, context } = params;
+  const { currentUser } = params.context.locals;
+  const { context } = params;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');
@@ -93,7 +95,5 @@ async function handle(params: DeleteApiKeyRequest) {
 export const DELETE: APIRoute = handler(
   handle satisfies HandleRoute<DeleteApiKeyRequest>,
   validate satisfies ValidateRoute<DeleteApiKeyRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

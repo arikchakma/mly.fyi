@@ -6,6 +6,7 @@ import {
 } from '@/db/schema';
 import type { Project } from '@/db/types';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -53,7 +54,8 @@ async function validate(params: GetProjectRequest) {
 }
 
 async function handle(params: GetProjectRequest) {
-  const { user: currentUser, context } = params;
+  const { context } = params;
+  const { currentUser } = params.context.locals;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');
@@ -88,7 +90,5 @@ async function handle(params: GetProjectRequest) {
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectRequest>,
   validate satisfies ValidateRoute<GetProjectRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

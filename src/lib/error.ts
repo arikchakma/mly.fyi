@@ -1,8 +1,8 @@
-import { json } from './response';
-import { stripQuotes } from '../utils/string';
-import { logError } from './logger';
 import Joi from 'joi';
+import { stripQuotes } from '../utils/string';
 import type { HttpError } from './http-error';
+import { logError } from './logger';
+import { json } from './response';
 
 export const ERROR_CODE_BY_KEY = {
   bad_request: 400,
@@ -19,6 +19,7 @@ export type ErrorCodeKey = keyof typeof ERROR_CODE_BY_KEY;
 
 export interface ErrorBody {
   type: ErrorCodeKey;
+  status: number;
   message: string;
   errors?: {
     message: string;
@@ -40,6 +41,7 @@ export function renderHttpError(error: HttpError): Response {
   return renderErrorResponse(
     {
       type: error.type || 'internal_error',
+      status: error.status,
       message: error.message,
       errors:
         error?.errors?.map((err) => ({
@@ -57,6 +59,7 @@ export function renderValidationError(error: Joi.ValidationError): Response {
   return renderErrorResponse(
     {
       type: 'validation_error',
+      status: 400,
       message: stripQuotes(error.message),
       errors: errorsList.map((err) => ({
         message: stripQuotes(err.message),
@@ -75,6 +78,7 @@ export function renderInternalError(err: Error): Response {
   return renderErrorResponse(
     {
       type: 'internal_error',
+      status: 500,
       message: err.message,
       errors: [],
     },
@@ -86,6 +90,7 @@ export function renderUnauthorized(): Response {
   return renderErrorResponse(
     {
       type: 'unauthorized',
+      status: 401,
       message: 'Invalid credentials',
       errors: [],
     },
@@ -97,6 +102,7 @@ export function renderNotFound(): Response {
   return renderErrorResponse(
     {
       type: 'not_found',
+      status: 404,
       message: 'Resource not found',
       errors: [],
     },

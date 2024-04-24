@@ -9,6 +9,7 @@ import {
   requireProjectConfiguration,
   requireProjectMember,
 } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import { createConfigurationSet } from '@/lib/configuration-set';
 import {
   addMailFromDomain,
@@ -26,11 +27,7 @@ import { newId } from '@/lib/new-id';
 import { createSNSServiceClient } from '@/lib/notification';
 import { json } from '@/lib/response';
 import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
-import {
-  DEFAULT_DISALLOWED_SUBDOMAINS,
-  isSubdomain,
-  isValidDomain,
-} from '@/utils/domain';
+import { DEFAULT_DISALLOWED_SUBDOMAINS, isSubdomain } from '@/utils/domain';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -107,7 +104,8 @@ async function validate(params: CreateProjectIdentityRequest) {
 }
 
 async function handle(params: CreateProjectIdentityRequest) {
-  const { body, userId } = params;
+  const { body } = params;
+  const { currentUserId } = params.context.locals;
   const { projectId } = params.context.params;
   const { type } = body;
 
@@ -126,7 +124,7 @@ async function handle(params: CreateProjectIdentityRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  await requireProjectMember(userId!, projectId, ['admin', 'manager']);
+  await requireProjectMember(currentUserId!, projectId, ['admin', 'manager']);
   await requireProjectConfiguration(project);
 
   const { domain, mailFromDomain } = body;
@@ -182,7 +180,7 @@ async function handle(params: CreateProjectIdentityRequest) {
   await db.insert(projectIdentities).values({
     id: projectIdentityId,
     projectId,
-    creatorId: userId!,
+    creatorId: currentUserId!,
     type,
     domain,
     mailFromDomain,
@@ -280,7 +278,5 @@ async function handle(params: CreateProjectIdentityRequest) {
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<CreateProjectIdentityRequest>,
   validate satisfies ValidateRoute<CreateProjectIdentityRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

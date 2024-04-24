@@ -1,6 +1,7 @@
 import { db } from '@/db';
 import { projectMembers, projects } from '@/db/schema';
 import type { Project } from '@/db/types';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -47,8 +48,9 @@ async function validate(params: CreateProjectRequest) {
 }
 
 async function handle(params: CreateProjectRequest) {
-  const { body, userId, user } = params;
+  const { body } = params;
   const { name, timezone, url } = body;
+  const { currentUserId, currentUser } = params.context.locals;
 
   const projectId = newId('project');
 
@@ -56,7 +58,7 @@ async function handle(params: CreateProjectRequest) {
     .insert(projects)
     .values({
       id: projectId,
-      creatorId: userId!,
+      creatorId: currentUserId!,
       name,
       url,
       timezone,
@@ -74,8 +76,8 @@ async function handle(params: CreateProjectRequest) {
   await db.insert(projectMembers).values({
     id: memberId,
     projectId,
-    userId: userId!,
-    invitedEmail: user?.email!,
+    userId: currentUserId!,
+    invitedEmail: currentUser?.email!,
     role: 'admin',
     status: 'joined',
     createdAt: new Date(),
@@ -88,7 +90,5 @@ async function handle(params: CreateProjectRequest) {
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<CreateProjectRequest>,
   validate satisfies ValidateRoute<CreateProjectRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

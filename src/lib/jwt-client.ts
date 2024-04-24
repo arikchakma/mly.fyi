@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 
-export const TOKEN_COOKIE_NAME = '__tiny_jt__';
+export const TOKEN_COOKIE_NAME = '__mly_jt__';
 
 export function setAuthToken(token: string) {
   Cookies.set(TOKEN_COOKIE_NAME, token, {

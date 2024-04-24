@@ -1,12 +1,8 @@
 import { db } from '@/db';
-import {
-  emailLogEvents,
-  emailLogs,
-  projectIdentities,
-  projects,
-} from '@/db/schema';
-import type { EmailLog, EmailLogEvent, ProjectIdentity } from '@/db/types';
+import { emailLogEvents, emailLogs, projects } from '@/db/schema';
+import type { EmailLog, EmailLogEvent } from '@/db/types';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -55,7 +51,8 @@ async function validate(params: GetProjectEmailRequest) {
 }
 
 async function handle(params: GetProjectEmailRequest) {
-  const { user: currentUser, context, query } = params;
+  const { context } = params;
+  const { currentUser } = params.context.locals;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');
@@ -100,7 +97,5 @@ async function handle(params: GetProjectEmailRequest) {
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectEmailRequest>,
   validate satisfies ValidateRoute<GetProjectEmailRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

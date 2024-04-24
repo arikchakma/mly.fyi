@@ -6,6 +6,7 @@ import {
 } from '@/db/schema';
 import type { AllowedProjectMemberRole } from '@/db/types';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -73,7 +74,8 @@ async function validate(params: UpdateProjectMemberRequest) {
 }
 
 async function handle(params: UpdateProjectMemberRequest) {
-  const { body, userId } = params;
+  const { body } = params;
+  const { currentUserId } = params.context.locals;
   const { projectId, memberId } = params.context.params;
 
   const project = await db.query.projects.findFirst({
@@ -84,7 +86,7 @@ async function handle(params: UpdateProjectMemberRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  await requireProjectMember(userId!, projectId, ['admin', 'manager']);
+  await requireProjectMember(currentUserId!, projectId, ['admin', 'manager']);
 
   const { role } = body;
 
@@ -118,7 +120,5 @@ async function handle(params: UpdateProjectMemberRequest) {
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<UpdateProjectMemberRequest>,
   validate satisfies ValidateRoute<UpdateProjectMemberRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

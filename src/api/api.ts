@@ -1,6 +1,6 @@
 import { serverConfig } from '@/lib/config.ts';
-import { TOKEN_COOKIE_NAME } from '../lib/jwt.ts';
 import type { APIContext } from 'astro';
+import { TOKEN_COOKIE_NAME } from '../lib/jwt.ts';
 
 type HttpOptionsType = RequestInit | { headers: Record<string, any> };
 
@@ -59,9 +59,9 @@ export function api(context: APIContext) {
 
       // Logout user if token is invalid
       if (data.status === 401) {
-        context.cookies.delete(TOKEN_COOKIE_NAME);
-        context.redirect(context.request.url);
-
+        context.cookies.delete(TOKEN_COOKIE_NAME, {
+          path: '/',
+        });
         return { response: undefined, error: data as ErrorType };
       }
 

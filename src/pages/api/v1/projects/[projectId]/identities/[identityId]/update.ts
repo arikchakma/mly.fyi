@@ -4,6 +4,7 @@ import {
   requireProjectConfiguration,
   requireProjectMember,
 } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type SetEventType,
   createConfigurationSetTrackingOptions,
@@ -71,6 +72,10 @@ async function validate(params: UpdateProjectIdentityRequest) {
     },
   );
 
+  if (bodyError) {
+    throw bodyError;
+  }
+
   return {
     ...params,
     body: bodyValue,
@@ -78,7 +83,8 @@ async function validate(params: UpdateProjectIdentityRequest) {
 }
 
 async function handle(params: UpdateProjectIdentityRequest) {
-  const { user: currentUser, context } = params;
+  const { currentUser } = params.context.locals;
+  const { context } = params;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');
@@ -227,7 +233,5 @@ async function handle(params: UpdateProjectIdentityRequest) {
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<UpdateProjectIdentityRequest>,
   validate satisfies ValidateRoute<UpdateProjectIdentityRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );
