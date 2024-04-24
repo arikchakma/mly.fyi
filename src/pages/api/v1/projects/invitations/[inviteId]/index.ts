@@ -54,7 +54,7 @@ async function validate(params: GetProjectMemberInviteInfoRequest) {
 }
 
 async function handle(params: GetProjectMemberInviteInfoRequest) {
-  const { user: currentUser } = params;
+  const { currentUser } = params.context.locals;
   const { inviteId } = params.context.params;
 
   const invitedMember = await db.query.projectMembers.findFirst({

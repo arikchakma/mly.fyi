@@ -12,11 +12,10 @@ import {
   SESServiceException,
   UpdateConfigurationSetEventDestinationCommand,
 } from '@aws-sdk/client-ses';
-import { logError } from './logger';
-import { setupEmailFeedbackHandling } from './notification';
-import { newId } from './new-id';
 import type { SNSClient } from '@aws-sdk/client-sns';
 import { HttpError } from './http-error';
+import { logError } from './logger';
+import { setupEmailFeedbackHandling } from './notification';
 
 const EVENT_DESTINATION_NAME = 'Feedback';
 const DEFAULT_EVENT_TYPES = [

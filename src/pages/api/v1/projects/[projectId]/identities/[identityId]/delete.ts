@@ -77,7 +77,8 @@ async function validate(params: DeleteProjectIdentityRequest) {
 }
 
 async function handle(params: DeleteProjectIdentityRequest) {
-  const { user: currentUser, context } = params;
+  const { context } = params;
+  const { currentUser } = params.context.locals;
   const { mode = 'soft' } = params.query;
 
   if (!currentUser) {

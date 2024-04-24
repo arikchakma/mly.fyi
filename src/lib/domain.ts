@@ -12,7 +12,6 @@ import {
   VerifyDomainIdentityCommand,
 } from '@aws-sdk/client-ses';
 import { resolveCname } from 'dns/promises';
-import { HttpError } from './http-error';
 import { logError } from './logger';
 
 export async function verifyDomainIdentity(

@@ -1,9 +1,5 @@
 import { db } from '@/db';
-import {
-  type AllowedProjectMemberRole,
-  projectMembers,
-  projects,
-} from '@/db/schema';
+import { type AllowedProjectMemberRole, projectMembers } from '@/db/schema';
 import type { Project } from '@/db/types';
 import { HttpError } from '@/lib/http-error';
 import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';

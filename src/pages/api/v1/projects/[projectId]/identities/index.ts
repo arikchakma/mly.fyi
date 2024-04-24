@@ -11,7 +11,7 @@ import {
 import { HttpError } from '@/lib/http-error';
 import { json } from '@/lib/response';
 import type { APIRoute } from 'astro';
-import { and, count, eq, inArray, or } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm';
 import Joi from 'joi';
 
 export interface ListProjectIdentitiesResponse {
@@ -81,7 +81,8 @@ async function validate(params: ListProjectIdentitiesRequest) {
 }
 
 async function handle(params: ListProjectIdentitiesRequest) {
-  const { user: currentUser, context, query } = params;
+  const { context, query } = params;
+  const { currentUser } = params.context.locals;
   const { currPage, perPage } = query;
 
   if (!currentUser) {

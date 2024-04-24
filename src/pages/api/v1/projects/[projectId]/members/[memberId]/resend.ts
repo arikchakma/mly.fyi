@@ -48,7 +48,7 @@ async function validate(params: ResendProjectMemberInviteRequest) {
 }
 
 async function handle(params: ResendProjectMemberInviteRequest) {
-  const { body, userId } = params;
+  const { currentUserId } = params.context.locals;
   const { projectId, memberId } = params.context.params;
 
   const project = await db.query.projects.findFirst({
@@ -59,7 +59,7 @@ async function handle(params: ResendProjectMemberInviteRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  await requireProjectMember(userId!, projectId, ['admin', 'manager']);
+  await requireProjectMember(currentUserId!, projectId, ['admin', 'manager']);
 
   const member = await db.query.projectMembers.findFirst({
     where: and(

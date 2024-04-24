@@ -1,6 +1,5 @@
 import { db } from '@/db';
 import { users } from '@/db/schema';
-import type { User } from '@/db/types';
 import type { APIContext, APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -21,8 +20,6 @@ export type RouteParams<
   query: Q;
   headers: Headers;
   context: APIContext<any, P>;
-  user?: User;
-  userId?: string;
 };
 
 export type HandleRoute<P = RouteParams> = (params: P) => Promise<Response>;
@@ -78,10 +75,8 @@ export function handler(
           throw new HttpError('bad_request', 'User not verified');
         }
 
-        Object.assign(routeParams, {
-          user,
-          userId: user.id,
-        });
+        context.locals.currentUser = user;
+        context.locals.currentUserId = user.id;
       }
 
       if (validate) {

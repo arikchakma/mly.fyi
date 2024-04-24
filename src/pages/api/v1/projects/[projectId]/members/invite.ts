@@ -1,7 +1,6 @@
 import { db } from '@/db';
 import {
   allowedProjectMemberRoles,
-  projectApiKeys,
   projectMembers,
   projects,
 } from '@/db/schema';
@@ -62,7 +61,8 @@ async function validate(params: InviteProjectMemberRequest) {
 }
 
 async function handle(params: InviteProjectMemberRequest) {
-  const { body, userId } = params;
+  const { body } = params;
+  const { currentUserId } = params.context.locals;
   const { projectId } = params.context.params;
 
   const project = await db.query.projects.findFirst({
@@ -73,7 +73,7 @@ async function handle(params: InviteProjectMemberRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  await requireProjectMember(userId!, projectId, ['admin', 'manager']);
+  await requireProjectMember(currentUserId!, projectId, ['admin', 'manager']);
 
   const { role, email } = body;
   const alreadyInvited = await db.query.projectMembers.findFirst({

@@ -47,8 +47,9 @@ async function validate(params: CreateProjectRequest) {
 }
 
 async function handle(params: CreateProjectRequest) {
-  const { body, userId, user } = params;
+  const { body } = params;
   const { name, timezone, url } = body;
+  const { currentUserId, currentUser } = params.context.locals;
 
   const projectId = newId('project');
 
@@ -56,7 +57,7 @@ async function handle(params: CreateProjectRequest) {
     .insert(projects)
     .values({
       id: projectId,
-      creatorId: userId!,
+      creatorId: currentUserId!,
       name,
       url,
       timezone,
@@ -74,8 +75,8 @@ async function handle(params: CreateProjectRequest) {
   await db.insert(projectMembers).values({
     id: memberId,
     projectId,
-    userId: userId!,
-    invitedEmail: user?.email!,
+    userId: currentUserId!,
+    invitedEmail: currentUser?.email!,
     role: 'admin',
     status: 'joined',
     createdAt: new Date(),

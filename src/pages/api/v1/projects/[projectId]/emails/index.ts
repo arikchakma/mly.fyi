@@ -74,7 +74,8 @@ async function validate(params: ListProjectEmailsRequest) {
 }
 
 async function handle(params: ListProjectEmailsRequest) {
-  const { user: currentUser, context, query } = params;
+  const { context, query } = params;
+  const { currentUser } = params.context.locals;
   const { currPage, perPage } = query;
 
   if (!currentUser) {

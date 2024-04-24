@@ -1,6 +1,4 @@
-import { DialogTrigger } from '@radix-ui/react-dialog';
 import { ChevronDown } from 'lucide-react';
-import { useRef, useState } from 'react';
 import { Button } from '../Interface/Button';
 import {
   DropdownMenu,

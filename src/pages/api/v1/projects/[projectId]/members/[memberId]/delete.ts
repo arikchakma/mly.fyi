@@ -48,7 +48,7 @@ async function validate(params: DeleteProjectMemberRequest) {
 }
 
 async function handle(params: DeleteProjectMemberRequest) {
-  const { userId: currentUserId } = params;
+  const { currentUserId } = params.context.locals;
   const { projectId, memberId } = params.context.params;
 
   const project = await db.query.projects.findFirst({

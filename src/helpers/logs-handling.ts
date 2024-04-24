@@ -3,7 +3,7 @@ import '@/lib/server-only';
 import { db } from '@/db';
 import { emailLogEvents, emailLogs, projectStats } from '@/db/schema';
 import { newId } from '@/lib/new-id';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { DateTime } from 'luxon';
 import type { AllowedEmailLogStatus } from '../db/types';
 

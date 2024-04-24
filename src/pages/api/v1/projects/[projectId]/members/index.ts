@@ -45,7 +45,8 @@ async function validate(params: GetProjectMembersRequest) {
 }
 
 async function handle(params: GetProjectMembersRequest) {
-  const { user: currentUser, context } = params;
+  const { context } = params;
+  const { currentUser } = params.context.locals;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');

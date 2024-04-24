@@ -47,7 +47,8 @@ async function validate(params: GetProjectApiKeyRequest) {
 }
 
 async function handle(params: GetProjectApiKeyRequest) {
-  const { user: currentUser, context, query } = params;
+  const { currentUser } = params.context.locals;
+  const { context } = params;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');

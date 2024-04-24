@@ -4,7 +4,7 @@ import type { APIContext, AstroGlobal } from 'astro';
 import * as jose from 'jose';
 import { serverConfig } from './config';
 
-export const TOKEN_COOKIE_NAME = '__tiny_jt__';
+export const TOKEN_COOKIE_NAME = '__mly_jt__';
 
 export type TokenPayload = {
   id: string;

@@ -1,11 +1,6 @@
 import { db } from '@/db';
-import {
-  emailLogEvents,
-  emailLogs,
-  projectIdentities,
-  projects,
-} from '@/db/schema';
-import type { EmailLog, EmailLogEvent, ProjectIdentity } from '@/db/types';
+import { emailLogEvents, emailLogs, projects } from '@/db/schema';
+import type { EmailLog, EmailLogEvent } from '@/db/types';
 import { requireProjectMember } from '@/helpers/project';
 import {
   type HandleRoute,
@@ -55,7 +50,8 @@ async function validate(params: GetProjectEmailRequest) {
 }
 
 async function handle(params: GetProjectEmailRequest) {
-  const { user: currentUser, context, query } = params;
+  const { context } = params;
+  const { currentUser } = params.context.locals;
 
   if (!currentUser) {
     throw new HttpError('unauthorized', 'Unauthorized');

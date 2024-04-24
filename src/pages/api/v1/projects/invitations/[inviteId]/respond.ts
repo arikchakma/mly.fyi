@@ -60,8 +60,8 @@ async function validate(params: RespondProjectMemberInviteRequest) {
 }
 
 async function handle(params: RespondProjectMemberInviteRequest) {
-  const { user: currentUser } = params;
   const { inviteId } = params.context.params;
+  const { currentUser } = params.context.locals;
 
   const invitedMember = await db.query.projectMembers.findFirst({
     where: and(eq(projectMembers.id, inviteId)),
