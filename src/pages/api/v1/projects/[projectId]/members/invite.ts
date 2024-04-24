@@ -6,6 +6,7 @@ import {
 } from '@/db/schema';
 import type { AllowedProjectMemberRole } from '@/db/types';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -112,7 +113,5 @@ async function handle(params: InviteProjectMemberRequest) {
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<InviteProjectMemberRequest>,
   validate satisfies ValidateRoute<InviteProjectMemberRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

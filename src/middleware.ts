@@ -6,6 +6,10 @@ import { TOKEN_COOKIE_NAME, decodeToken } from './lib/jwt.ts';
 import { logError } from './lib/logger.ts';
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (context.url.pathname.startsWith('/api')) {
+    return next();
+  }
+
   const userAuthToken = context.cookies.get(TOKEN_COOKIE_NAME)?.value;
   if (userAuthToken) {
     const { id } = decodeToken(userAuthToken);

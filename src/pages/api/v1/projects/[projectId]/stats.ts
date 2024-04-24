@@ -1,6 +1,7 @@
 import { db } from '@/db';
 import { projectStats, projects } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -175,7 +176,5 @@ async function handle(params: GetProjectStatsRequest) {
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectStatsRequest>,
   validate satisfies ValidateRoute<GetProjectStatsRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

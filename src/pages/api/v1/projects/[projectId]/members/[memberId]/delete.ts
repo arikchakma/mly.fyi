@@ -1,6 +1,7 @@
 import { db } from '@/db';
 import { projectMembers, projects } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -125,7 +126,5 @@ async function handle(params: DeleteProjectMemberRequest) {
 export const DELETE: APIRoute = handler(
   handle satisfies HandleRoute<DeleteProjectMemberRequest>,
   validate satisfies ValidateRoute<DeleteProjectMemberRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

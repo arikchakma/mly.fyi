@@ -1,6 +1,7 @@
 import { db } from '@/db';
 import { projectApiKeys, projects } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -94,7 +95,5 @@ async function handle(params: DeleteApiKeyRequest) {
 export const DELETE: APIRoute = handler(
   handle satisfies HandleRoute<DeleteApiKeyRequest>,
   validate satisfies ValidateRoute<DeleteApiKeyRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

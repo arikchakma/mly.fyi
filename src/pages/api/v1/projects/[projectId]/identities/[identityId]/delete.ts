@@ -4,6 +4,7 @@ import {
   requireProjectConfiguration,
   requireProjectMember,
 } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import { deleteConfigurationSet } from '@/lib/configuration-set';
 import { deleteIdentity } from '@/lib/domain';
 import {
@@ -146,7 +147,5 @@ async function handle(params: DeleteProjectIdentityRequest) {
 export const DELETE: APIRoute = handler(
   handle satisfies HandleRoute<DeleteProjectIdentityRequest>,
   validate satisfies ValidateRoute<DeleteProjectIdentityRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

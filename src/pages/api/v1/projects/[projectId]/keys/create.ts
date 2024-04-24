@@ -4,6 +4,7 @@ import {
   requireProjectConfiguration,
   requireProjectMember,
 } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -104,7 +105,5 @@ async function handle(params: CreateProjectApiKeyRequest) {
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<CreateProjectApiKeyRequest>,
   validate satisfies ValidateRoute<CreateProjectApiKeyRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

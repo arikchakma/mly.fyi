@@ -9,6 +9,7 @@ import {
   requireProjectConfiguration,
   requireProjectMember,
 } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import { createConfigurationSet } from '@/lib/configuration-set';
 import {
   addMailFromDomain,
@@ -277,7 +278,5 @@ async function handle(params: CreateProjectIdentityRequest) {
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<CreateProjectIdentityRequest>,
   validate satisfies ValidateRoute<CreateProjectIdentityRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

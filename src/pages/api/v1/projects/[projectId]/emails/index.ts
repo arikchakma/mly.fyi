@@ -2,6 +2,7 @@ import { db } from '@/db';
 import { emailLogs, projects } from '@/db/schema';
 import type { EmailLog } from '@/db/types';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -131,7 +132,5 @@ async function handle(params: ListProjectEmailsRequest) {
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<ListProjectEmailsRequest>,
   validate satisfies ValidateRoute<ListProjectEmailsRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

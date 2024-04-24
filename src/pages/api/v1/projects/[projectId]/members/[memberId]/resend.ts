@@ -1,6 +1,7 @@
 import { db } from '@/db';
 import { projectMembers, projects } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type HandleRoute,
   type RouteParams,
@@ -81,7 +82,5 @@ async function handle(params: ResendProjectMemberInviteRequest) {
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<ResendProjectMemberInviteRequest>,
   validate satisfies ValidateRoute<ResendProjectMemberInviteRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

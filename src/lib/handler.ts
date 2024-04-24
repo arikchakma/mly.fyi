@@ -1,7 +1,4 @@
-import { db } from '@/db';
-import { users } from '@/db/schema';
 import type { APIContext, APIRoute } from 'astro';
-import { eq } from 'drizzle-orm';
 import Joi from 'joi';
 import {
   renderHttpError,
@@ -9,7 +6,6 @@ import {
   renderValidationError,
 } from './error';
 import { HttpError } from './http-error';
-import { decodeToken, readTokenCookie } from './jwt';
 
 export type RouteParams<
   B = any,
@@ -24,10 +20,7 @@ export type RouteParams<
 
 export type HandleRoute<P = RouteParams> = (params: P) => Promise<Response>;
 export type ValidateRoute<P = RouteParams> = (params: P) => Promise<P>;
-
-export type HandlerOptions = {
-  isProtected?: boolean;
-};
+export type MiddlewareRoute<P = RouteParams> = (params: P) => Promise<P>;
 
 /**
  * Wraps the API handlers for error handling and other common tasks
@@ -39,10 +32,8 @@ export type HandlerOptions = {
 export function handler(
   handle: HandleRoute,
   validate: ValidateRoute | undefined = undefined,
-  options: HandlerOptions = {},
+  middlewares: MiddlewareRoute[] = [],
 ): APIRoute {
-  const { isProtected = false } = options;
-
   return async (context: APIContext): Promise<Response> => {
     try {
       const { request, url } = context;
@@ -56,27 +47,8 @@ export function handler(
         context,
       };
 
-      if (isProtected) {
-        const token = readTokenCookie(context);
-        if (!token) {
-          throw new HttpError('unauthorized', 'Unauthorized');
-        }
-
-        const payload = decodeToken(token);
-        const user = await db.query.users.findFirst({
-          where: eq(users.id, payload.id),
-        });
-
-        if (!user) {
-          throw new HttpError('unauthorized', 'Unauthorized');
-        }
-
-        if (!user.isEnabled) {
-          throw new HttpError('bad_request', 'User not verified');
-        }
-
-        context.locals.currentUser = user;
-        context.locals.currentUserId = user.id;
+      for (const middleware of middlewares) {
+        routeParams = await middleware(routeParams);
       }
 
       if (validate) {

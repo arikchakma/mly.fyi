@@ -6,6 +6,7 @@ import {
   projects,
 } from '@/db/schema';
 import { requireProjectMember } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   getDomainDkimVerificationStatus,
   getMailFromDomainVerificationStatus,
@@ -190,7 +191,5 @@ async function handle(params: VerifyProjectIdentityRequest) {
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<VerifyProjectIdentityRequest>,
   validate satisfies ValidateRoute<VerifyProjectIdentityRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );

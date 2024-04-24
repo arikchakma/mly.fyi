@@ -4,6 +4,7 @@ import {
   requireProjectConfiguration,
   requireProjectMember,
 } from '@/helpers/project';
+import { authenticateUser } from '@/lib/authenticate-user';
 import {
   type SetEventType,
   createConfigurationSetTrackingOptions,
@@ -232,7 +233,5 @@ async function handle(params: UpdateProjectIdentityRequest) {
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<UpdateProjectIdentityRequest>,
   validate satisfies ValidateRoute<UpdateProjectIdentityRequest>,
-  {
-    isProtected: true,
-  },
+  [authenticateUser],
 );
