@@ -24,9 +24,11 @@ type ProjectStat = {
   clicked: number;
   bounced: number;
   complained: number;
+  softBounced: number;
 };
 
 export interface GetProjectStatsResponse {
+  days: number;
   stats: ProjectStat[];
   total: {
     sent: number;
@@ -35,6 +37,7 @@ export interface GetProjectStatsResponse {
     clicked: number;
     bounced: number;
     complained: number;
+    softBounced: number;
   };
 }
 
@@ -122,6 +125,7 @@ async function handle(params: GetProjectStatsRequest) {
       clicked: projectStats.clicked,
       bounced: projectStats.bounced,
       complained: projectStats.complained,
+      softBounced: projectStats.softBounced,
     })
     .from(projectStats)
     .where(
@@ -144,6 +148,7 @@ async function handle(params: GetProjectStatsRequest) {
       clicked: stat?.clicked || 0,
       bounced: stat?.bounced || 0,
       complained: stat?.complained || 0,
+      softBounced: stat?.softBounced || 0,
     };
   });
 
@@ -155,6 +160,7 @@ async function handle(params: GetProjectStatsRequest) {
       acc.clicked += stat.clicked;
       acc.bounced += stat.bounced;
       acc.complained += stat.complained;
+      acc.softBounced += stat.softBounced;
       return acc;
     },
     {
@@ -164,10 +170,12 @@ async function handle(params: GetProjectStatsRequest) {
       clicked: 0,
       bounced: 0,
       complained: 0,
+      softBounced: 0,
     },
   );
 
   return json<GetProjectStatsResponse>({
+    days,
     stats: enrichedStats,
     total,
   });

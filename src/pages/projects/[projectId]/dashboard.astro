@@ -13,6 +13,8 @@ const { projectId } = Astro.params as { projectId: string };
 const projectClient = projectApi(Astro);
 const { response: project, error: projectError } =
 	await projectClient.getProject(projectId);
+
+const days = parseInt(Astro.url.searchParams.get('d') || '10');
 ---
 
 <ProjectLayout
@@ -26,6 +28,6 @@ const { response: project, error: projectError } =
 	projectId={projectId}
 >
 	<div class="mx-auto max-w-3xl py-12">
-		<ProjectDashboard projectId={projectId} client:load />
+		<ProjectDashboard projectId={projectId} days={days} client:load />
 	</div>
 </ProjectLayout>
