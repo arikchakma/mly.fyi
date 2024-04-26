@@ -1,3 +1,4 @@
+import { sleep } from '@/helpers/promise';
 import {
   GetSendQuotaCommand,
   ListIdentitiesCommand,
@@ -6,6 +7,7 @@ import {
 } from '@aws-sdk/client-ses';
 import { HttpError } from './http-error';
 import { logError } from './logger';
+import { connectRedis } from './redis';
 
 export function createSESServiceClient(
   accessKeyId: string,
@@ -85,5 +87,38 @@ export async function getSESSendQuota(client: SESClient): Promise<{
   } catch (err) {
     logError(err, (err as Error).stack);
     return null;
+  }
+}
+
+export const ALREADY_SEND_PER_SECOND_COUNT =
+  'ses:already_send_per_second_count';
+
+export async function increaseAlreadySendPerSecondCount() {
+  const redisClient = await connectRedis();
+  await redisClient.incr(ALREADY_SEND_PER_SECOND_COUNT);
+}
+
+export async function requireSESSendingRateLimit(client: SESClient) {
+  const quota = await getSESSendQuota(client);
+  if (!quota) {
+    throw new HttpError('internal_error', 'Failed to get SES quota');
+  }
+
+  const redisClient = await connectRedis();
+
+  const alreadySendPerSecondExists = await redisClient.exists(
+    ALREADY_SEND_PER_SECOND_COUNT,
+  );
+  const alreadySendPerSecond = parseInt(
+    (await redisClient.get(ALREADY_SEND_PER_SECOND_COUNT)) || '0',
+    10,
+  );
+
+  if (
+    !alreadySendPerSecondExists ||
+    (alreadySendPerSecond && alreadySendPerSecond >= quota.maxSendRate)
+  ) {
+    await sleep(1000);
+    await redisClient.set(ALREADY_SEND_PER_SECOND_COUNT, 0);
   }
 }

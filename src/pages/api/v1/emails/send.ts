@@ -12,6 +12,11 @@ import {
 import { HttpError } from '@/lib/http-error';
 import { newId } from '@/lib/new-id';
 import { json } from '@/lib/response';
+import {
+  createSESServiceClient,
+  increaseAlreadySendPerSecondCount,
+  requireSESSendingRateLimit,
+} from '@/lib/ses';
 import type { APIRoute } from 'astro';
 import Joi from 'joi';
 
@@ -113,6 +118,13 @@ async function handle(params: SendEmailRequest) {
     throw new HttpError('bad_request', 'Invalid project credentials');
   }
 
+  const sesClient = createSESServiceClient(
+    accessKeyId,
+    secretAccessKey,
+    region,
+  );
+  await requireSESSendingRateLimit(sesClient);
+
   const { data, error } = await sendEmail(
     {
       provider: 'ses',
@@ -130,6 +142,7 @@ async function handle(params: SendEmailRequest) {
       },
     },
   );
+  await increaseAlreadySendPerSecondCount();
 
   const emailLogId = newId('emailLog');
   const emailLogEventId = newId('emailLogEvent');
