@@ -9,7 +9,7 @@
  */
 export async function runPromisesInBatchSequentially<T>(
   promises: (() => Promise<T>)[] | Promise<T>[],
-  batchSize: number,
+  batchSize: number = 5,
   ignoreErrors = false,
 ): Promise<T[]> {
   const results: T[] = [];

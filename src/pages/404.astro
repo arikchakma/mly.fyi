@@ -2,9 +2,16 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title='404'>
-  <div>
-    <h1>404</h1>
-    <p>Page not found</p>
-  </div>
+<Layout title="404">
+	<div class="mx-auto my-8 max-w-2xl text-center">
+		<h1 class="text-5xl font-bold font-mono">404</h1>
+		<p class="mt-1 mb-4 text-lg text-zinc-500">Page not found</p>
+
+		<a
+			class="inline-block underline text-zinc-500 hover:text-zinc-400 hover:no-underline"
+			href="/projects"
+		>
+			Projects
+		</a>
+	</div>
 </Layout>

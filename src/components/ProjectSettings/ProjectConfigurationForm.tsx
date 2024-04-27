@@ -1,8 +1,3 @@
-import { useMutation } from '@tanstack/react-query';
-import { Loader2, SlidersHorizontal } from 'lucide-react';
-import { useId, useState } from 'react';
-import type { FormEvent } from 'react';
-import { toast } from 'sonner';
 import type { Project } from '@/db/types.ts';
 import { httpPatch } from '@/lib/http.ts';
 import type {
@@ -10,6 +5,11 @@ import type {
   ConfigureProjectRequest,
 } from '@/pages/api/v1/projects/[projectId]/configure.ts';
 import { queryClient } from '@/utils/query-client.ts';
+import { useMutation } from '@tanstack/react-query';
+import { Loader2, SlidersHorizontal } from 'lucide-react';
+import { useId, useState } from 'react';
+import type { FormEvent } from 'react';
+import { toast } from 'sonner';
 import { Input } from '../Interface/Input.tsx';
 import { Label } from '../Interface/Label.tsx';
 
@@ -146,9 +146,8 @@ export function ProjectConfigurationForm(props: ProjectConfigurationFormProps) {
         {isLoading ? (
           <Loader2 size={14} className='animate-spin stroke-[3px]' />
         ) : (
-          <SlidersHorizontal size={14} className='stroke-[3px]' />
+          'Update Configuration'
         )}
-        Update Configuration
       </button>
     </form>
   );

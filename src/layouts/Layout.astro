@@ -6,9 +6,9 @@ import { OnlineManager } from '../components/OnlineManager';
 import { ScreenSize } from '../components/ScreenSize';
 
 export interface Props {
-	title: string;
-	description?: string;
-	noIndex?: boolean;
+  title: string;
+  description?: string;
+  noIndex?: boolean;
 }
 
 const isDev = import.meta.env.DEV === true;
@@ -40,7 +40,7 @@ const { title = 'mly.fyi', description = '', noIndex = false } = Astro.props;
 	<body
 		class="bg-black text-gray-100 selection:bg-zinc-200 selection:text-zinc-900 scrollbar-stable"
 	>
-		<main class="relative mx-auto min-h-screen max-w-[1750px]">
+		<main class="relative mx-auto max-w-[1750px]">
 			<slot />
 
 			<Toaster position="bottom-center" client:load />

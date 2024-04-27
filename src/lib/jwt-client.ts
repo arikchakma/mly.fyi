@@ -24,3 +24,16 @@ export function redirectAuthSuccess() {
 
   window.location.href = '/';
 }
+
+export function logout() {
+  Cookies.remove(TOKEN_COOKIE_NAME, {
+    path: '/',
+  });
+
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  // Reloading will automatically redirect the user if required
+  window.location.reload();
+}

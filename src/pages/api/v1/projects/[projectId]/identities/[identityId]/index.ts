@@ -87,5 +87,5 @@ async function handle(params: GetProjectIdentityRequest) {
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectIdentityRequest>,
   validate satisfies ValidateRoute<GetProjectIdentityRequest>,
-  [authenticateUser]
+  [authenticateUser],
 );

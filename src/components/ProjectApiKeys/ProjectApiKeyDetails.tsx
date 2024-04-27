@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { Key } from 'lucide-react';
 import { DateTime } from 'luxon';
-import { httpGet } from '../../lib/http';
-import type { GetProjectApiKeyResponse } from '../../pages/api/v1/projects/[projectId]/keys/[keyId]/index';
-import { queryClient } from '../../utils/query-client';
+import { httpGet } from '@/lib/http';
+import type { GetProjectApiKeyResponse } from '@/pages/api/v1/projects/[projectId]/keys/[keyId]/index';
+import { queryClient } from '@/utils/query-client';
 import { PageError } from '../Errors/PageError';
 import { LoadingMessage } from '../LoadingMessage';
 

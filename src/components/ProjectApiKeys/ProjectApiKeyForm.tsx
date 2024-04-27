@@ -1,15 +1,15 @@
-import { useId, useState } from 'react';
-import type { FormEvent } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { queryClient } from '@/utils/query-client';
 import { httpPost } from '@/lib/http';
 import type {
   CreateProjectApiKeyBody,
   CreateProjectApiKeyResponse,
 } from '@/pages/api/v1/projects/[projectId]/keys/create';
-import { CopyableTableField } from '../ProjectIdentities/CopyableTableField';
+import { queryClient } from '@/utils/query-client';
+import { useMutation } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
+import { useId, useState } from 'react';
+import type { FormEvent } from 'react';
+import { toast } from 'sonner';
+import { ProjectApiKeyCopy } from './ProjectApiKeyCopy';
 
 type ProjectApiKeyFormProps = {
   projectId: string;
@@ -60,10 +60,7 @@ export function ProjectApiKeyForm(props: ProjectApiKeyFormProps) {
         <p className='mb-4 text-sm text-zinc-500'>
           Your key has been created successfully.
         </p>
-        <CopyableTableField
-          className='mt-1 h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-left outline-none placeholder:text-zinc-400 focus:border-zinc-600'
-          value={key}
-        />
+        <ProjectApiKeyCopy apiKey={key} />
         <p className='mt-2 text-sm text-zinc-500'>
           Make sure to copy this key as it won't be shown again.
         </p>

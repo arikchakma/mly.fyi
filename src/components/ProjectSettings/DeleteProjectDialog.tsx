@@ -1,8 +1,7 @@
 import { httpDelete } from '@/lib/http';
-import { cn } from '@/utils/classname';
 import { queryClient } from '@/utils/query-client';
 import { useMutation } from '@tanstack/react-query';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
@@ -19,64 +18,51 @@ import { Checkbox } from '../Interface/Checkbox';
 import { Input } from '../Interface/Input';
 import { Label } from '../Interface/Label';
 
-type DeleteIdentityProps = {
+type DeleteProjectDialogProps = {
+  projectName: string;
   projectId: string;
-  identityId: string;
-  identityDomain: string;
-  label?: string;
-  className?: string;
-  iconSize?: number;
 };
 
-export function DeleteIdentity(props: DeleteIdentityProps) {
-  const {
-    projectId,
-    identityId,
-    identityDomain,
-    label,
-    className,
-    iconSize = 16,
-  } = props;
+export function DeleteProjectDialog(props: DeleteProjectDialogProps) {
+  const { projectId, projectName } = props;
 
-  const confirmInputFieldId = `idt${useId()}`;
-  const modeInputFieldId = `mode${useId()}`;
-
-  const [mode, setMode] = useState<'strict' | 'soft'>('soft');
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [mode, setMode] = useState<'strict' | 'soft'>('soft');
 
-  const deleteIdentity = useMutation(
+  const confirmInputFieldId = `pjt${useId()}`;
+  const modeInputFieldId = `pjt${useId()}`;
+
+  const deleteProject = useMutation(
     {
-      mutationKey: ['project-identities', projectId, identityId, 'delete'],
+      mutationKey: ['projects', projectId, 'delete'],
       mutationFn: () => {
         return httpDelete(
-          `/api/v1/projects/${projectId}/identities/${identityId}/delete?mode=${mode}`,
+          `/api/v1/projects/${projectId}/delete?mode=${mode}`,
           {},
         );
       },
       onSuccess: () => {
         queryClient.invalidateQueries();
-        setIsOpen(false);
+        window.location.href = '/';
       },
     },
     queryClient,
   );
 
-  const { isPending } = deleteIdentity;
+  const { isPending } = deleteProject;
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const form = e.currentTarget;
-    const confirmIdentityDomain = form[confirmInputFieldId].value;
-
-    if (confirmIdentityDomain !== identityDomain) {
-      toast.error('Identity domain does not match');
+    if (!confirmText || confirmText !== 'CONFIRM') {
+      toast.error('Please type CONFIRM to continue');
       return;
     }
 
-    toast.promise(deleteIdentity.mutateAsync(), {
-      loading: 'Deleting Identity...',
-      success: 'Identity deleted successfully',
+    toast.promise(deleteProject.mutateAsync(), {
+      loading: 'Deleting Project...',
+      success: 'Project deleted successfully',
       error: (err) => {
         return err?.message || 'Something went wrong';
       },
@@ -86,44 +72,33 @@ export function DeleteIdentity(props: DeleteIdentityProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <button
-          disabled={isPending}
-          className={cn(
-            'inline-flex items-center border-none text-sm text-zinc-400 outline-none hover:text-zinc-50 focus:text-zinc-50 focus:outline-none disabled:opacity-70',
-            className,
-          )}
-        >
-          {isPending ? (
-            <Loader2 size={iconSize} className='animate-spin' />
-          ) : (
-            <Trash2 size={iconSize} />
-          )}
-          {label && <span>{label}</span>}
-        </button>
+        <Button variant='destructive'>Delete</Button>
       </AlertDialogTrigger>
       <AlertDialogContent className='max-w-sm gap-6 p-4'>
         <AlertDialogHeader className='space-y-1'>
-          <AlertDialogTitle>Delete Identity</AlertDialogTitle>
+          <AlertDialogTitle>Delete Project</AlertDialogTitle>
           <AlertDialogDescription className='text-balance text-zinc-400'>
-            This action cannot be undone. This will permanently delete the
-            identity <strong className='text-zinc-200'>{identityDomain}</strong>
-            .
+            This action cannot be undone and all data associated with{' '}
+            <strong className='text-zinc-200'>{projectName}</strong> will be
+            lost permanently.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div>
             <Label htmlFor={confirmInputFieldId}>
-              Type the identity domain to confirm
+              Type <strong>CONFIRM</strong> to continue
             </Label>
 
             <Input
               autoFocus
               id={confirmInputFieldId}
               type='text'
-              placeholder={identityDomain}
+              placeholder='CONFIRM'
               className='mt-2'
               required
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
             />
           </div>
 
@@ -136,7 +111,7 @@ export function DeleteIdentity(props: DeleteIdentityProps) {
               }}
             />
             <Label htmlFor={modeInputFieldId} className='text-xs'>
-              Remove identity from SES
+              Remove identities from SES
             </Label>
           </div>
 
@@ -149,7 +124,11 @@ export function DeleteIdentity(props: DeleteIdentityProps) {
             >
               Cancel
             </Button>
-            <Button type='submit' variant='destructive' disabled={isPending}>
+            <Button
+              type='submit'
+              variant='destructive'
+              disabled={isPending || confirmText !== 'CONFIRM'}
+            >
               {isPending ? (
                 <Loader2 size={16} className='animate-spin stroke-[3px]' />
               ) : (

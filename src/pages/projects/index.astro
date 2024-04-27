@@ -4,12 +4,12 @@ import { projectApi } from '@/api/project';
 
 const { currentUser } = Astro.locals;
 if (!currentUser) {
-	return Astro.redirect('/login');
+  return Astro.redirect('/login');
 }
 
 const projectClient = projectApi(Astro);
 const { response: projects, error: projectError } =
-	await projectClient.listProjects();
+  await projectClient.listProjects();
 ---
 
 <Layout title="Projects">

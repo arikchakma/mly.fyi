@@ -75,7 +75,7 @@ export function TimezonePopoverContent(props: TimezonePopoverContentProps) {
           autoFocus={true}
           type='text'
           className='w-full bg-transparent px-7 py-1.5 placeholder-zinc-500 focus:border-0 focus:shadow-none focus:outline-none'
-          placeholder={'Search timezone, city, or country'}
+          placeholder='Search timezone'
           onKeyDown={(e) => {
             if (e.key === 'ArrowDown') {
               e.preventDefault();

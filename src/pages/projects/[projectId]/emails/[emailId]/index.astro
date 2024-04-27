@@ -5,17 +5,17 @@ import { ProjectEmailDetails } from '@/components/ProjectEmails/ProjectEmailDeta
 
 const { currentUser } = Astro.locals;
 if (!currentUser) {
-	return Astro.redirect('/login');
+  return Astro.redirect('/login');
 }
 
 const { projectId, emailId } = Astro.params as {
-	projectId: string;
-	emailId: string;
+  projectId: string;
+  emailId: string;
 };
 
 const projectClient = projectApi(Astro);
 const { response: project, error: projectError } =
-	await projectClient.getProject(projectId);
+  await projectClient.getProject(projectId);
 ---
 
 <ProjectLayout
@@ -28,6 +28,7 @@ const { response: project, error: projectError } =
 	projectError={projectError}
 	projectId={projectId}
 	emailId={emailId}
+	currentUser={currentUser}
 >
 	<div class="mx-auto max-w-3xl py-12">
 		<ProjectEmailDetails projectId={projectId} emailId={emailId} client:load />

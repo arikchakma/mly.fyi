@@ -4,12 +4,12 @@ import { RespondInviteForm } from '@/components/AuthenticationFlow/RespondInvite
 
 const { inviteId } = Astro.params;
 if (!inviteId) {
-	return Astro.redirect('/login');
+  return Astro.redirect('/login');
 }
 
 const { currentUserId } = Astro.locals;
 if (!currentUserId) {
-	return Astro.redirect('/login');
+  return Astro.redirect('/login');
 }
 ---
 

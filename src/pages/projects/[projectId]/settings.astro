@@ -5,14 +5,14 @@ import { ProjectSettingsPage } from '@/components/ProjectSettings/ProjectSetting
 
 const { currentUser } = Astro.locals;
 if (!currentUser) {
-	return Astro.redirect('/login');
+  return Astro.redirect('/login');
 }
 
 const { projectId } = Astro.params as { projectId: string };
 
 const projectClient = projectApi(Astro);
 const { response: project, error: projectError } =
-	await projectClient.getProject(projectId);
+  await projectClient.getProject(projectId);
 ---
 
 <ProjectLayout
@@ -25,6 +25,7 @@ const { response: project, error: projectError } =
 	projectError={projectError}
 	projectId={projectId}
 	requireSetup={false}
+	currentUser={currentUser}
 >
 	<ProjectSettingsPage project={project!} projectId={projectId} client:load />
 </ProjectLayout>

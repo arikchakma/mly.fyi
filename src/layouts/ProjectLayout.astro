@@ -4,30 +4,33 @@ import type { AppError, FetchError } from '../api/api';
 import { ProjectNavigation } from '../components/Projects/ProjectNavigation';
 import { PageError } from '../components/Errors/PageError';
 import { ProjectConfigurationPending } from '@/components/ProjectSettings/ProjectConfigurationPending';
+import type { User } from '@/db/types';
 
 export interface Props {
-	project?: Partial<{
-		id: string;
-		name: string;
-		isConfigurationComplete: boolean;
-	}>;
-	requireSetup?: boolean;
-	projectError?: AppError | FetchError | null;
-	title: string;
-	projectId: string;
-	identityId?: string;
-	emailId?: string;
-	keyId?: string;
+  project?: Partial<{
+    id: string;
+    name: string;
+    isConfigurationComplete: boolean;
+  }>;
+  requireSetup?: boolean;
+  projectError?: AppError | FetchError | null;
+  title: string;
+  projectId: string;
+  identityId?: string;
+  emailId?: string;
+  keyId?: string;
+  currentUser: Pick<User, 'email' | 'name' | 'id'>;
 }
 
 const {
-	project,
-	projectError,
-	identityId,
-	emailId,
-	keyId,
-	requireSetup = true,
-	...props
+  project,
+  projectError,
+  identityId,
+  emailId,
+  keyId,
+  requireSetup = true,
+  currentUser,
+  ...props
 } = Astro.props;
 const hasError = !project?.id || !!projectError;
 const deafultUrl = Astro.url.toString();
@@ -46,6 +49,8 @@ const isProjectConfigured = !requireSetup || project?.isConfigurationComplete;
 					identityId={identityId!}
 					emailId={emailId!}
 					keyId={keyId!}
+					currentUser={currentUser}
+					client:load
 				/>
 				{isProjectConfigured ? (
 					<section class="px-4">

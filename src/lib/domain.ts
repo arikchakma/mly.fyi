@@ -12,6 +12,7 @@ import {
   VerifyDomainIdentityCommand,
 } from '@aws-sdk/client-ses';
 import { resolveCname } from 'dns/promises';
+import { HttpError } from './http-error';
 import { logError } from './logger';
 
 export async function verifyDomainIdentity(
@@ -92,12 +93,16 @@ export async function getMailFromDomainVerificationStatus(
     const status =
       result?.MailFromDomainAttributes?.[domain]?.MailFromDomainStatus;
     if (!status) {
-      throw new Error('Mail from domain status not found');
+      throw new HttpError('not_found', 'Mail from domain status not found');
     }
 
     return status;
   } catch (error) {
     logError(error, (error as Error)?.stack);
+    if (error instanceof HttpError) {
+      throw error;
+    }
+
     return 'Failed';
   }
 }
@@ -114,12 +119,16 @@ export async function getDomainDkimVerificationStatus(
     const result = await client.send(command);
     const status = result?.DkimAttributes?.[domain]?.DkimVerificationStatus;
     if (!status) {
-      throw new Error('DKIM verification status not found');
+      throw new HttpError('not_found', 'DKIM status not found');
     }
 
     return status;
   } catch (error) {
     logError(error, (error as Error)?.stack);
+    if (error instanceof HttpError) {
+      throw error;
+    }
+
     return 'Failed';
   }
 }

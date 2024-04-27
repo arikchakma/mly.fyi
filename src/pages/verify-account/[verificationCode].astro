@@ -4,12 +4,12 @@ import { TriggerVerifyAccount } from '@/components/AuthenticationFlow/TriggerVer
 
 const { verificationCode } = Astro.params;
 if (!verificationCode) {
-	return Astro.redirect('/login');
+  return Astro.redirect('/login');
 }
 
 const { currentUserId } = Astro.locals;
 if (currentUserId) {
-	return Astro.redirect('/');
+  return Astro.redirect('/');
 }
 ---
 

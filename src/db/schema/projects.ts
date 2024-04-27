@@ -20,8 +20,8 @@ export const projects = sqliteTable('projects', {
   name: text('name').notNull(),
   url: text('url').notNull(),
   timezone: text('timezone').notNull(),
-  accessKeyId: text('access_key_id').unique(),
-  secretAccessKey: text('secret_access_key').unique(),
+  accessKeyId: text('access_key_id'),
+  secretAccessKey: text('secret_access_key'),
   region: text('region'),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()

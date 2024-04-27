@@ -16,29 +16,26 @@ import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
 
-export interface ConfigureProjectResponse {
+export interface UpdateProjectResponse {
   status: 'ok';
 }
 
-export type ConfigureProjectBody = Pick<
-  Project,
-  'accessKeyId' | 'secretAccessKey' | 'region'
->;
+export type UpdateProjectBody = Pick<Project, 'name' | 'url' | 'timezone'>;
 
-export interface ConfigureProjectRequest
+export interface UpdateProjectRequest
   extends RouteParams<
-    ConfigureProjectBody,
+    UpdateProjectBody,
     any,
     {
       projectId: string;
     }
   > {}
 
-async function validate(params: ConfigureProjectRequest) {
+async function validate(params: UpdateProjectRequest) {
   const schema = Joi.object({
-    accessKeyId: Joi.string().required(),
-    secretAccessKey: Joi.string().required(),
-    region: Joi.string().required(),
+    name: Joi.string().trim().min(3).required(),
+    timezone: Joi.string().trim().required(),
+    url: Joi.string().trim().uri().required(),
   });
 
   const { error, value } = schema.validate(params.body, {
@@ -69,7 +66,7 @@ async function validate(params: ConfigureProjectRequest) {
   };
 }
 
-async function handle(params: ConfigureProjectRequest) {
+async function handle(params: UpdateProjectRequest) {
   const { body } = params;
   const { projectId } = params.context.params;
   const { currentUserId } = params.context.locals;
@@ -84,37 +81,23 @@ async function handle(params: ConfigureProjectRequest) {
 
   await requireProjectMember(currentUserId!, projectId, ['admin', 'manager']);
 
-  const { accessKeyId, secretAccessKey, region } = body;
-  if (!accessKeyId || !secretAccessKey || !region) {
-    throw new HttpError('bad_request', 'Invalid AWS credentials');
-  }
-
-  const sesClient = createSESServiceClient(
-    accessKeyId,
-    secretAccessKey,
-    region,
-  );
-  const isValidConfig = await isValidConfiguration(sesClient);
-  if (!isValidConfig) {
-    throw new HttpError('bad_request', 'Invalid AWS credentials');
-  }
-
+  const { name, url, timezone } = body;
   await db
     .update(projects)
     .set({
-      accessKeyId,
-      secretAccessKey,
-      region,
+      name,
+      url,
+      timezone,
     })
     .where(eq(projects.id, projectId));
 
-  return json<ConfigureProjectResponse>({
+  return json<UpdateProjectResponse>({
     status: 'ok',
   });
 }
 
 export const PATCH: APIRoute = handler(
-  handle satisfies HandleRoute<ConfigureProjectRequest>,
-  validate satisfies ValidateRoute<ConfigureProjectRequest>,
+  handle satisfies HandleRoute<UpdateProjectRequest>,
+  validate satisfies ValidateRoute<UpdateProjectRequest>,
   [authenticateUser],
 );

@@ -1,3 +1,5 @@
+import type { User } from '@/db/types';
+import { cn } from '@/utils/classname';
 import {
   BarChart2,
   Box,
@@ -7,7 +9,7 @@ import {
   Mail,
   Users2,
 } from 'lucide-react';
-import { cn } from '@/utils/classname';
+import { AccountButton } from '../AccountButton';
 
 type ProjectNavigationProps = {
   url: string;
@@ -16,6 +18,7 @@ type ProjectNavigationProps = {
   identityId?: string;
   emailId?: string;
   keyId?: string;
+  currentUser: Pick<User, 'email' | 'name' | 'id'>;
 };
 
 export function ProjectNavigation(props: ProjectNavigationProps) {
@@ -26,6 +29,7 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
     identityId,
     emailId,
     keyId,
+    currentUser,
   } = props;
   const url = new URL(defaultUrl || '');
 
@@ -76,31 +80,34 @@ export function ProjectNavigation(props: ProjectNavigationProps) {
 
   return (
     <div className='w-full border-b border-zinc-800 px-4'>
-      <div className='mx-auto flex max-w-3xl items-center justify-start gap-5'>
-        <a
-          href='/projects'
-          className='-mr-1.5 flex items-center gap-0.5 rounded-md border border-zinc-800 bg-zinc-900 py-1 pl-2 pr-2.5 text-sm text-zinc-50'
-        >
-          <FolderOpen size={16} />
-          <span className='relative ml-1'>{projectName}</span>
-        </a>
-        {primaryLinks.map((item) => (
+      <div className='mx-auto flex max-w-3xl items-center justify-between gap-2'>
+        <div className='flex items-center justify-start gap-5'>
           <a
-            key={item.name}
-            className={cn(
-              'flex items-center gap-1.5 py-2.5 text-sm text-zinc-500 hover:text-zinc-50',
-              {
-                'text-zinc-50':
-                  url.pathname === item.href ||
-                  item?.alts?.includes(url?.pathname as never),
-              },
-            )}
-            href={item.href}
+            href='/projects'
+            className='-mr-1.5 flex items-center gap-0.5 rounded-md border border-zinc-800 bg-zinc-900 py-1 pl-2 pr-2.5 text-sm text-zinc-50'
           >
-            <item.icon size={16} />
-            {item.name}
+            <FolderOpen size={16} />
+            <span className='relative ml-1'>{projectName}</span>
           </a>
-        ))}
+          {primaryLinks.map((item) => (
+            <a
+              key={item.name}
+              className={cn(
+                'flex items-center gap-1.5 py-2.5 text-sm text-zinc-500 hover:text-zinc-50',
+                {
+                  'text-zinc-50':
+                    url.pathname === item.href ||
+                    item?.alts?.includes(url?.pathname as never),
+                },
+              )}
+              href={item.href}
+            >
+              <item.icon size={16} />
+              {item.name}
+            </a>
+          ))}
+        </div>
+        <AccountButton user={currentUser} projectId={projectId} />
       </div>
     </div>
   );

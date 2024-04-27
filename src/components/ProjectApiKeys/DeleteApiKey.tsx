@@ -1,12 +1,11 @@
-import React from 'react';
-import { useId, useState } from 'react';
-import type { FormEvent } from 'react';
+import { httpDelete } from '@/lib/http';
+import { cn } from '@/utils/classname';
+import { queryClient } from '@/utils/query-client';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2, Trash2 } from 'lucide-react';
+import { useId, useState } from 'react';
+import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import { httpDelete } from '@/lib/http';
-import { queryClient } from '@/utils/query-client';
-import { cn } from '@/utils/classname';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -15,9 +14,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../Interface/AlertDialog';
+import { Button } from '../Interface/Button';
 import { Input } from '../Interface/Input';
 import { Label } from '../Interface/Label';
-import { Button } from '../Interface/Button';
 
 type DeleteApiKeyProps = {
   projectId: string;
@@ -40,6 +39,7 @@ export function DeleteApiKey(props: DeleteApiKeyProps) {
 
   const confirmInputFieldId = `idt${useId()}`;
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
 
   const deleteIdentity = useMutation(
     {
@@ -63,10 +63,7 @@ export function DeleteApiKey(props: DeleteApiKeyProps) {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const form = e.currentTarget;
-    const confirmIdentityDomain = form[confirmInputFieldId].value;
-
-    if (!confirmIdentityDomain || confirmIdentityDomain !== 'CONFIRM') {
+    if (!confirmText || confirmText !== 'CONFIRM') {
       toast.error('Please type CONFIRM to continue');
       return;
     }
@@ -120,6 +117,8 @@ export function DeleteApiKey(props: DeleteApiKeyProps) {
               placeholder='CONFIRM'
               className='mt-2'
               required
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
             />
           </div>
 
@@ -132,7 +131,11 @@ export function DeleteApiKey(props: DeleteApiKeyProps) {
             >
               Cancel
             </Button>
-            <Button type='submit' variant='destructive' disabled={isPending}>
+            <Button
+              type='submit'
+              variant='destructive'
+              disabled={isPending || confirmText !== 'CONFIRM'}
+            >
               {isPending ? (
                 <Loader2 size={16} className='animate-spin stroke-[3px]' />
               ) : (

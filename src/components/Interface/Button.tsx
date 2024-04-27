@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { Slot } from '@radix-ui/react-slot';
-import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/utils/classname';
+import { Slot } from '@radix-ui/react-slot';
+import { type VariantProps, cva } from 'class-variance-authority';
+import * as React from 'react';
 
 const buttonVariants = cva(
   'inline-flex w-full items-center justify-center gap-2 rounded-lg border p-2 text-sm font-medium outline-none disabled:cursor-not-allowed disabled:opacity-60',
@@ -9,11 +9,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'border-zinc-700 bg-zinc-800 text-zinc-50 hover:opacity-80 focus:border-zinc-500',
+          'border-zinc-700 bg-zinc-800 text-zinc-50 hover:opacity-80 focus-visible:border-zinc-500',
         outline:
-          'border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-50 focus:border-zinc-500',
+          'border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-50 focus-visible:border-zinc-500',
         destructive:
-          'border-red-700 bg-red-800 text-red-50 hover:opacity-80 focus:border-red-500',
+          'border-red-700 bg-red-800 text-red-50 hover:opacity-80 focus-visible:border-red-500',
       },
       size: {
         default: 'h-10 px-4 py-2',
