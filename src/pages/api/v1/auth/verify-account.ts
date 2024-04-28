@@ -1,17 +1,17 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { users } from '@/db/schema';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
-import { db } from '@/db';
-import { eq } from 'drizzle-orm';
-import { users } from '@/db/schema';
 import { HttpError } from '@/lib/http-error';
 import { createToken } from '@/lib/jwt';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface SendVerificationEmailResponse {
   token: string;
@@ -62,11 +62,25 @@ async function handle({ body }: SendVerificationEmailRequest) {
     throw new HttpError('bad_request', 'User is already verified');
   }
 
+  const { verificationCodeAt } = associatedUser;
+  if (!verificationCodeAt) {
+    throw new HttpError('bad_request', 'Invalid verification code');
+  }
+
+  // Verification code expires after 24 hours
+  if (
+    new Date(verificationCodeAt).getTime() + 24 * 60 * 60 * 1000 <
+    Date.now()
+  ) {
+    throw new HttpError('bad_request', 'Verification code expired');
+  }
+
   await db
     .update(users)
     .set({
       verifiedAt: new Date(),
       verificationCode: null,
+      verificationCodeAt: null,
       updatedAt: new Date(),
     })
     .where(eq(users.id, associatedUser.id));

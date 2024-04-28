@@ -12,11 +12,11 @@ export function EmailLoginForm(props: EmailLoginFormProps) {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  const login = useMutation(
+  const login = useMutation<{ token: string }>(
     {
       mutationKey: ['v1-login'],
       mutationFn: () => {
-        return httpPost<{ token: string }>(`/api/v1/auth/login`, {
+        return httpPost(`/api/v1/auth/login`, {
           email,
           password,
         });
@@ -32,14 +32,12 @@ export function EmailLoginForm(props: EmailLoginFormProps) {
         redirectAuthSuccess();
       },
       onError: (error) => {
-        // Implement the error handling logic for the login mutation
-        //   // @todo use proper types
-        //   if ((error as any).type === 'user_not_verified') {
-        //     window.location.href = `/verification-pending?email=${encodeURIComponent(
-        //       email,
-        //     )}`;
-        //     return;
-        //   }
+        if ((error as any).type === 'user_not_verified') {
+          window.location.href = `/verification-pending?email=${encodeURIComponent(
+            email,
+          )}`;
+          return;
+        }
       },
     },
     queryClient,

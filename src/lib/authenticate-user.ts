@@ -22,7 +22,7 @@ export const authenticateUser: MiddlewareRoute = async (params) => {
     throw new HttpError('unauthorized', 'Unauthorized');
   }
 
-  if (!user.isEnabled) {
+  if (!user.isEnabled || !user.verifiedAt) {
     throw new HttpError('bad_request', 'User not verified');
   }
 

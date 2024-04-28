@@ -1,5 +1,6 @@
 import { db } from '@/db';
 import { users } from '@/db/schema';
+import { sendVerificationEmail } from '@/lib/auth-email';
 import {
   type HandleRoute,
   type RouteParams,
@@ -11,6 +12,7 @@ import { json } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
+import { v4 as uuidV4 } from 'uuid';
 
 export interface SendVerificationEmailResponse {
   status: 'ok';
@@ -43,6 +45,7 @@ async function validate(params: SendVerificationEmailRequest) {
       id: true,
       verifiedAt: true,
       verificationCode: true,
+      verificationCodeAt: true,
     },
   });
 
@@ -60,6 +63,17 @@ async function validate(params: SendVerificationEmailRequest) {
     );
   }
 
+  if (associatedUser?.verificationCodeAt) {
+    const verificationCodeAt = new Date(associatedUser.verificationCodeAt);
+    const now = new Date();
+    const diff = now.getTime() - verificationCodeAt.getTime();
+
+    // Wait 3 minutes before sending another verification email
+    if (diff < 3 * 60 * 1000) {
+      throw new HttpError('bad_request', 'Please wait before requesting again');
+    }
+  }
+
   return {
     ...params,
     body: value,
@@ -73,15 +87,20 @@ async function handle({ body }: SendVerificationEmailRequest) {
     where: eq(users.email, email),
     columns: {
       id: true,
-      verificationCode: true,
     },
   });
 
-  const verificationCode = associatedUser?.verificationCode;
-  // TODO: Send verification email
-  console.log('-'.repeat(20));
-  console.log('Verification Code: ', verificationCode);
-  console.log('-'.repeat(20));
+  const newVerificationCode = uuidV4();
+  await db
+    .update(users)
+    .set({
+      verificationCode: newVerificationCode,
+      verificationCodeAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, associatedUser?.id!));
+
+  await sendVerificationEmail(email, newVerificationCode!);
 
   return json<SendVerificationEmailResponse>({ status: 'ok' });
 }
