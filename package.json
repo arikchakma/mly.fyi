@@ -8,10 +8,9 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "db:generate": "drizzle-kit generate:sqlite",
+    "db:generate": "drizzle-kit generate:sqlite --config=drizzle.config.ts",
     "db:migrate": "tsx ./scripts/db-migrate.ts",
-    "db:studio": "drizzle-kit studio",
-    "db:push": "drizzle-kit push:sqlite",
+    "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
     "format:write": "biome format --write ./src"
   },
   "dependencies": {
