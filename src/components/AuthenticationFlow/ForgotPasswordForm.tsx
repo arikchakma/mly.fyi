@@ -1,44 +1,37 @@
+import { httpPost } from '@/lib/http';
+import { queryClient } from '@/utils/query-client';
 import { useMutation } from '@tanstack/react-query';
-import React from 'react';
+import { Loader2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { httpPost } from '../../lib/http';
-import { redirectAuthSuccess, setAuthToken } from '../../lib/jwt-client';
-import { queryClient } from '../../utils/query-client';
+import { Button } from '../Interface/Button';
+import { Input } from '../Interface/Input';
 
-type EmailLoginFormProps = {};
+type ForgotPasswordFormProps = {};
 
-export function EmailLoginForm(props: EmailLoginFormProps) {
+export function ForgotPasswordForm(props: ForgotPasswordFormProps) {
   const [email, setEmail] = useState<string>('');
 
-  const login = useMutation(
+  const forgotPassword = useMutation(
     {
       mutationKey: ['forgot-password', email],
       mutationFn: () => {
-        return httpPost<{ token: string }>(`/api/v1/auth/forgot-password`, {
+        return httpPost(`/api/v1/auth/forgot-password`, {
           email,
         });
       },
-      onSuccess: (data) => {
-        const token = data?.token;
-        if (!token) {
-          toast.error('Something went wrong. Please try again.');
-          return;
-        }
-
-        setAuthToken(token);
-        redirectAuthSuccess();
+      onSuccess: () => {
+        setEmail('');
       },
       onError: (error) => {
-        // Implement the error handling logic for the login mutation
-        //   // @todo use proper types
-        //   if ((error as any).type === 'user_not_verified') {
-        //     window.location.href = `/verification-pending?email=${encodeURIComponent(
-        //       email,
-        //     )}`;
-        //     return;
-        //   }
+        // @todo use proper types
+        if ((error as any).type === 'user_not_verified') {
+          window.location.href = `/verification-pending?email=${encodeURIComponent(
+            email,
+          )}`;
+          return;
+        }
       },
     },
     queryClient,
@@ -46,39 +39,39 @@ export function EmailLoginForm(props: EmailLoginFormProps) {
 
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.promise(login.mutateAsync(), {
+    toast.promise(forgotPassword.mutateAsync(), {
       loading: 'Please wait...',
+      success: 'Check your email for the reset link.',
       error: (error) => {
         return error?.message || 'Something went wrong.';
       },
     });
   };
 
-  const isLoading = login.status === 'pending';
+  const isLoading = forgotPassword.status === 'pending';
 
   return (
     <form className='w-full' onSubmit={handleFormSubmit}>
       <label htmlFor='email' className='sr-only'>
         Email address
       </label>
-      <input
+      <Input
         name='email'
         type='email'
         autoComplete='email'
         required
-        className='block w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600'
         placeholder='Email Address'
         value={email}
         onInput={(e) => setEmail(String((e.target as any).value))}
       />
 
-      <button
-        type='submit'
-        disabled={isLoading}
-        className='inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-sm font-medium text-zinc-50 outline-none focus:ring-2 focus:ring-[#333] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60'
-      >
-        {isLoading ? 'Please wait...' : 'Continue'}
-      </button>
+      <Button type='submit' disabled={isLoading} className='mt-3'>
+        {isLoading ? (
+          <Loader2 className='animate-spin w-4 h-4 stroke-[2.5px]' />
+        ) : (
+          'Continue'
+        )}
+      </Button>
     </form>
   );
 }

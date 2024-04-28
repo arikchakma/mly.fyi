@@ -1,5 +1,6 @@
 import { db } from '@/db';
 import { users } from '@/db/schema';
+import { sendVerificationEmail } from '@/lib/auth-email';
 import {
   type HandleRoute,
   type RouteParams,
@@ -73,11 +74,12 @@ async function handle({ body }: RegisterRequest) {
     password: hashedPassword,
     verificationCode,
     authProvider: 'email',
+    verificationCodeAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date(),
   });
 
-  // Send verification email
+  await sendVerificationEmail(email, verificationCode);
 
   return json<RegisterResponse>({ status: 'ok' });
 }

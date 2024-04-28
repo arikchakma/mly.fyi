@@ -80,7 +80,7 @@ async function handle({ body }: V1LoginRequest) {
   }
 
   if (!associatedUser.verifiedAt) {
-    throw new HttpError('bad_request', 'User is not verified');
+    throw new HttpError('user_not_verified', 'User is not verified');
   }
 
   const token = await createToken({

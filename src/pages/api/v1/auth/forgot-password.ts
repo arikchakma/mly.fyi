@@ -1,5 +1,6 @@
 import { db } from '@/db';
 import { users } from '@/db/schema';
+import { sendForgotPasswordEmail } from '@/lib/auth-email';
 import {
   type HandleRoute,
   type RouteParams,
@@ -7,6 +8,7 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
+import { logError } from '@/lib/logger';
 import { json } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
@@ -56,7 +58,7 @@ async function validate(params: ForgotPasswordRequest) {
 
   if (!associatedUser.verifiedAt) {
     throw new HttpError(
-      'bad_request',
+      'user_not_verified',
       'Please verify your email address before resetting your password',
     );
   }
@@ -103,7 +105,8 @@ async function handle({ body }: ForgotPasswordRequest) {
       resetPasswordCodeAt: new Date(),
     })
     .where(eq(users.id, associatedUser.id));
-  // send email with reset code
+
+  await sendForgotPasswordEmail(email, resetCode);
 
   return json<ForgotPasswordResponse>({ status: 'ok' });
 }
