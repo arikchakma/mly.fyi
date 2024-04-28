@@ -1,11 +1,12 @@
 import Cookies from 'js-cookie';
-import { removeAuthToken, TOKEN_COOKIE_NAME } from './jwt-client';
+import { TOKEN_COOKIE_NAME, removeAuthToken } from './jwt-client';
 
 type HttpOptionsType = RequestInit;
 
 type AppResponse = Record<string, any>;
 
 export interface FetchError extends Error {
+  type: string;
   status: number;
   message: string;
 }
@@ -56,6 +57,7 @@ export async function httpCall<ResponseType = AppResponse>(
     if (!response.ok) {
       if (data.errors) {
         const error = new Error() as FetchError;
+        error.type = data.type;
         error.message = data.message;
         error.status = response.status;
         throw error;

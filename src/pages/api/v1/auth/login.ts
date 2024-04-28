@@ -1,18 +1,18 @@
-import type { APIRoute } from 'astro';
+import { db } from '@/db';
+import { users } from '@/db/schema';
 import {
-  handler,
   type HandleRoute,
   type RouteParams,
   type ValidateRoute,
+  handler,
 } from '@/lib/handler';
-import { json } from '@/lib/response';
-import Joi from 'joi';
-import { eq } from 'drizzle-orm';
-import { users } from '@/db/schema';
-import { db } from '@/db';
-import { HttpError } from '@/lib/http-error';
 import { verifyPassword } from '@/lib/hash';
+import { HttpError } from '@/lib/http-error';
 import { createToken } from '@/lib/jwt';
+import { json } from '@/lib/response';
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import Joi from 'joi';
 
 export interface V1LoginResponse {
   token: string;
@@ -28,7 +28,7 @@ export interface V1LoginRequest extends RouteParams<LoginBody> {}
 async function validate(params: V1LoginRequest) {
   const schema = Joi.object({
     email: Joi.string().email().trim().lowercase().required(),
-    password: Joi.string().trim().min(8).required(),
+    password: Joi.string().trim().min(8).max(25).required(),
   });
 
   const { error, value } = schema.validate(params.body, {

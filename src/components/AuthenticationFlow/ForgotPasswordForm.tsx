@@ -1,24 +1,23 @@
-import { httpPost } from '@/lib/http';
-import { redirectAuthSuccess, setAuthToken } from '@/lib/jwt-client';
-import { queryClient } from '@/utils/query-client';
 import { useMutation } from '@tanstack/react-query';
+import React from 'react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { httpPost } from '../../lib/http';
+import { redirectAuthSuccess, setAuthToken } from '../../lib/jwt-client';
+import { queryClient } from '../../utils/query-client';
 
 type EmailLoginFormProps = {};
 
 export function EmailLoginForm(props: EmailLoginFormProps) {
   const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
 
-  const login = useMutation<{ token: string }>(
+  const login = useMutation(
     {
-      mutationKey: ['v1-login'],
+      mutationKey: ['forgot-password', email],
       mutationFn: () => {
-        return httpPost(`/api/v1/auth/login`, {
+        return httpPost<{ token: string }>(`/api/v1/auth/forgot-password`, {
           email,
-          password,
         });
       },
       onSuccess: (data) => {
@@ -32,12 +31,14 @@ export function EmailLoginForm(props: EmailLoginFormProps) {
         redirectAuthSuccess();
       },
       onError: (error) => {
-        if ((error as any).type === 'user_not_verified') {
-          window.location.href = `/verification-pending?email=${encodeURIComponent(
-            email,
-          )}`;
-          return;
-        }
+        // Implement the error handling logic for the login mutation
+        //   // @todo use proper types
+        //   if ((error as any).type === 'user_not_verified') {
+        //     window.location.href = `/verification-pending?email=${encodeURIComponent(
+        //       email,
+        //     )}`;
+        //     return;
+        //   }
       },
     },
     queryClient,
@@ -70,28 +71,6 @@ export function EmailLoginForm(props: EmailLoginFormProps) {
         value={email}
         onInput={(e) => setEmail(String((e.target as any).value))}
       />
-      <label htmlFor='password' className='sr-only'>
-        Password
-      </label>
-      <input
-        name='password'
-        type='password'
-        autoComplete='current-password'
-        required
-        className='mt-2 block w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none placeholder:text-zinc-400 focus:border-zinc-600'
-        placeholder='Password'
-        value={password}
-        onInput={(e) => setPassword(String((e.target as any).value))}
-      />
-
-      <p className='mb-3 mt-2 text-sm'>
-        <a
-          href='/forgot-password'
-          className='text-zinc-400 hover:text-zinc-500'
-        >
-          Reset your password?
-        </a>
-      </p>
 
       <button
         type='submit'
