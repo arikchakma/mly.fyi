@@ -1,6 +1,7 @@
 ARG NODE_VERSION=20
 FROM node:${NODE_VERSION}-slim AS base
 RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates
+RUN apt-get install -y sqlite3 libsqlite3-dev
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable

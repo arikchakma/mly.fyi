@@ -12,5 +12,6 @@ else
 	litestream restore -if-replica-exists $DB_PATH
 fi
 
+pnpm run db:migrate
 # Run litestream with your app as the subprocess.
 exec litestream replicate -exec "node ./dist/server/entry.mjs"
