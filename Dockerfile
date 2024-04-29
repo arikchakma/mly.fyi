@@ -24,6 +24,7 @@ COPY --from=build /app/dist ./dist
 # Move the drizzle directory to the runtime image
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/src/templates ./dist/server/src/templates
 
 # Move the litestream binary to the runtime image from the litestream image
 # You can use a specific version of litestream by changing the tag
