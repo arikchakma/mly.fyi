@@ -1,8 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 import { httpGet } from '@/lib/http';
 import type { ListProjectEmailsResponse } from '@/pages/api/v1/projects/[projectId]/emails/index';
 import { queryClient } from '@/utils/query-client';
+import { useQuery } from '@tanstack/react-query';
+import { Mail } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { EmptyItems } from '../EmptyItems';
 import { PageError } from '../Errors/PageError';
 import { LoadingMessage } from '../LoadingMessage';
 import { Pagination } from '../Pagination';
@@ -56,30 +58,38 @@ export function ListProjectEmails(props: ListProjectEmailsProps) {
 
   return (
     <>
-      <div className='flex items-center justify-between'>
-        <h2 className='text-xl font-semibold'>Emails</h2>
-      </div>
+      {emails.length === 0 && (
+        <EmptyItems
+          title='No emails found.'
+          description='You can view the status of each email and track the delivery status. Start by sending an email.'
+          linkText='Start Sending Email'
+          // TODO: Add the docs link here
+          // link={`/projects/${projectId}/emails/new`}
+          icon={Mail}
+        />
+      )}
 
-      <div className='mt-6'>
-        {emails.length === 0 && (
-          <p className='text-zinc-500'>No emails found.</p>
-        )}
-
-        {emails.length > 0 && (
-          <div className='space-y-4'>
-            <ListProjectEmailsTable emails={emails} />
-            <Pagination
-              totalPages={data.totalPages}
-              currPage={data.currPage}
-              perPage={data.perPage}
-              totalCount={data.totalCount}
-              onPageChange={(page) => {
-                setCurrPage(page);
-              }}
-            />
+      {emails.length > 0 && (
+        <>
+          <div className='flex items-center justify-between'>
+            <h2 className='text-xl font-semibold'>Emails</h2>
           </div>
-        )}
-      </div>
+          <div className='mt-6'>
+            <div className='space-y-4'>
+              <ListProjectEmailsTable emails={emails} />
+              <Pagination
+                totalPages={data.totalPages}
+                currPage={data.currPage}
+                perPage={data.perPage}
+                totalCount={data.totalCount}
+                onPageChange={(page) => {
+                  setCurrPage(page);
+                }}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
