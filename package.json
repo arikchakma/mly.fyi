@@ -5,14 +5,14 @@
   "scripts": {
     "dev": "astro dev --port 3000",
     "start": "astro dev",
-    "build": "astro check && astro build && pnpm run copy:templates",
+    "build": "astro check && astro build && npm run copy:templates",
     "preview": "astro preview",
     "astro": "astro",
     "db:generate": "drizzle-kit generate:sqlite --config=drizzle.config.ts",
     "db:migrate": "tsx ./scripts/db-migrate.ts",
     "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
     "format:write": "biome format --write ./src",
-    "copy:templates": "cp -r ./src/templates ./dist/server/templates"
+    "copy:templates": "mkdir -p ./dist/server/src && cp -r ./src/templates ./dist/server/src/templates"
   },
   "dependencies": {
     "@astrojs/check": "^0.5.10",

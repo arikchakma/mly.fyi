@@ -21,7 +21,6 @@ pnpm-debug.log*
 .DS_Store
 
 # Ignore .sqlite3 files, db.sqlite3-*
-drizzle
 *.sqlite3
 
 # Ignore /data directory

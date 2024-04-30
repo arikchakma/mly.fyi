@@ -3,8 +3,6 @@ FROM node:${NODE_VERSION}-slim AS base
 RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates \
   && apt-get install -y sqlite3 libsqlite3-dev
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
