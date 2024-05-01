@@ -2,23 +2,21 @@ import { httpGet } from '@/lib/http';
 import type { GetProjectStatsResponse } from '@/pages/api/v1/projects/[projectId]/stats';
 import { setUrlParams } from '@/utils/browser';
 import { cn } from '@/utils/classname';
-import { formatCommaNumber, getPercentage } from '@/utils/number';
+import { getPercentage } from '@/utils/number';
 import { queryClient } from '@/utils/query-client';
 import { useQuery } from '@tanstack/react-query';
 import {
-  BarChart,
   Flag,
-  type LucideIcon,
   MailCheck,
   MailOpen,
   MailWarning,
   MailX,
   MousePointerClick,
 } from 'lucide-react';
-import { DateTime } from 'luxon';
 import { useState } from 'react';
 import { PageError } from '../Errors/PageError';
 import { LoadingMessage } from '../LoadingMessage';
+import { ProjectStatisticColumn } from './ProjectStatisticColumn';
 
 const ALLOWED_STAT_DAYS = [10, 15, 30];
 
@@ -188,91 +186,6 @@ export function ProjectDashboard(props: ProjectDashboardProps) {
           className='border-b border-zinc-900'
         />
       </div>
-    </div>
-  );
-}
-
-type ProjectStatisticColumnProps = {
-  label: string;
-  total: number;
-  icon?: LucideIcon;
-  percentage: string;
-  events: { date: string; count: number }[];
-  barClassName?: string;
-  className?: string;
-};
-
-function ProjectStatisticColumn(props: ProjectStatisticColumnProps) {
-  const {
-    label,
-    total,
-    icon: Icon = BarChart,
-    percentage,
-    events,
-    barClassName,
-    className,
-  } = props;
-
-  const shouldShowBottomDate = events.length <= 10;
-
-  return (
-    <div className={cn('p-2.5', className)}>
-      <h4 className='text-sm flex items-center gap-1.5'>
-        <Icon size={14} className='stroke-[2.5px]' />
-        {label}
-      </h4>
-      <p className='mt-1 text-lg font-semibold font-mono tabular-nums'>
-        {formatCommaNumber(total)}
-        <span className='text-sm ml-2 font-normal'>({percentage}%)</span>
-      </p>
-
-      <div
-        className='grid gap-px items-end mt-6'
-        style={{
-          gridTemplateColumns: `repeat(${events.length}, 1fr)`,
-          gridTemplateRows: `repeat(1, 1fr)`,
-        }}
-      >
-        {events.map((event) => {
-          const percentage = getPercentage(event.count, total);
-          const date = DateTime.fromISO(event.date).toFormat('dd');
-
-          return (
-            <div key={event.date} className='w-full flex flex-col items-center'>
-              <div className='h-[180px] w-full flex flex-col justify-end'>
-                <div
-                  style={{
-                    height: `${percentage}%`,
-                  }}
-                  className={cn(
-                    'w-full relative after:absolute after:bottom-full after:left-0 after:w-full after:h-0.5 after:bg-zinc-400',
-                    barClassName,
-                  )}
-                />
-              </div>
-
-              {shouldShowBottomDate && (
-                <span className='text-xs mt-3 text-zinc-600 font-mono tabular-nums'>
-                  {date}
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {!shouldShowBottomDate && (
-        <div className='flex items-center justify-between gap-2 mt-3'>
-          <span className='text-xs text-zinc-600 font-mono tabular-nums'>
-            {DateTime.fromISO(events[0].date).toFormat('dd MMM')}
-          </span>
-          <span className='text-xs text-zinc-600 font-mono tabular-nums'>
-            {DateTime.fromISO(events[events.length - 1].date).toFormat(
-              'dd MMM',
-            )}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

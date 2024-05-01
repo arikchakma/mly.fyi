@@ -38,7 +38,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.30.9",
+    "drizzle-orm": "^0.30.10",
     "joi": "^17.13.0",
     "jose": "^5.2.4",
     "js-cookie": "^3.0.5",
@@ -60,10 +60,10 @@
     "@types/better-sqlite3": "^7.6.10",
     "@types/js-cookie": "^3.0.6",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.8",
     "@types/nodemailer": "^6.4.14",
     "@types/uuid": "^9.0.8",
     "drizzle-kit": "^0.20.17",
-    "tsx": "^4.7.3"
+    "tsx": "^4.8.2"
   }
 }
