@@ -59,7 +59,7 @@ export function ProjectStatisticColumn(props: ProjectStatisticColumnProps) {
           return (
             <button
               key={event.date}
-              className='w-full flex flex-col items-center'
+              className='w-full flex flex-col items-center hover:opacity-75'
               onMouseEnter={() => setSelectedEvent(event)}
               onMouseLeave={() => setSelectedEvent(null)}
             >
