@@ -33,7 +33,7 @@ CREATE TABLE `email_logs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`message_id` text,
 	`project_id` text NOT NULL,
-	`api_key_id` text NOT NULL,
+	`api_key_id` text,
 	`from` text NOT NULL,
 	`to` text NOT NULL,
 	`reply_to` text,
@@ -45,7 +45,7 @@ CREATE TABLE `email_logs` (
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
 	FOREIGN KEY (`project_id`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`api_key_id`) REFERENCES `project_api_keys`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`api_key_id`) REFERENCES `project_api_keys`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE TABLE `project_api_keys` (

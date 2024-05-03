@@ -57,13 +57,12 @@ export function ProjectStatisticColumn(props: ProjectStatisticColumnProps) {
           const date = DateTime.fromISO(event.date).toFormat('dd');
 
           return (
-            <button
-              key={event.date}
-              className='w-full flex flex-col items-center hover:opacity-75'
-              onMouseEnter={() => setSelectedEvent(event)}
-              onMouseLeave={() => setSelectedEvent(null)}
-            >
-              <div className='h-[180px] w-full flex flex-col justify-end'>
+            <div key={event.date} className='w-full flex flex-col items-center'>
+              <button
+                className='h-[180px] w-full flex flex-col justify-end hover:opacity-75'
+                onMouseEnter={() => setSelectedEvent(event)}
+                onMouseLeave={() => setSelectedEvent(null)}
+              >
                 <div
                   style={{
                     height: `${percentage}%`,
@@ -73,14 +72,14 @@ export function ProjectStatisticColumn(props: ProjectStatisticColumnProps) {
                     barClassName,
                   )}
                 />
-              </div>
+              </button>
 
               {shouldShowBottomDate && !selectedEvent && (
                 <span className='text-xs mt-3 text-zinc-600 font-mono tabular-nums'>
                   {date}
                 </span>
               )}
-            </button>
+            </div>
           );
         })}
       </div>
@@ -100,7 +99,7 @@ export function ProjectStatisticColumn(props: ProjectStatisticColumnProps) {
 
       {selectedEvent && (
         <div className='mt-3 flex items-center justify-center'>
-          <p className='text-xs text-zinc-600 font-mono tabular-nums whitespace-nowrap'>
+          <p className='text-xs text-zinc-50 font-mono tabular-nums whitespace-nowrap'>
             {DateTime.fromISO(selectedEvent.date).toFormat('dd MMM yyyy')}
             ,&nbsp;
             {formatCommaNumber(selectedEvent.count)} (

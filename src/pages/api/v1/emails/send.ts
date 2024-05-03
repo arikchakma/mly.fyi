@@ -18,6 +18,7 @@ import {
   requireSESSendingRateLimit,
 } from '@/lib/ses';
 import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
 import Joi from 'joi';
 
 export interface SendEmailResponse {
@@ -125,56 +126,11 @@ async function handle(params: SendEmailRequest) {
   );
   await requireSESSendingRateLimit(sesClient);
 
-  const { data, error } = await sendEmail(
-    {
-      provider: 'ses',
-      ses: {
-        accessKeyId,
-        secretAccessKey,
-        region,
-      },
-    },
-    {
-      ...body,
-      headers: {
-        ...headers,
-        'X-SES-CONFIGURATION-SET': identity.configurationSetName,
-      },
-    },
-  );
-  await increaseAlreadySendPerSecondCount();
-
   const emailLogId = newId('emailLog');
   const emailLogEventId = newId('emailLogEvent');
-  if (error) {
-    await db.insert(emailLogs).values({
-      id: newId('emailLog'),
-      projectId: project.id,
-      apiKeyId: projectApiKey.id,
-      from,
-      to,
-      replyTo,
-      subject,
-      text,
-      html,
-      status: 'error',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await db.insert(emailLogEvents).values({
-      id: emailLogEventId,
-      projectId: project.id,
-      emailLogId,
-      email: to,
-      type: 'error',
-      timestamp: new Date(),
-    });
-    throw new HttpError('bad_request', error.message);
-  }
 
   await db.insert(emailLogs).values({
     id: emailLogId,
-    messageId: data.messageId,
     projectId: project.id,
     apiKeyId: projectApiKey.id,
     from,
@@ -195,6 +151,53 @@ async function handle(params: SendEmailRequest) {
     type: 'sending',
     timestamp: new Date(),
   });
+
+  const { data, error } = await sendEmail(
+    {
+      provider: 'ses',
+      ses: {
+        accessKeyId,
+        secretAccessKey,
+        region,
+      },
+    },
+    {
+      ...body,
+      headers: {
+        ...headers,
+        'X-SES-CONFIGURATION-SET': identity.configurationSetName,
+      },
+    },
+  );
+  await increaseAlreadySendPerSecondCount();
+
+  if (error) {
+    await db
+      .update(emailLogs)
+      .set({
+        status: 'error',
+        updatedAt: new Date(),
+      })
+      .where(eq(emailLogs.id, emailLogId));
+    await db.insert(emailLogEvents).values({
+      id: newId('emailLogEvent'),
+      projectId: project.id,
+      emailLogId,
+      email: to,
+      type: 'error',
+      timestamp: new Date(),
+    });
+
+    throw new HttpError('bad_request', error.message);
+  }
+
+  await db
+    .update(emailLogs)
+    .set({
+      messageId: data.messageId,
+      updatedAt: new Date(),
+    })
+    .where(eq(emailLogs.id, emailLogId));
 
   return json<SendEmailResponse>({
     id: emailLogId,

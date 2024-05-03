@@ -73,7 +73,11 @@ export function AccountButton(props: AccountButtonProps) {
               <User2 className='inline-block' size={15} />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end' side={'bottom'}>
+          <DropdownMenuContent
+            align='end'
+            side='bottom'
+            className='min-w-[180px]'
+          >
             <DropdownMenuLabel className='flex flex-col text-xs font-normal'>
               <span className='font-medium text-zinc-500'>Signed in as</span>
               <span className='truncate text-zinc-300'>{user?.email}</span>

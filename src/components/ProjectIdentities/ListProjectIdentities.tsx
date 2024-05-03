@@ -66,8 +66,7 @@ export function ListProjectIdentities(props: ListProjectIdentitiesProps) {
             <div>
               <h2 className='text-xl font-semibold'>Indentites</h2>
               <p className='text-sm text-zinc-500 text-balance mt-1'>
-                You can send emails from the identities you've verified. You can
-                add multiple identities to a project.
+                You can send emails from the identities you've verified.
               </p>
             </div>
             <a
