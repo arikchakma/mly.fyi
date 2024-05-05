@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { stripQuotes } from '../utils/string';
-import type { HttpError } from './http-error';
+import type { HttpError, RateLimitError } from './http-error';
 import { logError } from './logger';
 import { json } from './response';
 
@@ -52,6 +52,24 @@ export function renderHttpError(error: HttpError): Response {
         })) || [],
     },
     error.status,
+  );
+}
+
+export function renderRateLimitError(e: RateLimitError): Response {
+  return json(
+    {
+      type: e.type,
+      status: e.status,
+      message: e.message,
+      errors: e.errors,
+    },
+    {
+      status: e.status,
+      headers: {
+        'RateLimit-Limit': String(e.limit),
+        'RateLimit-Remaining': String(e.remaining),
+      },
+    },
   );
 }
 
@@ -109,26 +127,5 @@ export function renderNotFound(): Response {
       errors: [],
     },
     404,
-  );
-}
-
-export function renderRateLimitError(
-  limit: number,
-  remaining: number,
-): Response {
-  return json(
-    {
-      type: 'rate_limited',
-      status: 429,
-      message: 'Too many requests, please try again later.',
-      errors: [],
-    },
-    {
-      status: 429,
-      headers: {
-        'RateLimit-Limit': String(limit),
-        'RateLimit-Remaining': String(remaining),
-      },
-    },
   );
 }

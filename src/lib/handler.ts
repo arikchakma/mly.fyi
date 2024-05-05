@@ -3,9 +3,10 @@ import Joi from 'joi';
 import {
   renderHttpError,
   renderInternalError,
+  renderRateLimitError,
   renderValidationError,
 } from './error';
-import { HttpError } from './http-error';
+import { HttpError, RateLimitError } from './http-error';
 
 export type RouteParams<
   B = any,
@@ -64,6 +65,10 @@ export function handler(
 
       if (HttpError.isHttpError(e)) {
         return renderHttpError(e);
+      }
+
+      if (RateLimitError.isRateLimitError(e)) {
+        return renderRateLimitError(e);
       }
 
       return renderInternalError(e as Error);

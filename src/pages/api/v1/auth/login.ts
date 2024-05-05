@@ -1,6 +1,5 @@
 import { db } from '@/db';
 import { users } from '@/db/schema';
-import { renderRateLimitError } from '@/lib/error';
 import {
   type HandleRoute,
   type RouteParams,
@@ -10,7 +9,7 @@ import {
 import { verifyPassword } from '@/lib/hash';
 import { HttpError } from '@/lib/http-error';
 import { createToken } from '@/lib/jwt';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimit, rateLimitMiddleware } from '@/lib/rate-limit';
 import { json } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
@@ -52,27 +51,6 @@ async function handle(params: V1LoginRequest) {
   const { body, context } = params;
   const { email, password } = body;
 
-  // const ipAddress =
-  //   context.clientAddress ||
-  //   context.request.headers.get('x-forwarded-for') ||
-  //   context.request.headers.get('x-real-ip');
-
-  // const { success, remaining, limit } = await rateLimit(ipAddress!, {
-  //   requests: 5,
-  //   timeWindow: 1,
-  //   prefix: 'request-login',
-  // });
-
-  // console.log('-'.repeat(20));
-  // console.log('ipAddress:', ipAddress);
-  // console.log('success:', success);
-  // console.log('remaining:', remaining);
-  // console.log('limit:', limit);
-  // console.log('-'.repeat(20));
-  // if (!success) {
-  //   return renderRateLimitError(limit, remaining);
-  // }
-
   const associatedUser = await db.query.users.findFirst({
     where: eq(users.email, email),
     columns: {
@@ -112,10 +90,11 @@ async function handle(params: V1LoginRequest) {
     email: associatedUser.email,
   });
 
-  return json<V1LoginResponse>({ token });
+  return json<V1LoginResponse>({ token }, {}, context);
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<V1LoginRequest>,
   validate satisfies ValidateRoute<V1LoginRequest>,
+  [rateLimitMiddleware()],
 );
