@@ -1,8 +1,8 @@
+import { httpDelete } from '@/lib/http.ts';
 import { queryClient } from '@/utils/query-client.ts';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { httpDelete } from '@/lib/http.ts';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,7 +67,7 @@ export function LeaveProjectButton(props: LeaveProjectButtonProps) {
                 loading: 'Leaving project..',
                 success: (data) => {
                   window.setTimeout(() => {
-                    window.location.href = '/project';
+                    window.location.href = '/projects';
                   }, 700);
 
                   return 'Project left';
