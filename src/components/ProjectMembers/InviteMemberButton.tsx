@@ -1,9 +1,9 @@
+import { httpPost } from '@/lib/http.ts';
 import { queryClient } from '@/utils/query-client.ts';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';
-import { httpPost } from '@/lib/http.ts';
 import { Button } from '../Interface/Button.tsx';
 import {
   Dialog,
@@ -45,6 +45,7 @@ export function InviteMemberButton(props: InviteMemberButtonProps) {
         queryClient.invalidateQueries({
           queryKey: ['project-members', projectId],
         });
+        setEmail('');
         setIsOpen(false);
       },
     },

@@ -38,21 +38,22 @@ export function EmailPreviewTabs(props: EmailPreviewTabsProps) {
       <TabsContent value='preview'>
         <EmailIFrame
           innerHTML={html || text || '<p>No content</p>'}
-          wrapperClassName='bg-white rounded-md min-h-[300px]'
+          wrapperClassName='bg-white rounded-md'
+          className='min-h-[400px] w-full no-scrollbar'
         />
       </TabsContent>
       <TabsContent value='html'>
         <Textarea
           defaultValue={html}
           readOnly={true}
-          className='min-h-[300px]'
+          className='min-h-[400px]'
         />
       </TabsContent>
       <TabsContent value='text'>
         <Textarea
           defaultValue={text}
           readOnly={true}
-          className='min-h-[300px]'
+          className='min-h-[400px]'
         />
       </TabsContent>
     </Tabs>

@@ -83,7 +83,21 @@ async function handle(params: SendEmailRequest) {
     );
   }
 
-  const fromDomain = from.split('@')[1];
+  // FROM can be a direct email address or `Name <email@address>`
+  const fromEmail = from.match(/<(.+)>/)?.[1] || from;
+  const { error: emailValidatorError } = Joi.string()
+    .trim()
+    .lowercase()
+    .email()
+    .validate(fromEmail);
+  if (emailValidatorError) {
+    throw new HttpError('bad_request', 'Invalid from email address.');
+  }
+
+  const fromDomain = fromEmail?.split('@')?.[1];
+  if (!fromDomain) {
+    throw new HttpError('bad_request', 'Invalid from email address.');
+  }
 
   const identity = await db.query.projectIdentities.findFirst({
     where(fields, { and, eq }) {

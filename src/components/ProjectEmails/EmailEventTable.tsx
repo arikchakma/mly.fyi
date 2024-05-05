@@ -52,7 +52,7 @@ export function EmailEventTable(props: EmailEventTableProps) {
                     {event?.type === 'clicked' && (
                       <>
                         , clicked&nbsp;
-                        <span className='font-semibold'>
+                        <span className='font-semibold truncate inline-flex min-w-0'>
                           {event?.link || 'unknown'}
                         </span>
                       </>
