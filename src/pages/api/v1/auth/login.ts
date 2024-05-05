@@ -10,7 +10,7 @@ import { verifyPassword } from '@/lib/hash';
 import { HttpError } from '@/lib/http-error';
 import { createToken } from '@/lib/jwt';
 import { rateLimit, rateLimitMiddleware } from '@/lib/rate-limit';
-import { json } from '@/lib/response';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -90,7 +90,7 @@ async function handle(params: V1LoginRequest) {
     email: associatedUser.email,
   });
 
-  return json<V1LoginResponse>({ token }, {}, context);
+  return jsonWithRateLimit(json<V1LoginResponse>({ token }), context);
 }
 
 export const POST: APIRoute = handler(

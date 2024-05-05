@@ -24,17 +24,14 @@ export class HttpError<ErrorType = HttpErrorItem> extends Error {
 export class RateLimitError<
   ErrorType = HttpErrorItem,
 > extends HttpError<ErrorType> {
-  limit: number;
-  remaining: number;
   constructor(
     message: string,
-    limit: number,
-    remaining: number,
+    public limit: number,
+    public remaining: number,
+    public reset: number,
     errors?: ErrorType[],
   ) {
     super('rate_limited', message, errors);
-    this.limit = limit;
-    this.remaining = remaining;
   }
 
   static isRateLimitError(error: any): error is RateLimitError {

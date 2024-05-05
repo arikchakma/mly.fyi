@@ -1,3 +1,4 @@
+import { jsonWithRateLimit } from '@/lib/response';
 import type { APIContext, APIRoute } from 'astro';
 import Joi from 'joi';
 import {
@@ -60,15 +61,15 @@ export function handler(
       return handleResponse;
     } catch (e) {
       if (e instanceof Joi.ValidationError) {
-        return renderValidationError(e);
+        return jsonWithRateLimit(renderValidationError(e), context);
       }
 
       if (HttpError.isHttpError(e)) {
-        return renderHttpError(e);
+        return jsonWithRateLimit(renderHttpError(e), context);
       }
 
       if (RateLimitError.isRateLimitError(e)) {
-        return renderRateLimitError(e);
+        return jsonWithRateLimit(renderRateLimitError(e), context);
       }
 
       return renderInternalError(e as Error);

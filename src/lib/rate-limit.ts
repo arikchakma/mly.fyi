@@ -4,13 +4,14 @@ import { RateLimitError } from './http-error';
 import { logError, logInfo } from './logger';
 import { connectRedis } from './redis';
 
-const SCRIPT = `
+const LIMIT_SCRIPT = `
 local current
 current = tonumber(redis.call("incr", KEYS[1]))
 if current == 1 then
   redis.call("expire", KEYS[1], ARGV[1])
 end
-return current
+local ttl = redis.call("ttl", KEYS[1])
+return {current, ttl}
 `;
 
 export interface RateLimitResponse {
@@ -18,6 +19,7 @@ export interface RateLimitResponse {
   count: number;
   limit: number;
   remaining: number;
+  reset: number;
 }
 
 export interface RateLimitOptions {
@@ -36,10 +38,10 @@ export async function rateLimit(
     const cache = await connectRedis();
     identifier = prefix ? `${prefix}:${identifier}` : identifier;
 
-    let result = (await cache.eval(SCRIPT, {
+    let [result, ttl] = (await cache.eval(LIMIT_SCRIPT, {
       keys: [identifier],
       arguments: [String(timeWindow)],
-    })) as number;
+    })) as [number, number];
     result = typeof result === 'number' ? result : parseInt(result);
 
     const remaining = requests - result;
@@ -49,6 +51,7 @@ export async function rateLimit(
       limit: requests,
       remaining: Math.max(0, remaining),
       count: result,
+      reset: ttl || 0,
     };
   } catch (error) {
     logError(error, (error as any)?.stack);
@@ -57,6 +60,7 @@ export async function rateLimit(
       limit: requests,
       remaining: 0,
       count: 0,
+      reset: 0,
     };
   }
 }
@@ -74,16 +78,21 @@ export function rateLimitMiddleware(
       context.request.headers.get('x-forwarded-for') ||
       context.request.headers.get('x-real-ip');
 
-    const { success, remaining, limit, count } = await rateLimit(ipAddress!, {
-      requests: options?.requests || DEFAULT_RATE_LIMIT_REQUESTS,
-      timeWindow: options?.timeWindow || DEFAULT_RATE_LIMIT_TIME_WINDOW, // 1 minute
-      prefix: options?.prefix || 'mly-rate-limit',
-    });
+    const { success, remaining, limit, count, reset } = await rateLimit(
+      ipAddress!,
+      {
+        requests: options?.requests || DEFAULT_RATE_LIMIT_REQUESTS,
+        timeWindow: options?.timeWindow || DEFAULT_RATE_LIMIT_TIME_WINDOW, // 1 minute
+        prefix: options?.prefix || 'mly-rate-limit',
+      },
+    );
 
     if (serverConfig.isDev) {
+      logInfo('-- Rate Limit Middleware --');
       logInfo(
-        `Rate limit: ${remaining}/${limit} for ${ipAddress}(count: ${count})`,
+        `Rate limit: ${remaining}/${limit} for ${ipAddress}(count: ${count}). Reset in ${reset} seconds.`,
       );
+      logInfo('-------------------------');
     }
 
     if (!success) {
@@ -91,6 +100,7 @@ export function rateLimitMiddleware(
         'Too many requests, please try again later.',
         limit,
         remaining,
+        reset,
       );
     }
 
@@ -99,6 +109,7 @@ export function rateLimitMiddleware(
       remaining,
       limit,
       count,
+      reset,
     };
 
     return params;

@@ -1,3 +1,4 @@
+import type { APIContext } from 'astro';
 import Joi from 'joi';
 import { stripQuotes } from '../utils/string';
 import type { HttpError, RateLimitError } from './http-error';
@@ -65,10 +66,6 @@ export function renderRateLimitError(e: RateLimitError): Response {
     },
     {
       status: e.status,
-      headers: {
-        'RateLimit-Limit': String(e.limit),
-        'RateLimit-Remaining': String(e.remaining),
-      },
     },
   );
 }
@@ -103,29 +100,5 @@ export function renderInternalError(err: Error): Response {
       errors: [],
     },
     500,
-  );
-}
-
-export function renderUnauthorized(): Response {
-  return renderErrorResponse(
-    {
-      type: 'unauthorized',
-      status: 401,
-      message: 'Invalid credentials',
-      errors: [],
-    },
-    401,
-  );
-}
-
-export function renderNotFound(): Response {
-  return renderErrorResponse(
-    {
-      type: 'not_found',
-      status: 404,
-      message: 'Resource not found',
-      errors: [],
-    },
-    404,
   );
 }
