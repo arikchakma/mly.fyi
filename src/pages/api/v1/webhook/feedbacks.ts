@@ -10,7 +10,8 @@ import {
   handleEmailFeedbacks,
   handleSubscriptionConfirmation,
 } from '@/lib/notification';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import { isValidJSON } from '@/utils/json';
 import type { APIRoute } from 'astro';
 
@@ -26,7 +27,7 @@ async function validate(params: FeedbacksRequest) {
   return params;
 }
 
-async function handle({ body }: FeedbacksRequest) {
+async function handle({ body, context }: FeedbacksRequest) {
   if (
     (body.Type === 'SubscriptionConfirmation' && body.SubscribeURL) ||
     (body.Type === 'UnsubscribeConfirmation' && body.UnsubscribeURL)
@@ -40,10 +41,17 @@ async function handle({ body }: FeedbacksRequest) {
     }
   }
 
-  return json<FeedbacksResponse>({ status: 'ok' });
+  return jsonWithRateLimit(json<FeedbacksResponse>({ status: 'ok' }), context);
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<FeedbacksRequest>,
   validate satisfies ValidateRoute<FeedbacksRequest>,
+  [
+    // Rate limit to 20 requests per second
+    rateLimitMiddleware({
+      requests: 20,
+      timeWindow: 1,
+    }),
+  ],
 );

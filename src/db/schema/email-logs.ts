@@ -27,11 +27,9 @@ export const emailLogs = sqliteTable(
       .references(() => projects.id, {
         onDelete: 'cascade',
       }),
-    apiKeyId: text('api_key_id')
-      .notNull()
-      .references(() => projectApiKeys.id, {
-        onDelete: 'no action',
-      }),
+    apiKeyId: text('api_key_id').references(() => projectApiKeys.id, {
+      onDelete: 'set null',
+    }),
     from: text('from').notNull(),
     to: text('to').notNull(),
     replyTo: text('reply_to'),

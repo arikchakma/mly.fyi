@@ -23,5 +23,6 @@ declare namespace App {
       | Pick<import('./db/types.ts').User, 'id' | 'email' | 'name'>
       | undefined;
     currentUserId: string | undefined;
+    rateLimit: import('./lib/rate-limit.ts').RateLimitResponse | undefined;
   }
 }

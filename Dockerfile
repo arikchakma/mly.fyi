@@ -1,7 +1,8 @@
 ARG NODE_VERSION=20
 FROM node:${NODE_VERSION}-slim AS base
-RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates
-RUN apt-get install -y sqlite3 libsqlite3-dev
+RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates \
+  && apt-get install -y sqlite3 libsqlite3-dev
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -24,7 +25,6 @@ COPY --from=build /app/dist ./dist
 # Move the drizzle directory to the runtime image
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/scripts ./scripts
-COPY --from=build /app/src/templates ./dist/server/src/templates
 
 # Move the litestream binary to the runtime image from the litestream image
 # You can use a specific version of litestream by changing the tag

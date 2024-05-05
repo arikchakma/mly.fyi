@@ -10,7 +10,8 @@ import {
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
 import { newId } from '@/lib/new-id';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import { isValidTimezone } from '@/utils/timezone';
 import type { APIRoute } from 'astro';
 import Joi from 'joi';
@@ -84,11 +85,14 @@ async function handle(params: CreateProjectRequest) {
     updatedAt: new Date(),
   });
 
-  return json<CreateProjectResponse>(project?.[0]);
+  return jsonWithRateLimit(
+    json<CreateProjectResponse>(project?.[0]),
+    params.context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<CreateProjectRequest>,
   validate satisfies ValidateRoute<CreateProjectRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

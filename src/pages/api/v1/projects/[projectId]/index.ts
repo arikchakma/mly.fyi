@@ -14,7 +14,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -77,18 +78,21 @@ async function handle(params: GetProjectRequest) {
     secretAccessKey && accessKeyId && region,
   );
 
-  return json<GetProjectResponse>({
-    ...project,
-    status: member.status,
-    role: member.role,
-    memberId: member.id,
-    canManage: ['manager', 'admin'].includes(member.role),
-    isConfigurationComplete,
-  });
+  return jsonWithRateLimit(
+    json<GetProjectResponse>({
+      ...project,
+      status: member.status,
+      role: member.role,
+      memberId: member.id,
+      canManage: ['manager', 'admin'].includes(member.role),
+      isConfigurationComplete,
+    }),
+    context,
+  );
 }
 
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectRequest>,
   validate satisfies ValidateRoute<GetProjectRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

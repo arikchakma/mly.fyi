@@ -10,7 +10,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -88,14 +89,17 @@ async function handle(params: GetProjectEmailRequest) {
     },
   });
 
-  return json<GetProjectEmailResponse>({
-    ...emailLog,
-    events: emailEvents,
-  });
+  return jsonWithRateLimit(
+    json<GetProjectEmailResponse>({
+      ...emailLog,
+      events: emailEvents,
+    }),
+    context,
+  );
 }
 
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectEmailRequest>,
   validate satisfies ValidateRoute<GetProjectEmailRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

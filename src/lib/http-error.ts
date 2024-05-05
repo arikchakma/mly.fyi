@@ -20,3 +20,21 @@ export class HttpError<ErrorType = HttpErrorItem> extends Error {
     return error instanceof HttpError;
   }
 }
+
+export class RateLimitError<
+  ErrorType = HttpErrorItem,
+> extends HttpError<ErrorType> {
+  constructor(
+    message: string,
+    public limit: number,
+    public remaining: number,
+    public reset: number,
+    errors?: ErrorType[],
+  ) {
+    super('rate_limited', message, errors);
+  }
+
+  static isRateLimitError(error: any): error is RateLimitError {
+    return error instanceof RateLimitError;
+  }
+}

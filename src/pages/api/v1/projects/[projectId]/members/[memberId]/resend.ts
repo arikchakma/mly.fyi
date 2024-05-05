@@ -9,7 +9,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -74,13 +75,16 @@ async function handle(params: ResendProjectMemberInviteRequest) {
 
   // Send invitation email to the member again and increment the invite count
 
-  return json<ResendProjectMemberInviteResponse>({
-    status: 'ok',
-  });
+  return jsonWithRateLimit(
+    json<ResendProjectMemberInviteResponse>({
+      status: 'ok',
+    }),
+    params.context,
+  );
 }
 
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<ResendProjectMemberInviteRequest>,
   validate satisfies ValidateRoute<ResendProjectMemberInviteRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

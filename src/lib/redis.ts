@@ -2,9 +2,11 @@ import { createClient } from 'redis';
 import { serverConfig } from './config';
 import { logError, logInfo, logWarning } from './logger';
 
-let cachedRedisClient: ReturnType<typeof createClient> | null = null;
+export type RedisClient = ReturnType<typeof createClient>;
 
-export async function connectRedis(): Promise<ReturnType<typeof createClient>> {
+let cachedRedisClient: RedisClient | null = null;
+
+export async function connectRedis(): Promise<RedisClient> {
   if (cachedRedisClient) {
     logInfo('[redis] using cached client');
     return cachedRedisClient;

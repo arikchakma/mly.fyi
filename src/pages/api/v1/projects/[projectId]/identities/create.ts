@@ -25,7 +25,8 @@ import {
 import { HttpError } from '@/lib/http-error';
 import { newId } from '@/lib/new-id';
 import { createSNSServiceClient } from '@/lib/notification';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
 import { DEFAULT_DISALLOWED_SUBDOMAINS, isSubdomain } from '@/utils/domain';
 import type { APIRoute } from 'astro';
@@ -270,13 +271,16 @@ async function handle(params: CreateProjectIdentityRequest) {
     })
     .where(eq(projectIdentities.id, projectIdentityId));
 
-  return json<CreateProjectIdentityResponse>({
-    identityId: projectIdentityId,
-  });
+  return jsonWithRateLimit(
+    json<CreateProjectIdentityResponse>({
+      identityId: projectIdentityId,
+    }),
+    params.context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<CreateProjectIdentityRequest>,
   validate satisfies ValidateRoute<CreateProjectIdentityRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

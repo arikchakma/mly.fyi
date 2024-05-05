@@ -19,7 +19,8 @@ import {
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
 import { createSNSServiceClient } from '@/lib/notification';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
@@ -225,13 +226,16 @@ async function handle(params: UpdateProjectIdentityRequest) {
       ),
     );
 
-  return json<UpdateProjectIdentityResponse>({
-    status: 'ok',
-  });
+  return jsonWithRateLimit(
+    json<UpdateProjectIdentityResponse>({
+      status: 'ok',
+    }),
+    context,
+  );
 }
 
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<UpdateProjectIdentityRequest>,
   validate satisfies ValidateRoute<UpdateProjectIdentityRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

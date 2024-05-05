@@ -15,7 +15,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import { createSESServiceClient } from '@/lib/ses';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
@@ -131,13 +132,16 @@ async function handle(params: DeleteProjectRequest) {
 
   await db.delete(projects).where(eq(projects.id, projectId));
 
-  return json<DeleteProjectResponse>({
-    status: 'ok',
-  });
+  return jsonWithRateLimit(
+    json<DeleteProjectResponse>({
+      status: 'ok',
+    }),
+    params.context,
+  );
 }
 
 export const DELETE: APIRoute = handler(
   handle satisfies HandleRoute<DeleteProjectRequest>,
   validate satisfies ValidateRoute<DeleteProjectRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

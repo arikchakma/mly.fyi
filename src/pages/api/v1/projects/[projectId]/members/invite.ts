@@ -15,7 +15,8 @@ import {
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
 import { newId } from '@/lib/new-id';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -105,13 +106,16 @@ async function handle(params: InviteProjectMemberRequest) {
 
   // TODO: Send invitation email
 
-  return json<InviteProjectMemberResponse>({
-    status: 'ok',
-  });
+  return jsonWithRateLimit(
+    json<InviteProjectMemberResponse>({
+      status: 'ok',
+    }),
+    params.context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<InviteProjectMemberRequest>,
   validate satisfies ValidateRoute<InviteProjectMemberRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

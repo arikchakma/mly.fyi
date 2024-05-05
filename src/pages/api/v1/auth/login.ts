@@ -9,7 +9,8 @@ import {
 import { verifyPassword } from '@/lib/hash';
 import { HttpError } from '@/lib/http-error';
 import { createToken } from '@/lib/jwt';
-import { json } from '@/lib/response';
+import { rateLimit, rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -46,7 +47,8 @@ async function validate(params: V1LoginRequest) {
   };
 }
 
-async function handle({ body }: V1LoginRequest) {
+async function handle(params: V1LoginRequest) {
+  const { body, context } = params;
   const { email, password } = body;
 
   const associatedUser = await db.query.users.findFirst({
@@ -88,10 +90,11 @@ async function handle({ body }: V1LoginRequest) {
     email: associatedUser.email,
   });
 
-  return json<V1LoginResponse>({ token });
+  return jsonWithRateLimit(json<V1LoginResponse>({ token }), context);
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<V1LoginRequest>,
   validate satisfies ValidateRoute<V1LoginRequest>,
+  [rateLimitMiddleware()],
 );

@@ -6,7 +6,7 @@ import type {
 } from '@/pages/api/v1/projects/[projectId]/configure.ts';
 import { queryClient } from '@/utils/query-client.ts';
 import { useMutation } from '@tanstack/react-query';
-import { Loader2, SlidersHorizontal } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import type { FormEvent } from 'react';
 import { toast } from 'sonner';

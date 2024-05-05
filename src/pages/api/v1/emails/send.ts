@@ -11,13 +11,15 @@ import {
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
 import { newId } from '@/lib/new-id';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import {
   createSESServiceClient,
   increaseAlreadySendPerSecondCount,
   requireSESSendingRateLimit,
 } from '@/lib/ses';
 import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
 import Joi from 'joi';
 
 export interface SendEmailResponse {
@@ -82,7 +84,21 @@ async function handle(params: SendEmailRequest) {
     );
   }
 
-  const fromDomain = from.split('@')[1];
+  // FROM can be a direct email address or `Name <email@address>`
+  const fromEmail = from.match(/<(.+)>/)?.[1] || from;
+  const { error: emailValidatorError } = Joi.string()
+    .trim()
+    .lowercase()
+    .email()
+    .validate(fromEmail);
+  if (emailValidatorError) {
+    throw new HttpError('bad_request', 'Invalid from email address.');
+  }
+
+  const fromDomain = fromEmail?.split('@')?.[1];
+  if (!fromDomain) {
+    throw new HttpError('bad_request', 'Invalid from email address.');
+  }
 
   const identity = await db.query.projectIdentities.findFirst({
     where(fields, { and, eq }) {
@@ -125,56 +141,11 @@ async function handle(params: SendEmailRequest) {
   );
   await requireSESSendingRateLimit(sesClient);
 
-  const { data, error } = await sendEmail(
-    {
-      provider: 'ses',
-      ses: {
-        accessKeyId,
-        secretAccessKey,
-        region,
-      },
-    },
-    {
-      ...body,
-      headers: {
-        ...headers,
-        'X-SES-CONFIGURATION-SET': identity.configurationSetName,
-      },
-    },
-  );
-  await increaseAlreadySendPerSecondCount();
-
   const emailLogId = newId('emailLog');
   const emailLogEventId = newId('emailLogEvent');
-  if (error) {
-    await db.insert(emailLogs).values({
-      id: newId('emailLog'),
-      projectId: project.id,
-      apiKeyId: projectApiKey.id,
-      from,
-      to,
-      replyTo,
-      subject,
-      text,
-      html,
-      status: 'error',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await db.insert(emailLogEvents).values({
-      id: emailLogEventId,
-      projectId: project.id,
-      emailLogId,
-      email: to,
-      type: 'error',
-      timestamp: new Date(),
-    });
-    throw new HttpError('bad_request', error.message);
-  }
 
   await db.insert(emailLogs).values({
     id: emailLogId,
-    messageId: data.messageId,
     projectId: project.id,
     apiKeyId: projectApiKey.id,
     from,
@@ -196,12 +167,69 @@ async function handle(params: SendEmailRequest) {
     timestamp: new Date(),
   });
 
-  return json<SendEmailResponse>({
-    id: emailLogId,
-  });
+  const { data, error } = await sendEmail(
+    {
+      provider: 'ses',
+      ses: {
+        accessKeyId,
+        secretAccessKey,
+        region,
+      },
+    },
+    {
+      ...body,
+      headers: {
+        ...headers,
+        'X-SES-CONFIGURATION-SET': identity.configurationSetName,
+      },
+    },
+  );
+  await increaseAlreadySendPerSecondCount();
+
+  if (error) {
+    await db
+      .update(emailLogs)
+      .set({
+        status: 'error',
+        updatedAt: new Date(),
+      })
+      .where(eq(emailLogs.id, emailLogId));
+    await db.insert(emailLogEvents).values({
+      id: newId('emailLogEvent'),
+      projectId: project.id,
+      emailLogId,
+      email: to,
+      type: 'error',
+      timestamp: new Date(),
+    });
+
+    throw new HttpError('bad_request', error.message);
+  }
+
+  await db
+    .update(emailLogs)
+    .set({
+      messageId: data.messageId,
+      updatedAt: new Date(),
+    })
+    .where(eq(emailLogs.id, emailLogId));
+
+  return jsonWithRateLimit(
+    json<SendEmailResponse>({
+      id: emailLogId,
+    }),
+    context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<SendEmailRequest>,
   validate satisfies ValidateRoute<SendEmailRequest>,
+  [
+    // Rate limit 20 requests per second
+    rateLimitMiddleware({
+      requests: 20,
+      timeWindow: 1,
+    }),
+  ],
 );

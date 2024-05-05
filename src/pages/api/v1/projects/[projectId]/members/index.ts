@@ -10,7 +10,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq, inArray } from 'drizzle-orm';
 import Joi from 'joi';
@@ -88,11 +89,14 @@ async function handle(params: GetProjectMembersRequest) {
     };
   });
 
-  return json<GetProjectMembersResponse>(enrichedMembers);
+  return jsonWithRateLimit(
+    json<GetProjectMembersResponse>(enrichedMembers),
+    context,
+  );
 }
 
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectMembersRequest>,
   validate satisfies ValidateRoute<GetProjectMembersRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

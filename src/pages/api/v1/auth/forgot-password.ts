@@ -9,7 +9,8 @@ import {
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
 import { logError } from '@/lib/logger';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -69,7 +70,7 @@ async function validate(params: ForgotPasswordRequest) {
   };
 }
 
-async function handle({ body }: ForgotPasswordRequest) {
+async function handle({ body, context }: ForgotPasswordRequest) {
   const { email } = body;
 
   const associatedUser = await db.query.users.findFirst({
@@ -108,10 +109,14 @@ async function handle({ body }: ForgotPasswordRequest) {
 
   await sendForgotPasswordEmail(email, resetCode);
 
-  return json<ForgotPasswordResponse>({ status: 'ok' });
+  return jsonWithRateLimit(
+    json<ForgotPasswordResponse>({ status: 'ok' }),
+    context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<ForgotPasswordRequest>,
   validate satisfies ValidateRoute<ForgotPasswordRequest>,
+  [rateLimitMiddleware()],
 );

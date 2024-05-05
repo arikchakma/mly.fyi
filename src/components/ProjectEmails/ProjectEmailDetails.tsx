@@ -1,12 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
 import { httpGet } from '@/lib/http';
 import type { GetProjectEmailResponse } from '@/pages/api/v1/projects/[projectId]/emails/[emailId]/index';
 import { queryClient } from '@/utils/query-client';
-import { PageError } from '../Errors/PageError';
-import { LoadingMessage } from '../LoadingMessage';
+import { useQuery } from '@tanstack/react-query';
 import { Box } from 'lucide-react';
 import { DateTime } from 'luxon';
+import { PageError } from '../Errors/PageError';
+import { LoadingMessage } from '../LoadingMessage';
 import { EmailEventTable } from './EmailEventTable';
+import { EmailPreviewTabs } from './EmailPreviewTabs';
 
 type ProjectEmailDetailsProps = {
   projectId: string;
@@ -71,7 +72,13 @@ export function ProjectEmailDetails(props: ProjectEmailDetailsProps) {
         </div>
       </div>
 
-      <EmailEventTable events={data.events} />
+      <div className='grid grid-cols-3 gap-4 max-md:grid-cols-1'>
+        <EmailEventTable events={data.events} />
+
+        <div className='col-span-2'>
+          <EmailPreviewTabs html={data?.html || ''} text={data?.text || ''} />
+        </div>
+      </div>
     </section>
   );
 }

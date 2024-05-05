@@ -8,7 +8,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -93,13 +94,16 @@ async function handle(params: RespondProjectMemberInviteRequest) {
     })
     .where(eq(projectMembers.id, inviteId));
 
-  return json<RespondProjectMemberInviteResponse>({
-    status: 'ok',
-  });
+  return jsonWithRateLimit(
+    json<RespondProjectMemberInviteResponse>({
+      status: 'ok',
+    }),
+    params.context,
+  );
 }
 
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<RespondProjectMemberInviteRequest>,
   validate satisfies ValidateRoute<RespondProjectMemberInviteRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

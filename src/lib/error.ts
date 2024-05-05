@@ -1,6 +1,7 @@
+import type { APIContext } from 'astro';
 import Joi from 'joi';
 import { stripQuotes } from '../utils/string';
-import type { HttpError } from './http-error';
+import type { HttpError, RateLimitError } from './http-error';
 import { logError } from './logger';
 import { json } from './response';
 
@@ -14,6 +15,7 @@ export const ERROR_CODE_BY_KEY = {
   conflict: 409,
   not_implemented: 501,
   user_not_verified: 400,
+  rate_limited: 429,
 } as const;
 
 export type ErrorCodeKey = keyof typeof ERROR_CODE_BY_KEY;
@@ -54,6 +56,20 @@ export function renderHttpError(error: HttpError): Response {
   );
 }
 
+export function renderRateLimitError(e: RateLimitError): Response {
+  return json(
+    {
+      type: e.type,
+      status: e.status,
+      message: e.message,
+      errors: e.errors,
+    },
+    {
+      status: e.status,
+    },
+  );
+}
+
 export function renderValidationError(error: Joi.ValidationError): Response {
   const errorsList = error.details || [];
 
@@ -84,29 +100,5 @@ export function renderInternalError(err: Error): Response {
       errors: [],
     },
     500,
-  );
-}
-
-export function renderUnauthorized(): Response {
-  return renderErrorResponse(
-    {
-      type: 'unauthorized',
-      status: 401,
-      message: 'Invalid credentials',
-      errors: [],
-    },
-    401,
-  );
-}
-
-export function renderNotFound(): Response {
-  return renderErrorResponse(
-    {
-      type: 'not_found',
-      status: 404,
-      message: 'Resource not found',
-      errors: [],
-    },
-    404,
   );
 }
