@@ -95,15 +95,6 @@ export function rateLimitMiddleware(
       logInfo('-------------------------');
     }
 
-    if (!success) {
-      throw new RateLimitError(
-        'Too many requests, please try again later.',
-        limit,
-        remaining,
-        reset,
-      );
-    }
-
     context.locals.rateLimit = {
       success,
       remaining,
@@ -112,6 +103,14 @@ export function rateLimitMiddleware(
       reset,
     };
 
+    if (!success) {
+      throw new RateLimitError(
+        'Too many requests, please try again later.',
+        limit,
+        remaining,
+        reset,
+      );
+    }
     return params;
   };
 }

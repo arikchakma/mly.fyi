@@ -9,7 +9,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { and, eq, ne } from 'drizzle-orm';
 import Joi from 'joi';
@@ -103,13 +104,16 @@ async function handle(params: LeaveProjectRequest) {
       ),
     );
 
-  return json<LeaveProjectResponse>({
-    status: 'ok',
-  });
+  return jsonWithRateLimit(
+    json<LeaveProjectResponse>({
+      status: 'ok',
+    }),
+    params.context,
+  );
 }
 
 export const DELETE: APIRoute = handler(
   handle satisfies HandleRoute<LeaveProjectRequest>,
   validate satisfies ValidateRoute<LeaveProjectRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

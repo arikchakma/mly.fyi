@@ -10,7 +10,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { count, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -113,17 +114,20 @@ async function handle(params: ListProjectApiKeysRequest) {
     },
   });
 
-  return json<ListProjectApiKeysResponse>({
-    data: apiKeys,
-    totalCount,
-    totalPages,
-    currPage,
-    perPage,
-  });
+  return jsonWithRateLimit(
+    json<ListProjectApiKeysResponse>({
+      data: apiKeys,
+      totalCount,
+      totalPages,
+      currPage,
+      perPage,
+    }),
+    context,
+  );
 }
 
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<ListProjectApiKeysRequest>,
   validate satisfies ValidateRoute<ListProjectApiKeysRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

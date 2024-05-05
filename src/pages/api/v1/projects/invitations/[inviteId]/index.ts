@@ -9,7 +9,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -81,21 +82,24 @@ async function handle(params: GetProjectMemberInviteInfoRequest) {
     throw new HttpError('not_found', 'Project not found');
   }
 
-  return json<GetProjectMemberInviteInfoResponse>({
-    project: {
-      id: project.id,
-      name: project.name,
-    },
-    invitedMember: {
-      id: invitedMember.id,
-      email: invitedMember.invitedEmail,
-      role: invitedMember.role,
-    },
-  });
+  return jsonWithRateLimit(
+    json<GetProjectMemberInviteInfoResponse>({
+      project: {
+        id: project.id,
+        name: project.name,
+      },
+      invitedMember: {
+        id: invitedMember.id,
+        email: invitedMember.invitedEmail,
+        role: invitedMember.role,
+      },
+    }),
+    params.context,
+  );
 }
 
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectMemberInviteInfoRequest>,
   validate satisfies ValidateRoute<GetProjectMemberInviteInfoRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

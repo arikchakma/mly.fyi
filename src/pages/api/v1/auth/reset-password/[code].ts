@@ -9,7 +9,8 @@ import {
 import { hashPassword } from '@/lib/hash';
 import { HttpError } from '@/lib/http-error';
 import { createToken } from '@/lib/jwt';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -111,10 +112,14 @@ async function handle(params: ResetPasswordRequest) {
     email: associatedUser.email,
   });
 
-  return json<ResetPasswordResponse>({ token });
+  return jsonWithRateLimit(
+    json<ResetPasswordResponse>({ token }),
+    params.context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<ResetPasswordRequest>,
   validate satisfies ValidateRoute<ResetPasswordRequest>,
+  [rateLimitMiddleware()],
 );

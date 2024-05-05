@@ -10,7 +10,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
@@ -91,13 +92,16 @@ async function handle(params: UpdateProjectRequest) {
     })
     .where(eq(projects.id, projectId));
 
-  return json<UpdateProjectResponse>({
-    status: 'ok',
-  });
+  return jsonWithRateLimit(
+    json<UpdateProjectResponse>({
+      status: 'ok',
+    }),
+    params.context,
+  );
 }
 
 export const PATCH: APIRoute = handler(
   handle satisfies HandleRoute<UpdateProjectRequest>,
   validate satisfies ValidateRoute<UpdateProjectRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

@@ -8,7 +8,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -80,7 +81,7 @@ async function validate(params: SendVerificationEmailRequest) {
   };
 }
 
-async function handle({ body }: SendVerificationEmailRequest) {
+async function handle({ body, context }: SendVerificationEmailRequest) {
   const { email } = body;
 
   const associatedUser = await db.query.users.findFirst({
@@ -102,10 +103,14 @@ async function handle({ body }: SendVerificationEmailRequest) {
 
   await sendVerificationEmail(email, newVerificationCode!);
 
-  return json<SendVerificationEmailResponse>({ status: 'ok' });
+  return jsonWithRateLimit(
+    json<SendVerificationEmailResponse>({ status: 'ok' }),
+    context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<SendVerificationEmailRequest>,
   validate satisfies ValidateRoute<SendVerificationEmailRequest>,
+  [rateLimitMiddleware()],
 );

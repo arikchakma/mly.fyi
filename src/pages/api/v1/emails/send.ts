@@ -11,7 +11,8 @@ import {
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
 import { newId } from '@/lib/new-id';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import {
   createSESServiceClient,
   increaseAlreadySendPerSecondCount,
@@ -213,12 +214,22 @@ async function handle(params: SendEmailRequest) {
     })
     .where(eq(emailLogs.id, emailLogId));
 
-  return json<SendEmailResponse>({
-    id: emailLogId,
-  });
+  return jsonWithRateLimit(
+    json<SendEmailResponse>({
+      id: emailLogId,
+    }),
+    context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<SendEmailRequest>,
   validate satisfies ValidateRoute<SendEmailRequest>,
+  [
+    // Rate limit 20 requests per second
+    rateLimitMiddleware({
+      requests: 20,
+      timeWindow: 1,
+    }),
+  ],
 );

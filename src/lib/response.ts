@@ -21,7 +21,7 @@ export function json<T>(response: T, options: ResponseInit = {}): Response {
 
 export function jsonWithRateLimit<T>(
   response: Response,
-  context?: APIContext,
+  context: APIContext,
 ): Response {
   const rateLimit = context?.locals?.rateLimit;
   if (rateLimit) {

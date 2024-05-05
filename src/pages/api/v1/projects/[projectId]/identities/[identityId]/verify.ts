@@ -20,7 +20,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import { createSESServiceClient, isValidConfiguration } from '@/lib/ses';
 import type { CustomMailFromStatus } from '@aws-sdk/client-ses';
 import type { APIRoute } from 'astro';
@@ -183,13 +184,16 @@ async function handle(params: VerifyProjectIdentityRequest) {
     })
     .where(eq(projectIdentities.id, identityId));
 
-  return json<VerifyProjectIdentityResponse>({
-    records,
-  });
+  return jsonWithRateLimit(
+    json<VerifyProjectIdentityResponse>({
+      records,
+    }),
+    context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<VerifyProjectIdentityRequest>,
   validate satisfies ValidateRoute<VerifyProjectIdentityRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

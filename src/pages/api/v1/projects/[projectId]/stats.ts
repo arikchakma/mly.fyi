@@ -9,7 +9,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import { getAllDatesBetween } from '@/utils/date';
 import type { APIRoute } from 'astro';
 import { and, asc, eq, sql } from 'drizzle-orm';
@@ -174,15 +175,18 @@ async function handle(params: GetProjectStatsRequest) {
     },
   );
 
-  return json<GetProjectStatsResponse>({
-    days,
-    stats: enrichedStats,
-    total,
-  });
+  return jsonWithRateLimit(
+    json<GetProjectStatsResponse>({
+      days,
+      stats: enrichedStats,
+      total,
+    }),
+    context,
+  );
 }
 
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectStatsRequest>,
   validate satisfies ValidateRoute<GetProjectStatsRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

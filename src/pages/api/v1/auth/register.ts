@@ -10,7 +10,8 @@ import {
 import { hashPassword } from '@/lib/hash';
 import { HttpError } from '@/lib/http-error';
 import { newId } from '@/lib/new-id';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -60,7 +61,7 @@ async function validate(params: RegisterRequest) {
   };
 }
 
-async function handle({ body }: RegisterRequest) {
+async function handle({ body, context }: RegisterRequest) {
   const { name, email, password } = body;
 
   const verificationCode = uuidV4();
@@ -81,10 +82,11 @@ async function handle({ body }: RegisterRequest) {
 
   await sendVerificationEmail(email, verificationCode);
 
-  return json<RegisterResponse>({ status: 'ok' });
+  return jsonWithRateLimit(json<RegisterResponse>({ status: 'ok' }), context);
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<RegisterRequest>,
   validate satisfies ValidateRoute<RegisterRequest>,
+  [rateLimitMiddleware()],
 );

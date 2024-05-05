@@ -13,7 +13,8 @@ import {
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
 import { newApiKey, newId } from '@/lib/new-id';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -97,13 +98,16 @@ async function handle(params: CreateProjectApiKeyRequest) {
     updatedAt: new Date(),
   });
 
-  return json<CreateProjectApiKeyResponse>({
-    key,
-  });
+  return jsonWithRateLimit(
+    json<CreateProjectApiKeyResponse>({
+      key,
+    }),
+    params.context,
+  );
 }
 
 export const POST: APIRoute = handler(
   handle satisfies HandleRoute<CreateProjectApiKeyRequest>,
   validate satisfies ValidateRoute<CreateProjectApiKeyRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

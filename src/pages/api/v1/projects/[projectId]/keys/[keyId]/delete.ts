@@ -9,7 +9,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -87,13 +88,16 @@ async function handle(params: DeleteApiKeyRequest) {
       ),
     );
 
-  return json<DeleteApiKeyResponse>({
-    status: 'ok',
-  });
+  return jsonWithRateLimit(
+    json<DeleteApiKeyResponse>({
+      status: 'ok',
+    }),
+    context,
+  );
 }
 
 export const DELETE: APIRoute = handler(
   handle satisfies HandleRoute<DeleteApiKeyRequest>,
   validate satisfies ValidateRoute<DeleteApiKeyRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );

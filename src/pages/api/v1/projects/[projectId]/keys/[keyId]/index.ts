@@ -10,7 +10,8 @@ import {
   handler,
 } from '@/lib/handler';
 import { HttpError } from '@/lib/http-error';
-import { json } from '@/lib/response';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { json, jsonWithRateLimit } from '@/lib/response';
 import type { APIRoute } from 'astro';
 import { and, eq } from 'drizzle-orm';
 import Joi from 'joi';
@@ -79,11 +80,14 @@ async function handle(params: GetProjectApiKeyRequest) {
     throw new HttpError('not_found', 'API key not found');
   }
 
-  return json<GetProjectApiKeyResponse>(apiKey);
+  return jsonWithRateLimit(
+    json<GetProjectApiKeyResponse>(apiKey),
+    params.context,
+  );
 }
 
 export const GET: APIRoute = handler(
   handle satisfies HandleRoute<GetProjectApiKeyRequest>,
   validate satisfies ValidateRoute<GetProjectApiKeyRequest>,
-  [authenticateUser],
+  [rateLimitMiddleware(), authenticateUser],
 );
