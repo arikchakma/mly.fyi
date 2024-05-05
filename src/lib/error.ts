@@ -14,6 +14,7 @@ export const ERROR_CODE_BY_KEY = {
   conflict: 409,
   not_implemented: 501,
   user_not_verified: 400,
+  rate_limited: 429,
 } as const;
 
 export type ErrorCodeKey = keyof typeof ERROR_CODE_BY_KEY;
@@ -108,5 +109,26 @@ export function renderNotFound(): Response {
       errors: [],
     },
     404,
+  );
+}
+
+export function renderRateLimitError(
+  limit: number,
+  remaining: number,
+): Response {
+  return json(
+    {
+      type: 'rate_limited',
+      status: 429,
+      message: 'Too many requests, please try again later.',
+      errors: [],
+    },
+    {
+      status: 429,
+      headers: {
+        'RateLimit-Limit': String(limit),
+        'RateLimit-Remaining': String(remaining),
+      },
+    },
   );
 }
