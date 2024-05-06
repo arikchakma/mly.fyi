@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/arikchakma/mly.fyi/blob/main/license">
-    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" />
+    <img src="https://img.shields.io/badge/License-MIT-FB923C.svg" />
   </a>
    <a href="https://github.com/arikchakma/maily.to">
     <img src="https://mly.fyi/badge.svg" height="20" />
