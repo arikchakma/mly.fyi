@@ -4,6 +4,9 @@
   <a href="https://github.com/arikchakma/mly.fyi/blob/main/license">
     <img src="https://img.shields.io/badge/License-MIT-FB923C.svg" />
   </a>
+  <a href="https://buymeacoffee.com/arikchakma">
+    <img src="https://img.shields.io/badge/-buy_me_a%C2%A0coffee-FB923C?logo=buy-me-a-coffee" alt="Buy me a coffee" />
+  </a>
    <a href="https://github.com/arikchakma/maily.to">
     <img src="https://mly.fyi/badge.svg" height="20" />
   </a>
