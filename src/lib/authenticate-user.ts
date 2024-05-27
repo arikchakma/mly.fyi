@@ -3,7 +3,7 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import type { MiddlewareRoute } from './handler';
 import { HttpError } from './http-error';
-import { decodeToken, readTokenCookie } from './jwt';
+import { decodeToken, readTokenCookie, verifyToken } from './jwt';
 
 export const authenticateUser: MiddlewareRoute = async (params) => {
   const { context } = params;
@@ -13,7 +13,11 @@ export const authenticateUser: MiddlewareRoute = async (params) => {
     throw new HttpError('unauthorized', 'Unauthorized');
   }
 
-  const payload = decodeToken(token);
+  const payload = await verifyToken(token);
+  if (!payload) {
+    throw new HttpError('unauthorized', 'Unauthorized');
+  }
+
   const user = await db.query.users.findFirst({
     where: eq(users.id, payload.id),
   });

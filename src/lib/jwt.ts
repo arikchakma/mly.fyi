@@ -24,12 +24,15 @@ export async function createToken(data: TokenPayload): Promise<string> {
     .sign(secret);
 }
 
-export async function verifyToken(token: string): Promise<TokenPayload> {
-  const secret = new TextEncoder().encode(serverConfig.jwt.secret);
+export async function verifyToken(token: string): Promise<TokenPayload | null> {
+  try {
+    const secret = new TextEncoder().encode(serverConfig.jwt.secret);
 
-  const { payload } = await jose.jwtVerify(token, secret);
-
-  return payload as TokenPayload;
+    const { payload } = await jose.jwtVerify(token, secret);
+    return payload as TokenPayload;
+  } catch (error) {
+    return null;
+  }
 }
 
 export function decodeToken(token: string): TokenPayload {
