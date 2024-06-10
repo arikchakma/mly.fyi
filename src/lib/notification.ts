@@ -15,6 +15,7 @@ import {
   SubscribeCommand,
 } from '@aws-sdk/client-sns';
 import type { ListSubscriptionsCommandOutput } from '@aws-sdk/client-sns';
+import { serverConfig } from './config';
 import { logError, logInfo } from './logger';
 
 export function createSNSServiceClient(
@@ -95,8 +96,7 @@ export async function setupEmailFeedbackHandling(
   let feedbacksTopicArn: string | undefined;
   let feedbacksSubscriptionArn: string | undefined;
 
-  // TODO: Remove me
-  const APP_URL = 'https://dev.arikko.dev';
+  const APP_URL = serverConfig.appUrl;
   const feedbacksEndpoint = `${APP_URL}/api/v1/webhook/feedbacks`;
 
   try {
